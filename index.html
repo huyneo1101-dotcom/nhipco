@@ -122,6 +122,11 @@ body{
 .resetLine{font-size:20px;font-weight:800;text-align:center;max-width:88%;line-height:1.45;color:var(--soft)}
 .mbar{height:7px;border-radius:99px;background:var(--line);overflow:hidden}
 .mbar>div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--gold))}
+.musicRow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.musicLink{flex:1;min-width:0;color:var(--text);text-decoration:none;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xbtn{background:transparent;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:2px 6px;flex:none}
+.poslegend{display:flex;gap:14px;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0;flex-wrap:wrap}
+.posdot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.35)}
 
 .card{background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--line);
   border-radius:var(--r);box-shadow:var(--shadow)}
@@ -389,19 +394,17 @@ const CUES=[
 ];
 
 const GAMES=['9-bi','10-bi'];
-const MISTAKES=[
-  'Đẩy cơ lệch','Giật tay khi bắn','Nhổm đầu sớm','Cầm cơ quá chặt','Thế đứng chưa vững','Ngắm sai điểm chạm',
-  'Lực quá mạnh','Lực quá nhẹ','Mất vị trí bi cái','Chết cái',
-  'Chọn sai bi/lỗ','Bỏ lỡ cú dễ','Tính sai đường bi','Đọc bàn sai',
-  'Thiếu phòng thủ','Safety hớ','Cú phá kém',
-  'Nóng vội','Mất tập trung','Thiếu kiên nhẫn'];
+// Lỗi gom sẵn theo nhóm; MISTAKES suy ra từ đây (một nguồn duy nhất)
 const MISTAKE_CATS=[
-  {t:'Kỹ thuật cơ bản',      items:['Đẩy cơ lệch','Giật tay khi bắn','Nhổm đầu sớm','Cầm cơ quá chặt','Thế đứng chưa vững','Ngắm sai điểm chạm']},
-  {t:'Lực & vị trí bi cái',  items:['Lực quá mạnh','Lực quá nhẹ','Mất vị trí bi cái','Chết cái']},
-  {t:'Tư duy & chọn cú',     items:['Chọn sai bi/lỗ','Bỏ lỡ cú dễ','Tính sai đường bi','Đọc bàn sai']},
-  {t:'Chiến thuật',          items:['Thiếu phòng thủ','Safety hớ','Cú phá kém']},
-  {t:'Tâm lý',               items:['Nóng vội','Mất tập trung','Thiếu kiên nhẫn']},
+  {t:'Kỹ thuật & tư thế', items:['Đẩy cơ lệch','Đưa cơ không thẳng','Giật tay khi bắn','Nhổm đầu sớm','Cầm cơ quá chặt','Thế đứng chưa vững','Mắt rời điểm chạm']},
+  {t:'Ngắm & nhắm',       items:['Ngắm sai điểm chạm','Sai góc cắt','Bù xoáy/throw sai']},
+  {t:'Cú bắn còn kém',    items:['Cú thẳng dài hỏng','Cú cắt mỏng hỏng','Cú băng (bank) kém','Cú đề/phé kém','Cú rút (draw) kém','Cú theo (follow) kém','Cú lỗ xa kém','Cú combo/chùm kém']},
+  {t:'Lực & vị trí bi cái',items:['Lực quá mạnh','Lực quá nhẹ','Mất vị trí bi cái','Chết cái','Bi cái đi quá đường','Không tính đường ra bi']},
+  {t:'Tư duy & chọn cú',  items:['Chọn sai bi/lỗ','Bỏ lỡ cú dễ','Tính sai đường bi','Đọc bàn sai','Sai thứ tự bi','Phá cụm sai thời điểm']},
+  {t:'Chiến thuật',       items:['Thiếu phòng thủ','Safety hớ','Cú phá kém','Không khoá bi']},
+  {t:'Tâm lý',            items:['Nóng vội','Mất tập trung','Thiếu kiên nhẫn','Run tay khi căng','Mất bình tĩnh sau lỗi']},
 ];
+const MISTAKES=MISTAKE_CATS.reduce((a,c)=>a.concat(c.items),[]);
 const mistakeCat=(m)=>{ const c=MISTAKE_CATS.find(c=>c.items.includes(m)); return c?c.t:'Khác'; };
 const FEELS=[{v:1,e:'😞'},{v:2,e:'😐'},{v:3,e:'🙂'},{v:4,e:'😄'},{v:5,e:'🔥'}];
 
@@ -583,12 +586,6 @@ const STRETCHES=[
   {n:'Nghiêng & xoay cổ',  h:'Nghiêng đầu sang hai bên rồi xoay nhẹ, không giật.', s:20},
   {n:'Vặn nhẹ thân/hông',  h:'Hai tay chống hông, xoay eo mở khớp hông.', s:20},
   {n:'Bung & nắm ngón tay',h:'Nắm chặt rồi xòe mạnh các ngón 10 lần, làm nóng bàn tay.', s:20},
-];
-const MUSIC=[
-  {k:'focus',ico:'🎯',t:'Tập trung',d:'lo-fi · deep focus',url:'https://www.youtube.com/results?search_query=deep+focus+lofi+playlist'},
-  {k:'hype', ico:'🔥',t:'Máu chiến',d:'hype · workout',     url:'https://www.youtube.com/results?search_query=hype+gym+workout+motivation+mix'},
-  {k:'calm', ico:'😌',t:'Thư giãn', d:'calm · ambient',      url:'https://www.youtube.com/results?search_query=calm+relax+ambient+music'},
-  {k:'viet', ico:'🎤',t:'Việt sôi động',d:'EDM/rap Việt',    url:'https://www.youtube.com/results?search_query=nh%E1%BA%A1c+vi%E1%BB%87t+s%C3%B4i+%C4%91%E1%BB%99ng+remix'},
 ];
 const WAR_QUOTES=[
   'Vào bàn là để THẮNG — không phải để hy vọng.',
@@ -880,7 +877,7 @@ function Cue(){
 /* ================= Settings ================= */
 function Settings({theme,setTheme,order,setOrder,close}){
   const fileRef=useRef(null);
-  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.training','nc.ghost'];
+  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.training','nc.ghost'];
   const moveTab=(i,dir)=>{ const j=i+dir; if(j<0||j>=order.length) return; const o=order.slice(); const x=o[i]; o[i]=o[j]; o[j]=x; setOrder(o); };
   const exportData=()=>{
     const data={}; KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) data[k]=v; });
@@ -970,11 +967,16 @@ function Empty({ico,t,s}){
 function MatchLog(){
   const [list,setList]=useState(()=>store.get('nc.matches',[]));
   const [extra,setExtra]=useState(()=>store.get('nc.mistakes',[]));  // lỗi tự ghi (không từ trận)
+  const [positions,setPositions]=useState(()=>store.get('nc.positions',[]));  // tình huống điều bi lỗi
   const [form,setForm]=useState(null);
   const [mform,setMform]=useState(false);
+  const [pform,setPform]=useState(null);   // editor thế bi (null | {} | bản ghi)
   const [view2,setView2]=useState('log');
   const save=(l)=>{ setList(l); store.set('nc.matches',l); };
   const saveExtra=(l)=>{ setExtra(l); store.set('nc.mistakes',l); };
+  const savePos=(l)=>{ setPositions(l); store.set('nc.positions',l); };
+  const upsertPos=(p)=>{ savePos(p.id? positions.map(x=>x.id===p.id?p:x) : [{...p,id:uid('p'),date:todayStr()},...positions]); setPform(null); };
+  const delPos=(id)=>savePos(positions.filter(x=>x.id!==id));
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
     let next=list.slice();
     recs.forEach(m=>{ if(m.id){ next=next.map(x=>x.id===m.id?m:x); } else { next=[{...m,id:uid('m')},...next]; } });
@@ -1022,10 +1024,11 @@ function MatchLog(){
         <button className="chip on" onClick={()=>setForm({date:todayStr(),result:'W',game:'10-bi',mistakes:[],feel:3})}>＋ Ghi trận</button>
       </div>
 
-      <div className="modeseg" style={{alignSelf:'flex-start',margin:'10px 0 2px'}}>
+      <div className="modeseg" style={{alignSelf:'stretch',margin:'10px 0 2px',overflowX:'auto'}}>
         <button className={view2==='log'?'on':''} onClick={()=>setView2('log')}>Lịch sử</button>
-        <button className={view2==='opps'?'on':''} onClick={()=>setView2('opps')}>Đối thủ ({opps.length})</button>
+        <button className={view2==='opps'?'on':''} onClick={()=>setView2('opps')}>Đối thủ</button>
         <button className={view2==='mis'?'on':''} onClick={()=>setView2('mis')}>Lỗi</button>
+        <button className={view2==='pos'?'on':''} onClick={()=>setView2('pos')}>Điều bi</button>
       </div>
 
       {view2==='log' && list.length===0 &&
@@ -1141,8 +1144,36 @@ function MatchLog(){
           </>}
       </>}
 
+      {view2==='pos' && <>
+        <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setPform({})}>＋ Thêm tình huống điều bi</button>
+        <div className="tsub">Dựng lại thế bi bạn điều lỗi: kéo bi cái, bi mục tiêu và bi tiếp theo lên bàn rồi ghi chú.</div>
+        <div className="poslegend">
+          <span><i className="posdot" style={{background:'#f3f1e8'}}/>Bi cái</span>
+          <span><i className="posdot" style={{background:'#e0556b'}}/>Bi mục tiêu</span>
+          <span><i className="posdot" style={{background:'#f4c95d'}}/>Bi tiếp theo</span>
+        </div>
+        {positions.length===0
+          ? <Empty ico="🎱" t="Chưa có tình huống nào" s="Bấm nút trên để dựng lại thế bi bạn điều lỗi và rút kinh nghiệm."/>
+          : <div className="list">
+              {positions.map(p=>(
+                <div key={p.id} className="card" style={{padding:12}}>
+                  <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,c:'#f3f1e8'},{x:p.obj.x,y:p.obj.y,c:'#e0556b'},{x:p.nxt.x,y:p.nxt.y,c:'#f4c95d'}],
+                    arrows:[[p.cue.x,p.cue.y,p.obj.x,p.obj.y],[p.obj.x,p.obj.y,p.nxt.x,p.nxt.y]]}}/>
+                  {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+                    <span className="muted small">{fmtDate(p.date)}</span>
+                    <div style={{display:'flex',gap:8}}>
+                      <button className="chip" onClick={()=>setPform(p)}>✎ Sửa</button>
+                      <button className="xbtn" onClick={()=>delPos(p.id)}>✕</button>
+                    </div>
+                  </div>
+                </div>))}
+            </div>}
+      </>}
+
       {form && <MatchForm init={form} names={oppNames} lastHc={lastHc} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
       {mform && <MistakeForm onSave={addExtra} close={()=>setMform(false)}/>}
+      {pform && <PositionEditor init={pform.id?pform:null} onSave={upsertPos} onDel={pform.id?()=>{delPos(pform.id);setPform(null);}:null} close={()=>setPform(null)}/>}
     </div>
   );
 }
@@ -1163,6 +1194,55 @@ function MistakeForm({onSave,close}){
           <textarea rows="3" value={note} onChange={e=>setNote(e.target.value)} placeholder="Bối cảnh, cách khắc phục bạn nghĩ ra..."/></div>
         <button className="btn wide" disabled={tags.length===0&&!note.trim()}
           onClick={()=>{ if(tags.length===0&&!note.trim()) return; onSave({tags,note:note.trim()}); }}>Lưu lỗi</button>
+      </div>
+    </div>
+  );
+}
+function PositionEditor({init,onSave,onDel,close}){
+  const [cue,setCue]=useState(init?init.cue:{x:24,y:34});
+  const [obj,setObj]=useState(init?init.obj:{x:56,y:22});
+  const [nxt,setNxt]=useState(init?init.nxt:{x:80,y:38});
+  const [note,setNote]=useState(init?(init.note||''):'');
+  const drag=useRef(null), svgRef=useRef(null);
+  const RX=[6,94,6,46];
+  const POCK=[[7,7],[50,4],[93,7],[7,45],[50,48],[93,45]];
+  const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    return {x:Math.round(Math.max(RX[0],Math.min(RX[1],(cx-r.left)/r.width*100))),
+            y:Math.round(Math.max(RX[2],Math.min(RX[3],(cy-r.top)/r.height*52)))}; };
+  const setter={cue:setCue,obj:setObj,nxt:setNxt};
+  const pos={cue,obj,nxt};
+  const place=(k,p)=>setter[k](p);
+  const down=(e)=>{ const p=toSvg(e); let best='cue',bd=1e9; ['cue','obj','nxt'].forEach(k=>{const d=Math.hypot(p.x-pos[k].x,p.y-pos[k].y); if(d<bd){bd=d;best=k;}}); drag.current=best; place(best,p); };
+  const move=(e)=>{ if(!drag.current) return; e.preventDefault(); place(drag.current,toSvg(e)); };
+  const up=()=>{ drag.current=null; };
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>{init?'Sửa tình huống':'Dựng thế bi'}</h3>
+        <div className="muted small" style={{margin:'-8px 0 8px'}}>Kéo từng bi vào đúng vị trí trên bàn.</div>
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 52" preserveAspectRatio="xMidYMid meet"
+          style={{width:'100%',maxWidth:'none',touchAction:'none'}}
+          onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
+          onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
+          {POCK.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.4" fill="#06311f"/>)}
+          <line x1={cue.x} y1={cue.y} x2={obj.x} y2={obj.y} stroke="#ffffff" strokeOpacity=".4" strokeWidth=".7" strokeDasharray="2 2"/>
+          <line x1={obj.x} y1={obj.y} x2={nxt.x} y2={nxt.y} stroke="#ffd166" strokeOpacity=".6" strokeWidth=".7" strokeDasharray="2 2"/>
+          <circle cx={cue.x} cy={cue.y} r="3.6" fill="#f3f1e8" stroke="rgba(0,0,0,.4)" strokeWidth=".6"/>
+          <circle cx={obj.x} cy={obj.y} r="3.6" fill="#e0556b" stroke="rgba(0,0,0,.4)" strokeWidth=".6"/>
+          <circle cx={nxt.x} cy={nxt.y} r="3.6" fill="#f4c95d" stroke="rgba(0,0,0,.4)" strokeWidth=".6"/>
+        </svg>
+        <div className="poslegend">
+          <span><i className="posdot" style={{background:'#f3f1e8'}}/>Bi cái</span>
+          <span><i className="posdot" style={{background:'#e0556b'}}/>Bi mục tiêu</span>
+          <span><i className="posdot" style={{background:'#f4c95d'}}/>Bi tiếp theo</span>
+        </div>
+        <div className="field"><label>Ghi chú (điều bi sai chỗ nào, nên đánh thế nào)</label>
+          <textarea rows="3" value={note} onChange={e=>setNote(e.target.value)} placeholder="VD: định ra giữa bàn nhưng bi cái đi quá, kẹt sau bi vàng..."/></div>
+        <div className="rowbtns">
+          {onDel && <button className="btn ghost" onClick={onDel} style={{color:'var(--danger)',flex:'0 0 auto'}}>🗑 Xoá</button>}
+          <button className="btn" onClick={()=>onSave({...(init||{}),cue,obj,nxt,note:note.trim()})}>Lưu</button>
+        </div>
       </div>
     </div>
   );
@@ -1720,14 +1800,8 @@ function PreMatch(){
 
       <div>
         <div className="h">🎧 Nhạc trước trận</div>
-        <div className="tsub" style={{marginTop:2}}>Mở playlist hợp tâm trạng (mở ở trình duyệt).</div>
-        <div className="musicgrid">
-          {MUSIC.map(m=>(
-            <a key={m.k} className="musicCard" href={m.url} target="_blank" rel="noopener noreferrer">
-              <span style={{fontSize:24}}>{m.ico}</span>
-              <b>{m.t}</b><small>{m.d}</small>
-            </a>))}
-        </div>
+        <div className="tsub" style={{marginTop:2}}>Dán link playlist Spotify hoặc YouTube của bạn để mở nhanh trước trận.</div>
+        <MusicLinks/>
       </div>
 
       <div>
@@ -1779,6 +1853,33 @@ function WarQuote(){
         <div className="t" style={{fontSize:19}}>{WAR_QUOTES[i]}</div>
       </div>
       <button className="btn acc wide" style={{marginTop:10}} onClick={next}>🔀 Câu khác</button>
+    </div>
+  );
+}
+function platformIco(u){ if(/spotify/i.test(u)) return '🟢'; if(/youtu/i.test(u)) return '▶️'; return '🔗'; }
+function platformName(u){ if(/spotify/i.test(u)) return 'Spotify'; if(/youtu/i.test(u)) return 'YouTube'; return 'Link nhạc'; }
+function MusicLinks(){
+  const [list,setList]=useState(()=>store.get('nc.music',[]));
+  const [url,setUrl]=useState(''); const [label,setLabel]=useState('');
+  const save=(l)=>{ setList(l); store.set('nc.music',l); };
+  const add=()=>{ let u=url.trim(); if(!u) return; if(!/^https?:\/\//i.test(u)) u='https://'+u;
+    save([{id:uid('mu'),url:u,label:label.trim()||platformName(u)},...list]); setUrl(''); setLabel(''); };
+  const del=(id)=>save(list.filter(x=>x.id!==id));
+  return (
+    <div style={{marginTop:8}}>
+      <div className="editrow"><input value={label} onChange={e=>setLabel(e.target.value)} placeholder="Tên (vd: Máu chiến)" style={{flex:'0 0 36%'}}/>
+        <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="Dán link Spotify / YouTube"/></div>
+      <button className="btn ghost wide" onClick={add} style={{marginBottom:10}}>＋ Thêm link</button>
+      {list.length===0
+        ? <div className="muted small">Chưa có link. Dán link playlist của bạn ở trên để mở nhanh.</div>
+        : <div className="list">
+            {list.map(m=>(
+              <div key={m.id} className="musicRow">
+                <span style={{fontSize:20}}>{platformIco(m.url)}</span>
+                <a href={m.url} target="_blank" rel="noopener noreferrer" className="musicLink">{m.label||m.url}</a>
+                <button onClick={()=>del(m.id)} className="xbtn">✕</button>
+              </div>))}
+          </div>}
     </div>
   );
 }
