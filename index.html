@@ -952,7 +952,7 @@ function Cue(){
 /* ================= Settings ================= */
 function Settings({theme,setTheme,order,setOrder,close}){
   const fileRef=useRef(null);
-  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.training','nc.ghost'];
+  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.training','nc.ghost'];
   const moveTab=(i,dir)=>{ const j=i+dir; if(j<0||j>=order.length) return; const o=order.slice(); const x=o[i]; o[i]=o[j]; o[j]=x; setOrder(o); };
   const exportData=()=>{
     const data={}; KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) data[k]=v; });
@@ -1783,6 +1783,55 @@ function DrillBuilder({onSave,close}){
     </div>
   );
 }
+function ProblemBuilder({onSave,close}){
+  const [name,setName]=useState(''); const [tag,setTag]=useState('');
+  const [sit,setSit]=useState(''); const [fix,setFix]=useState('');
+  const [cue,setCue]=useState({x:22,y:30});
+  const [balls,setBalls]=useState([{x:52,y:26},{x:72,y:32}]);
+  const drag=useRef(null), svgRef=useRef(null);
+  const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    return {x:Math.round(Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100))),
+            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54)))}; };
+  const place=(k,p)=>{ if(k==='cue') setCue(p); else setBalls(a=>a.map((b,i)=>i===k?p:b)); };
+  const down=(e)=>{ const p=toSvg(e); let best='cue',bd=Math.hypot(p.x-cue.x,p.y-cue.y);
+    balls.forEach((b,i)=>{const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<bd){bd=d;best=i;}}); drag.current=best; place(best,p); };
+  const move=(e)=>{ if(drag.current==null) return; e.preventDefault(); place(drag.current,toSvg(e)); };
+  const up=()=>{ drag.current=null; };
+  const addBall=()=>setBalls(a=>a.length>=15?a:[...a,{x:46+(a.length%5)*8, y:24+Math.floor(a.length/5)*7}]);
+  const rmBall=()=>setBalls(a=>a.slice(0,-1));
+  const dia=customDia(cue,balls);
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>Thêm thế khó</h3>
+        <div className="muted small" style={{margin:'-8px 0 6px'}}>Dựng thế bi minh hoạ, rồi ghi cách xử lý.</div>
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
+          style={{width:'100%',maxWidth:'none',touchAction:'none'}}
+          onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
+          onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
+          <TableFrame/>
+          {dia.balls.map((b,i)=><Ball key={i} x={b.x} y={b.y} b={b}/>)}
+        </svg>
+        <div className="ghostform" style={{justifyContent:'center',marginTop:8}}>
+          <button className="chip" onClick={rmBall} disabled={!balls.length}>－ Bớt bi</button>
+          <span className="muted small">{balls.length} bi + bi cái</span>
+          <button className="chip" onClick={addBall} disabled={balls.length>=15}>＋ Thêm bi</button>
+        </div>
+        <div className="field" style={{marginTop:8}}><label>Tên tình huống</label>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="VD: Bi kẹt góc"/></div>
+        <div className="field"><label>Nhãn ngắn</label>
+          <input value={tag} onChange={e=>setTag(e.target.value)} placeholder="VD: Góc bí"/></div>
+        <div className="field"><label>Tình huống</label>
+          <textarea rows="2" value={sit} onChange={e=>setSit(e.target.value)} placeholder="Mô tả thế bi khó..."/></div>
+        <div className="field"><label>Cách xử lý</label>
+          <textarea rows="3" value={fix} onChange={e=>setFix(e.target.value)} placeholder="Nên đánh thế nào..."/></div>
+        <button className="btn wide" onClick={()=>{ if(!name.trim()) return;
+          onSave({custom:true,name:name.trim(),tag:tag.trim()||'Tự ghi',sit:sit.trim(),fix:fix.trim()||'(chưa ghi)',dia}); }}>Lưu thế khó</button>
+      </div>
+    </div>
+  );
+}
 function Training(){
   const matches=store.get('nc.matches',[]);
   const [recs,setRecs]=useState(()=>store.get('nc.training',[]));     // {id,date,drill,score,max,note}
@@ -1797,15 +1846,22 @@ function Training(){
   const [hiddenP,setHiddenP]=useState(()=>store.get('nc.hiddenProblems',[]));
   const [weakHide,setWeakHide]=useState(()=>store.get('nc.weakHidden',[]));
   const [planHide,setPlanHide]=useState(()=>{ const ph=store.get('nc.planHidden',null); return (ph&&ph.date===todayStr())?ph.keys:[]; });
+  const [customProblems,setCustomProblems]=useState(()=>store.get('nc.customProblems',[]));
   const [drillBuilder,setDrillBuilder]=useState(false);
+  const [pbuilder,setPbuilder]=useState(false);
+  const [lessonV,setLessonV]=useState(0);   // ép render khi sửa bài học (nc.matches)
+  const addCustomProblem=(p)=>{ const l=[{...p,key:uid('cp')},...customProblems]; setCustomProblems(l); store.set('nc.customProblems',l); setPbuilder(false); };
+  const clearGhost=()=>{ if(window.confirm('Xoá toàn bộ lịch sử đấu Ghost?')){ setGhost([]); store.set('nc.ghost',[]); } };
+  const clearLesson=(id)=>{ const ms=store.get('nc.matches',[]).map(m=>m.id===id?{...m,note:''}:m); store.set('nc.matches',ms); setLessonV(v=>v+1); };
   const savePlans=(l)=>{ setPlans(l); store.set('nc.plans',l); };
   const upsertPlan=(p)=>{ savePlans(p.id? plans.map(x=>x.id===p.id?p:x) : [{...p,id:uid('pl')},...plans]); setBuilder(null); };
   const delPlan=(id)=>{ savePlans(plans.filter(x=>x.id!==id)); setBuilder(null); };
   const addCustomDrill=(d)=>{ const l=[d,...customDrills]; setCustomDrills(l); store.set('nc.customDrills',l); setDrillBuilder(false); };
   const hideDrill=(k)=>{ if(customDrills.some(x=>x.key===k)){ const l=customDrills.filter(x=>x.key!==k); setCustomDrills(l); store.set('nc.customDrills',l); } else { const l=[...new Set([...hiddenD,k])]; setHiddenD(l); store.set('nc.hiddenDrills',l); } };
   const restoreDrills=()=>{ setHiddenD([]); store.set('nc.hiddenDrills',[]); };
-  const hideProblem=(k)=>{ const l=[...new Set([...hiddenP,k])]; setHiddenP(l); store.set('nc.hiddenProblems',l); };
+  const hideProblem=(k)=>{ if(customProblems.some(x=>x.key===k)){ const l=customProblems.filter(x=>x.key!==k); setCustomProblems(l); store.set('nc.customProblems',l); } else { const l=[...new Set([...hiddenP,k])]; setHiddenP(l); store.set('nc.hiddenProblems',l); } };
   const restoreProblems=()=>{ setHiddenP([]); store.set('nc.hiddenProblems',[]); };
+  const allProblems=[...customProblems,...PROBLEMS].filter(p=>!hiddenP.includes(p.key));
   const hideWeak=(m)=>{ const l=[...new Set([...weakHide,m])]; setWeakHide(l); store.set('nc.weakHidden',l); };
   const hidePlanItem=(k)=>{ const l=[...new Set([...planHide,k])]; setPlanHide(l); store.set('nc.planHidden',{date:todayStr(),keys:l}); };
   const allDrills=[...customDrills,...DRILLS].filter(d=>!hiddenD.includes(d.key));
@@ -1970,9 +2026,12 @@ function Training(){
 
       <div className="h2">🧩 Thế khó thường gặp</div>
       <div className="tsub" style={{marginTop:2}}>Tình huống thực tế + cách xử lý. Chạm để mở.</div>
-      {hiddenP.length>0 && <button className="chip" style={{alignSelf:'flex-start',marginTop:6}} onClick={restoreProblems}>↺ Hiện lại {hiddenP.length} thế đã ẩn</button>}
+      <div style={{display:'flex',gap:8,marginTop:6,flexWrap:'wrap'}}>
+        <button className="btn acc sm" onClick={()=>setPbuilder(true)}>＋ Thêm thế khó (tự vẽ bàn)</button>
+        {hiddenP.length>0 && <button className="chip" onClick={restoreProblems}>↺ Hiện lại {hiddenP.length} thế đã ẩn</button>}
+      </div>
       <div className="list">
-        {PROBLEMS.filter(p=>!hiddenP.includes(p.key)).map(p=><ProblemCard key={p.key} p={p} onDelete={()=>hideProblem(p.key)}/>)}
+        {allProblems.map(p=><ProblemCard key={p.key} p={p} onDelete={()=>hideProblem(p.key)}/>)}
       </div>
 
       <div className="h2">👻 Đấu với Ghost</div>
@@ -1988,6 +2047,7 @@ function Training(){
         <div className="ghostform">
           <button className="btn acc sm" onClick={()=>addGhost(true)}>👍 Thắng Ghost</button>
           <button className="btn ghost sm" onClick={()=>addGhost(false)}>👎 Thua Ghost</button>
+          {ghost.length>0 && <button className="xbtn" style={{marginLeft:'auto'}} onClick={clearGhost} title="Xoá lịch sử">🗑</button>}
         </div>
       </div>
 
@@ -1996,7 +2056,10 @@ function Training(){
         <div className="list">
           {lessons.map(m=>(
             <div key={m.id} className="card lesson">
-              <div className="muted small">{fmtDate(m.date)} · {m.opp||'?'} · {m.result==='W'?'Thắng':m.result==='L'?'Thua':'Hòa'}</div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+                <div className="muted small">{fmtDate(m.date)} · {m.opp||'?'} · {m.result==='W'?'Thắng':m.result==='L'?'Thua':'Hòa'}</div>
+                <button className="xbtn" onClick={()=>clearLesson(m.id)}>✕</button>
+              </div>
               <div className="lz">“{m.note}”</div>
             </div>))}
         </div>
@@ -2009,6 +2072,7 @@ function Training(){
         weakKeys={[...new Set(weak.flatMap(([m])=>DRILLS.filter(d=>d.fixes.includes(m)).map(d=>d.key)))]}
         onSave={upsertPlan} onDel={builder.id?()=>delPlan(builder.id):null} close={()=>setBuilder(null)}/>}
       {drillBuilder && <DrillBuilder onSave={addCustomDrill} close={()=>setDrillBuilder(false)}/>}
+      {pbuilder && <ProblemBuilder onSave={addCustomProblem} close={()=>setPbuilder(false)}/>}
     </div>
   );
 }
