@@ -581,9 +581,8 @@ function MindTab(){
   const [seg,setSeg]=useState('breathe');
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={seg} set={setSeg} opts={[['breathe','🫁 Thở'],['routine','✓ Routine'],['cue','🧘 Tịnh tâm']]}/>
+      <Seg val={seg} set={setSeg} opts={[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm']]}/>
       {seg==='breathe' && <Breathe/>}
-      {seg==='routine' && <Routine/>}
       {seg==='cue' && <Cue/>}
     </div>
   );
@@ -889,7 +888,7 @@ function Cue(){
 /* ================= Settings ================= */
 function Settings({theme,setTheme,order,setOrder,close}){
   const fileRef=useRef(null);
-  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.training','nc.ghost'];
+  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.warvotes','nc.training','nc.ghost'];
   const moveTab=(i,dir)=>{ const j=i+dir; if(j<0||j>=order.length) return; const o=order.slice(); const x=o[i]; o[i]=o[j]; o[j]=x; setOrder(o); };
   const exportData=()=>{
     const data={}; KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) data[k]=v; });
@@ -989,6 +988,25 @@ function MatchLog(){
   const savePos=(l)=>{ setPositions(l); store.set('nc.positions',l); };
   const upsertPos=(p)=>{ savePos(p.id? positions.map(x=>x.id===p.id?p:x) : [{...p,id:uid('p'),date:todayStr()},...positions]); setPform(null); };
   const delPos=(id)=>savePos(positions.filter(x=>x.id!==id));
+  const togglePosDone=(id)=>savePos(positions.map(x=>x.id===id?{...x,done:!x.done}:x));
+  const posCard=(p)=>{
+    const sug=suggestTip(p.cue,p.obj,p.nxt);
+    return (
+      <div key={p.id} className="card" style={{padding:12,opacity:p.done?0.72:1}}>
+        <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}]}}/>
+        {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
+        <div className="muted small" style={{marginTop:6}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{p.tip?tipLabel(p.tip):'—'}</b> · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+          <span className="muted small">{fmtDate(p.date)}</span>
+          <div style={{display:'flex',gap:8}}>
+            <button className={'chip'+(p.done?' on':'')} onClick={()=>togglePosDone(p.id)}>{p.done?'↩ Tập lại':'✓ Đã tập'}</button>
+            <button className="chip" onClick={()=>setPform(p)}>✎</button>
+            <button className="xbtn" onClick={()=>delPos(p.id)}>✕</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
     let next=list.slice();
     recs.forEach(m=>{ if(m.id){ next=next.map(x=>x.id===m.id?m:x); } else { next=[{...m,id:uid('m')},...next]; } });
@@ -1158,28 +1176,20 @@ function MatchLog(){
 
       {view2==='pos' && <>
         <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setPform({})}>＋ Thêm tình huống điều bi</button>
-        <div className="tsub">Dựng lại thế bi bạn điều lỗi: kéo bi cái, bi mục tiêu và bi tiếp theo lên bàn rồi ghi chú.</div>
+        <div className="tsub">Dựng lại thế bi bạn điều lỗi. Tập lại được rồi thì tick "Đã tập".</div>
         <div className="poslegend">
-          <span><i className="posdot" style={{background:'#f3f1e8'}}/>Bi cái</span>
-          <span><i className="posdot" style={{background:'#e0556b'}}/>Bi mục tiêu</span>
-          <span><i className="posdot" style={{background:'#f4c95d'}}/>Bi tiếp theo</span>
+          <span><i className="posdot" style={{background:'#f4f1e6'}}/>Bi cái</span>
+          <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9</span>
+          <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10</span>
         </div>
-        {positions.length===0
-          ? <Empty ico="🎱" t="Chưa có tình huống nào" s="Bấm nút trên để dựng lại thế bi bạn điều lỗi và rút kinh nghiệm."/>
-          : <div className="list">
-              {positions.map(p=>(
-                <div key={p.id} className="card" style={{padding:12}}>
-                  <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}]}}/>
-                  {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
-                    <span className="muted small">{fmtDate(p.date)}{p.tip?' · đầu cơ: '+tipLabel(p.tip):''}</span>
-                    <div style={{display:'flex',gap:8}}>
-                      <button className="chip" onClick={()=>setPform(p)}>✎ Sửa</button>
-                      <button className="xbtn" onClick={()=>delPos(p.id)}>✕</button>
-                    </div>
-                  </div>
-                </div>))}
-            </div>}
+        {positions.length===0 &&
+          <Empty ico="🎱" t="Chưa có tình huống nào" s="Bấm nút trên để dựng lại thế bi bạn điều lỗi và rút kinh nghiệm."/>}
+        {positions.filter(p=>!p.done).length>0 &&
+          <div className="list">{positions.filter(p=>!p.done).map(posCard)}</div>}
+        {positions.filter(p=>p.done).length>0 && <>
+          <div className="h2">✅ Đã tập ({positions.filter(p=>p.done).length})</div>
+          <div className="list">{positions.filter(p=>p.done).map(posCard)}</div>
+        </>}
       </>}
 
       {form && <MatchForm init={form} names={oppNames} lastHc={lastHc} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
@@ -1234,6 +1244,7 @@ function PositionEditor({init,onSave,onDel,close}){
   const tdown=(e)=>{ tdrag.current=true; e.preventDefault(); tipAt(e); };
   const tmove=(e)=>{ if(!tdrag.current) return; e.preventDefault(); tipAt(e); };
   const tup=()=>{ tdrag.current=false; };
+  const sug=suggestTip(cue,obj,nxt);
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
@@ -1262,9 +1273,10 @@ function PositionEditor({init,onSave,onDel,close}){
             <circle cx="50" cy="50" r="46" fill="#f4f1e6" stroke="var(--line)" strokeWidth="2"/>
             <line x1="50" y1="8" x2="50" y2="92" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
             <line x1="8" y1="50" x2="92" y2="50" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
+            <circle cx={50+sug.x*40} cy={50+sug.y*40} r="10" fill="none" stroke="var(--gold)" strokeWidth="2.5" strokeDasharray="4 3"/>
             <circle cx={50+tip.x*40} cy={50+tip.y*40} r="9" fill="var(--accent)" stroke="#04231a" strokeWidth="1.5"/>
           </svg>
-          <div className="muted small" style={{marginTop:4}}>Điểm chạm: <b style={{color:'var(--gold)'}}>{tipLabel(tip)}</b></div>
+          <div className="muted small" style={{marginTop:4,textAlign:'center'}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{tipLabel(tip)}</b> · <span style={{color:'var(--gold)'}}>Gợi ý: {tipLabel(sug)}</span> <span style={{display:'block',fontSize:11,opacity:.8}}>(vòng vàng nét đứt = gợi ý)</span></div>
         </div>
 
         <div className="field"><label>Ghi chú (điều bi sai chỗ nào, nên đánh thế nào)</label>
@@ -1358,12 +1370,14 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
 /* ================= Tập luyện ================= */
 const POCKETS=[[7,8],[50,5.4],[93,8],[7,46],[50,48.6],[93,46]];
 const FELT=[10,90,10,44]; // giới hạn di chuyển bi: x0,x1,y0,y1
+const DIAMONDS=(()=>{ const d=[]; [18,31,44,56,69,82].forEach(x=>{d.push([x,2.4]);d.push([x,51.6]);}); [16,27,38].forEach(y=>{d.push([1.9,y]);d.push([98.1,y]);}); return d; })();
 function TableFrame(){
   return (
     <g>
       <rect x="0" y="0" width="100" height="54" rx="5" fill="#6b4a2a"/>
       <rect x="3.5" y="4.5" width="93" height="45" rx="3" fill="#0c5e3c"/>
-      {POCKETS.map((p,i)=>(<g key={i}><circle cx={p[0]} cy={p[1]} r="4.3" fill="#3a2a18"/><circle cx={p[0]} cy={p[1]} r="3" fill="#05140d"/></g>))}
+      {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1.05} L ${p[0]+1.05} ${p[1]} L ${p[0]} ${p[1]+1.05} L ${p[0]-1.05} ${p[1]} Z`} fill="#efe4c8"/>)}
+      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="4.3" fill="#3a2a18"/><circle cx={p[0]} cy={p[1]} r="3" fill="#05140d"/></g>))}
     </g>
   );
 }
@@ -1372,7 +1386,7 @@ function bandPath(cx,cy,r,b){
   return `M ${cx-w} ${cy-b} L ${cx+w} ${cy-b} A ${r} ${r} 0 0 1 ${cx+w} ${cy+b} L ${cx-w} ${cy+b} A ${r} ${r} 0 0 1 ${cx-w} ${cy-b} Z`;
 }
 function Ball({x,y,r,b}){
-  r=r||3.6;
+  r=r||3.05;
   if(b.cue) return <circle cx={x} cy={y} r={r} fill="#f4f1e6" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>;
   if(b.num!=null) return (
     <g>
@@ -1389,6 +1403,16 @@ function tipLabel(t){
   if(Math.hypot(t.x,t.y)<0.28) return 'tâm';
   const v=t.y<-0.28?'cao':(t.y>0.28?'thấp':''), h=t.x<-0.28?'trái':(t.x>0.28?'phải':'');
   return [v,h].filter(Boolean).join(' ')||'tâm';
+}
+// Gợi ý đầu cơ: đánh giá vị trí bi kế so với hướng ngắm để chọn theo/rút + xoáy
+function suggestTip(cue,obj,nxt){
+  const ax=obj.x-cue.x, ay=obj.y-cue.y, al=Math.hypot(ax,ay)||1, ux=ax/al, uy=ay/al;
+  const bx=nxt.x-obj.x, by=nxt.y-obj.y, bl=Math.hypot(bx,by)||1, vx=bx/bl, vy=by/bl;
+  const dot=ux*vx+uy*vy;        // bi kế ở phía trước (theo) hay phía sau (rút)
+  const cross=ux*vy-uy*vx;      // bi kế lệch trái/phải hướng ngắm
+  const y=dot>0.3?-0.55:(dot<-0.3?0.55:0);
+  const x=cross>0.3?0.5:(cross<-0.3?-0.5:0);
+  return {x,y};
 }
 function MiniTable({dia}){
   if(!dia) return null;
@@ -1501,6 +1525,7 @@ function Training(){
   const [ghost,setGhost]=useState(()=>store.get('nc.ghost',[]));      // {id,date,game,won}
   const [scoring,setScoring]=useState(null);
   const [cat,setCat]=useState('all');
+  const [tseg,setTseg]=useState('drills');
 
   const addScore=(r)=>{ const l=[{...r,id:uid('t'),date:todayStr()},...recs]; setRecs(l); store.set('nc.training',l); setScoring(null); };
   const addGhost=(won)=>{ const l=[{id:uid('g'),date:todayStr(),won},...ghost]; setGhost(l); store.set('nc.ghost',l); };
@@ -1547,6 +1572,8 @@ function Training(){
 
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <Seg val={tseg} set={setTseg} opts={[['drills','🎯 Luyện tập'],['routine','✓ Routine']]}/>
+      {tseg==='routine' ? <Routine/> : <>
       <div className="h">Tập luyện</div>
       <div className="tsub">Luyện có mục tiêu, chấm điểm và theo dõi tiến bộ — không chỉ "đánh cho vui".</div>
 
@@ -1657,6 +1684,7 @@ function Training(){
       </>}
 
       <div style={{height:8}}/>
+      </>}
       {scoring && <ScoreModal d={scoring} onSave={addScore} close={()=>setScoring(null)}/>}
     </div>
   );
@@ -1667,10 +1695,9 @@ function AtTable(){
   const [seg,setSeg]=useState('clock');
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={seg} set={setSeg} opts={[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp'],['angle','📐 Góc']]}/>
+      <Seg val={seg} set={setSeg} opts={[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]}/>
       {seg==='clock' && <ShotClock/>}
       {seg==='metro' && <Metronome/>}
-      {seg==='angle' && <AngleCalc/>}
     </div>
   );
 }
@@ -1843,6 +1870,17 @@ function PreMatch(){
   return (
     <div style={{display:'flex',flexDirection:'column',gap:18,flex:1}}>
       <div>
+        <div className="h">⚔️ Mindset chiến đấu</div>
+        <WarQuote/>
+      </div>
+
+      <div>
+        <div className="h">🎧 Nhạc trước trận</div>
+        <div className="tsub" style={{marginTop:2}}>Dán link playlist Spotify hoặc YouTube của bạn để mở nhanh trước trận.</div>
+        <MusicLinks/>
+      </div>
+
+      <div>
         <div className="h">🤸 Khởi động &amp; giãn cơ</div>
         <div className="tsub" style={{marginTop:2}}>Làm nóng cổ tay – vai – cổ ~2 phút để tay mượt và tránh chấn thương.</div>
         {!g ? <>
@@ -1855,17 +1893,6 @@ function PreMatch(){
           </div>
           <button className="btn acc wide" style={{marginTop:12}} onClick={()=>setG(true)}>▶ Khởi động theo nhịp</button>
         </> : <GuidedStretch onDone={()=>setG(false)}/>}
-      </div>
-
-      <div>
-        <div className="h">🎧 Nhạc trước trận</div>
-        <div className="tsub" style={{marginTop:2}}>Dán link playlist Spotify hoặc YouTube của bạn để mở nhanh trước trận.</div>
-        <MusicLinks/>
-      </div>
-
-      <div>
-        <div className="h">⚔️ Mindset chiến đấu</div>
-        <WarQuote/>
       </div>
       <div style={{height:6}}/>
     </div>
@@ -1903,15 +1930,37 @@ function GuidedStretch({onDone}){
   );
 }
 function WarQuote(){
-  const [i,setI]=useState(()=>Math.floor((Date.now()/1000)%WAR_QUOTES.length));
-  const next=()=>setI(p=>{ let n=p; while(n===p&&WAR_QUOTES.length>1) n=Math.floor(Math.random()*WAR_QUOTES.length); return n; });
+  const [votes,setVotes]=useState(()=>store.get('nc.warvotes',{}));
+  const pool=WAR_QUOTES.filter(q=>votes[q]!=='down');
+  const pick=(arr,not)=>{ const a=arr.filter(q=>q!==not); if(!a.length) return arr[0]||''; return a[Math.floor(Math.random()*a.length)]; };
+  const [cur,setCur]=useState(()=>{ const p=WAR_QUOTES.filter(q=>(store.get('nc.warvotes',{})[q])!=='down'); return p.length?p[Math.floor((Date.now()/1000)%p.length)]:''; });
+  const saveV=(v)=>{ setVotes(v); store.set('nc.warvotes',v); };
+  const next=()=>setCur(pick(pool,cur));
+  const like=()=>{ const v={...votes}; if(v[cur]==='up') delete v[cur]; else v[cur]='up'; saveV(v); };
+  const dislike=()=>{ const v={...votes}; v[cur]='down'; saveV(v); const np=WAR_QUOTES.filter(q=>v[q]!=='down'); setCur(np.length?pick(np,cur):''); };
+  const restore=()=>{ const v={}; Object.keys(votes).forEach(k=>{ if(votes[k]==='up') v[k]='up'; }); saveV(v); setCur(WAR_QUOTES[Math.floor((Date.now()/1000)%WAR_QUOTES.length)]); };
+  const liked=votes[cur]==='up';
+  const hidden=Object.values(votes).filter(x=>x==='down').length;
+  if(!pool.length) return (
+    <div style={{marginTop:6}} className="card" >
+      <div style={{padding:18,textAlign:'center'}}>
+        <div className="muted" style={{fontSize:14,marginBottom:10}}>Bạn đã ẩn hết câu.</div>
+        <button className="btn ghost wide" onClick={restore}>↺ Khôi phục {hidden} câu đã ẩn</button>
+      </div>
+    </div>
+  );
   return (
     <div style={{marginTop:6}}>
-      <div className="card cuecard" style={{minHeight:140}} onClick={next}>
+      <div className="card cuecard" style={{minHeight:128}}>
         <div className="q">“</div>
-        <div className="t" style={{fontSize:19}}>{WAR_QUOTES[i]}</div>
+        <div className="t" style={{fontSize:19}}>{cur}</div>
       </div>
-      <button className="btn acc wide" style={{marginTop:10}} onClick={next}>🔀 Câu khác</button>
+      <div style={{display:'flex',gap:8,marginTop:10}}>
+        <button className="btn ghost" style={{flex:'0 0 auto',color:liked?'var(--gold)':'var(--text)'}} onClick={like}>{liked?'❤️':'🤍'} Thích</button>
+        <button className="btn ghost" style={{flex:'0 0 auto'}} onClick={dislike}>👎 Ẩn</button>
+        <button className="btn acc" style={{flex:1}} onClick={next}>🔀 Câu khác</button>
+      </div>
+      {hidden>0 && <button className="chip" style={{marginTop:8}} onClick={restore}>↺ Bỏ ẩn {hidden} câu</button>}
     </div>
   );
 }
