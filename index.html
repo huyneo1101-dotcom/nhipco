@@ -96,7 +96,7 @@ body{
   background:linear-gradient(0deg,var(--bg) 72%,transparent);position:sticky;bottom:0;
   overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:0 0 auto;min-width:64px;border:1px solid var(--line);background:var(--card2);color:var(--muted);
+.tab{flex:1 1 auto;min-width:60px;border:1px solid var(--line);background:var(--card2);color:var(--muted);
   border-radius:12px;padding:8px 7px;cursor:pointer;display:flex;flex-direction:column;
   align-items:center;gap:3px;font-size:10px;font-weight:700;transition:.15s;white-space:nowrap}
 .tab .ico{font-size:18px;line-height:1}
@@ -274,8 +274,8 @@ body{
 .scHint{font-size:13px;color:var(--muted);font-weight:600}
 @keyframes scpulse{0%,100%{opacity:1}50%{opacity:.35}}
 .scNum.pulse{animation:scpulse .5s steps(1) infinite}
-.mtable{width:100%;max-width:270px;align-self:center;background:#0b5d3b;border-radius:8px;
-  border:4px solid #6b4a2a;box-shadow:inset 0 0 14px rgba(0,0,0,.35)}
+.mtable{width:100%;max-width:300px;align-self:center;border-radius:7px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.cueball{width:148px;height:148px;align-self:center;touch-action:none;cursor:pointer;margin-top:6px}
 .ghostform{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px}
 .dot.W{background:var(--ok)} .dot.L{background:var(--danger)}
@@ -546,16 +546,13 @@ const todayStr=()=> new Date().toISOString().slice(0,10);
 const fmtDate=(s)=>{ if(!s) return ''; const p=s.split('-'); return p.length===3? p[2]+'/'+p[1] : s; };
 const uid=(p)=> p+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
 
-/* ---- Tab (cho phép đổi vị trí) ---- */
+/* ---- Tab (gộp gọn còn 5; cho phép đổi vị trí) ---- */
 const TAB_DEFS=[
-  {id:'pre',     ico:'🔥', lab:'Trước trận'},
-  {id:'breathe', ico:'🫁', lab:'Nhịp thở'},
-  {id:'metro',   ico:'🎵', lab:'Đếm nhịp'},
-  {id:'routine', ico:'✓',  lab:'Routine'},
-  {id:'cue',     ico:'🧘', lab:'Tịnh tâm'},
-  {id:'table',   ico:'🎱', lab:'Tại bàn'},
-  {id:'log',     ico:'📓', lab:'Nhật ký'},
-  {id:'train',   ico:'🎯', lab:'Tập luyện'},
+  {id:'pre',   ico:'🔥', lab:'Trước trận'},
+  {id:'mind',  ico:'🧘', lab:'Tâm trí'},
+  {id:'table', ico:'🎱', lab:'Tại bàn'},
+  {id:'log',   ico:'📓', lab:'Nhật ký'},
+  {id:'train', ico:'🎯', lab:'Tập luyện'},
 ];
 const TAB_IDS=TAB_DEFS.map(t=>t.id);
 function mergeOrder(saved){
@@ -566,15 +563,30 @@ function mergeOrder(saved){
 function tabView(id){
   switch(id){
     case 'pre': return <PreMatch/>;
-    case 'breathe': return <Breathe/>;
-    case 'metro': return <Metronome/>;
-    case 'routine': return <Routine/>;
-    case 'cue': return <Cue/>;
+    case 'mind': return <MindTab/>;
     case 'table': return <AtTable/>;
     case 'log': return <MatchLog/>;
     case 'train': return <Training/>;
     default: return null;
   }
+}
+function Seg({val,set,opts}){
+  return (
+    <div className="modeseg" style={{alignSelf:'center',margin:'4px 0 10px',maxWidth:'100%',overflowX:'auto'}}>
+      {opts.map(([k,t])=><button key={k} className={val===k?'on':''} onClick={()=>set(k)}>{t}</button>)}
+    </div>
+  );
+}
+function MindTab(){
+  const [seg,setSeg]=useState('breathe');
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <Seg val={seg} set={setSeg} opts={[['breathe','🫁 Thở'],['routine','✓ Routine'],['cue','🧘 Tịnh tâm']]}/>
+      {seg==='breathe' && <Breathe/>}
+      {seg==='routine' && <Routine/>}
+      {seg==='cue' && <Cue/>}
+    </div>
+  );
 }
 
 /* ---- Trước trận: giãn cơ + nhạc + mindset ---- */
@@ -1157,11 +1169,10 @@ function MatchLog(){
           : <div className="list">
               {positions.map(p=>(
                 <div key={p.id} className="card" style={{padding:12}}>
-                  <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,c:'#f3f1e8'},{x:p.obj.x,y:p.obj.y,c:'#e0556b'},{x:p.nxt.x,y:p.nxt.y,c:'#f4c95d'}],
-                    arrows:[[p.cue.x,p.cue.y,p.obj.x,p.obj.y],[p.obj.x,p.obj.y,p.nxt.x,p.nxt.y]]}}/>
+                  <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}]}}/>
                   {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
-                    <span className="muted small">{fmtDate(p.date)}</span>
+                    <span className="muted small">{fmtDate(p.date)}{p.tip?' · đầu cơ: '+tipLabel(p.tip):''}</span>
                     <div style={{display:'flex',gap:8}}>
                       <button className="chip" onClick={()=>setPform(p)}>✎ Sửa</button>
                       <button className="xbtn" onClick={()=>delPos(p.id)}>✕</button>
@@ -1199,49 +1210,68 @@ function MistakeForm({onSave,close}){
   );
 }
 function PositionEditor({init,onSave,onDel,close}){
-  const [cue,setCue]=useState(init?init.cue:{x:24,y:34});
-  const [obj,setObj]=useState(init?init.obj:{x:56,y:22});
+  const [cue,setCue]=useState(init?init.cue:{x:24,y:36});
+  const [obj,setObj]=useState(init?init.obj:{x:54,y:22});
   const [nxt,setNxt]=useState(init?init.nxt:{x:80,y:38});
+  const [tip,setTip]=useState(init&&init.tip?init.tip:{x:0,y:0});
   const [note,setNote]=useState(init?(init.note||''):'');
-  const drag=useRef(null), svgRef=useRef(null);
-  const RX=[6,94,6,46];
-  const POCK=[[7,7],[50,4],[93,7],[7,45],[50,48],[93,45]];
+  const drag=useRef(null), svgRef=useRef(null), tipRef=useRef(null), tdrag=useRef(false);
   const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
-    return {x:Math.round(Math.max(RX[0],Math.min(RX[1],(cx-r.left)/r.width*100))),
-            y:Math.round(Math.max(RX[2],Math.min(RX[3],(cy-r.top)/r.height*52)))}; };
+    return {x:Math.round(Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100))),
+            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54)))}; };
   const setter={cue:setCue,obj:setObj,nxt:setNxt};
   const pos={cue,obj,nxt};
   const place=(k,p)=>setter[k](p);
   const down=(e)=>{ const p=toSvg(e); let best='cue',bd=1e9; ['cue','obj','nxt'].forEach(k=>{const d=Math.hypot(p.x-pos[k].x,p.y-pos[k].y); if(d<bd){bd=d;best=k;}}); drag.current=best; place(best,p); };
   const move=(e)=>{ if(!drag.current) return; e.preventDefault(); place(drag.current,toSvg(e)); };
   const up=()=>{ drag.current=null; };
+  // chọn đầu cơ trên mặt bi cái
+  const tipAt=(e)=>{ const r=tipRef.current.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    let x=(cx-r.left)/r.width*2-1, y=(cy-r.top)/r.height*2-1; const m=Math.hypot(x,y); if(m>1){x/=m;y/=m;}
+    setTip({x:Math.round(x*100)/100,y:Math.round(y*100)/100}); };
+  const tdown=(e)=>{ tdrag.current=true; e.preventDefault(); tipAt(e); };
+  const tmove=(e)=>{ if(!tdrag.current) return; e.preventDefault(); tipAt(e); };
+  const tup=()=>{ tdrag.current=false; };
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
         <h3>{init?'Sửa tình huống':'Dựng thế bi'}</h3>
         <div className="muted small" style={{margin:'-8px 0 8px'}}>Kéo từng bi vào đúng vị trí trên bàn.</div>
-        <svg ref={svgRef} className="mtable" viewBox="0 0 100 52" preserveAspectRatio="xMidYMid meet"
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
           style={{width:'100%',maxWidth:'none',touchAction:'none'}}
           onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
           onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
-          {POCK.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.4" fill="#06311f"/>)}
-          <line x1={cue.x} y1={cue.y} x2={obj.x} y2={obj.y} stroke="#ffffff" strokeOpacity=".4" strokeWidth=".7" strokeDasharray="2 2"/>
-          <line x1={obj.x} y1={obj.y} x2={nxt.x} y2={nxt.y} stroke="#ffd166" strokeOpacity=".6" strokeWidth=".7" strokeDasharray="2 2"/>
-          <circle cx={cue.x} cy={cue.y} r="3.6" fill="#f3f1e8" stroke="rgba(0,0,0,.4)" strokeWidth=".6"/>
-          <circle cx={obj.x} cy={obj.y} r="3.6" fill="#e0556b" stroke="rgba(0,0,0,.4)" strokeWidth=".6"/>
-          <circle cx={nxt.x} cy={nxt.y} r="3.6" fill="#f4c95d" stroke="rgba(0,0,0,.4)" strokeWidth=".6"/>
+          <TableFrame/>
+          <Ball x={cue.x} y={cue.y} b={{cue:true}}/>
+          <Ball x={obj.x} y={obj.y} b={{num:9,stripe:'#e8c020'}}/>
+          <Ball x={nxt.x} y={nxt.y} b={{num:10,stripe:'#2f6fd6'}}/>
         </svg>
         <div className="poslegend">
-          <span><i className="posdot" style={{background:'#f3f1e8'}}/>Bi cái</span>
-          <span><i className="posdot" style={{background:'#e0556b'}}/>Bi mục tiêu</span>
-          <span><i className="posdot" style={{background:'#f4c95d'}}/>Bi tiếp theo</span>
+          <span><i className="posdot" style={{background:'#f4f1e6'}}/>Bi cái</span>
+          <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9 (mục tiêu)</span>
+          <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10 (kế)</span>
         </div>
+
+        <div className="field" style={{alignItems:'center',marginTop:6}}>
+          <label style={{alignSelf:'flex-start'}}>Đầu cơ bạn đã đánh (chạm điểm trên bi cái)</label>
+          <svg ref={tipRef} className="cueball" viewBox="0 0 100 100"
+            onMouseDown={tdown} onMouseMove={tmove} onMouseUp={tup} onMouseLeave={tup}
+            onTouchStart={tdown} onTouchMove={tmove} onTouchEnd={tup}>
+            <circle cx="50" cy="50" r="46" fill="#f4f1e6" stroke="var(--line)" strokeWidth="2"/>
+            <line x1="50" y1="8" x2="50" y2="92" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
+            <line x1="8" y1="50" x2="92" y2="50" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
+            <circle cx={50+tip.x*40} cy={50+tip.y*40} r="9" fill="var(--accent)" stroke="#04231a" strokeWidth="1.5"/>
+          </svg>
+          <div className="muted small" style={{marginTop:4}}>Điểm chạm: <b style={{color:'var(--gold)'}}>{tipLabel(tip)}</b></div>
+        </div>
+
         <div className="field"><label>Ghi chú (điều bi sai chỗ nào, nên đánh thế nào)</label>
-          <textarea rows="3" value={note} onChange={e=>setNote(e.target.value)} placeholder="VD: định ra giữa bàn nhưng bi cái đi quá, kẹt sau bi vàng..."/></div>
+          <textarea rows="3" value={note} onChange={e=>setNote(e.target.value)} placeholder="VD: định ra giữa bàn nhưng bi cái đi quá, kẹt sau bi 10..."/></div>
         <div className="rowbtns">
           {onDel && <button className="btn ghost" onClick={onDel} style={{color:'var(--danger)',flex:'0 0 auto'}}>🗑 Xoá</button>}
-          <button className="btn" onClick={()=>onSave({...(init||{}),cue,obj,nxt,note:note.trim()})}>Lưu</button>
+          <button className="btn" onClick={()=>onSave({...(init||{}),cue,obj,nxt,tip,note:note.trim()})}>Lưu</button>
         </div>
       </div>
     </div>
@@ -1326,17 +1356,50 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
 }
 
 /* ================= Tập luyện ================= */
+const POCKETS=[[7,8],[50,5.4],[93,8],[7,46],[50,48.6],[93,46]];
+const FELT=[10,90,10,44]; // giới hạn di chuyển bi: x0,x1,y0,y1
+function TableFrame(){
+  return (
+    <g>
+      <rect x="0" y="0" width="100" height="54" rx="5" fill="#6b4a2a"/>
+      <rect x="3.5" y="4.5" width="93" height="45" rx="3" fill="#0c5e3c"/>
+      {POCKETS.map((p,i)=>(<g key={i}><circle cx={p[0]} cy={p[1]} r="4.3" fill="#3a2a18"/><circle cx={p[0]} cy={p[1]} r="3" fill="#05140d"/></g>))}
+    </g>
+  );
+}
+function bandPath(cx,cy,r,b){
+  const w=Math.sqrt(Math.max(0,r*r-b*b));
+  return `M ${cx-w} ${cy-b} L ${cx+w} ${cy-b} A ${r} ${r} 0 0 1 ${cx+w} ${cy+b} L ${cx-w} ${cy+b} A ${r} ${r} 0 0 1 ${cx-w} ${cy-b} Z`;
+}
+function Ball({x,y,r,b}){
+  r=r||3.6;
+  if(b.cue) return <circle cx={x} cy={y} r={r} fill="#f4f1e6" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>;
+  if(b.num!=null) return (
+    <g>
+      <circle cx={x} cy={y} r={r} fill="#f7f4ea" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>
+      <path d={bandPath(x,y,r,r*0.66)} fill={b.stripe}/>
+      <circle cx={x} cy={y} r={r*0.5} fill="#fff"/>
+      <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={r*0.72} fontWeight="800" fill="#222">{b.num}</text>
+    </g>
+  );
+  return <circle cx={x} cy={y} r={r} fill={b.c} stroke="rgba(0,0,0,.35)" strokeWidth=".5"/>;
+}
+function tipLabel(t){
+  if(!t) return 'tâm';
+  if(Math.hypot(t.x,t.y)<0.28) return 'tâm';
+  const v=t.y<-0.28?'cao':(t.y>0.28?'thấp':''), h=t.x<-0.28?'trái':(t.x>0.28?'phải':'');
+  return [v,h].filter(Boolean).join(' ')||'tâm';
+}
 function MiniTable({dia}){
   if(!dia) return null;
-  const pockets=[[4,4],[50,2.6],[96,4],[4,48],[50,49.4],[96,48]];
   return (
-    <svg className="mtable" viewBox="0 0 100 52" role="img" aria-label="Sơ đồ đặt bàn">
+    <svg className="mtable" viewBox="0 0 100 54" role="img" aria-label="Sơ đồ bàn bi-a">
       <defs>
         <marker id="ncAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto">
           <path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/>
         </marker>
       </defs>
-      {pockets.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.4" fill="#06311f"/>)}
+      <TableFrame/>
       {dia.stick && <line x1={dia.stick[0]} y1={dia.stick[1]} x2={dia.stick[2]} y2={dia.stick[3]}
         stroke="#caa05a" strokeWidth="2.6" strokeLinecap="round"/>}
       {dia.line && <line x1={dia.line[0]} y1={dia.line[1]} x2={dia.line[2]} y2={dia.line[3]}
@@ -1345,8 +1408,7 @@ function MiniTable({dia}){
         stroke="#ffd166" strokeWidth="1.1" strokeOpacity=".95" markerEnd="url(#ncAh)"/>)}
       {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="none"
         stroke="#ffd166" strokeWidth=".8" strokeDasharray="2.2 1.6"/>}
-      {dia.balls.map((b,i)=><circle key={'b'+i} cx={b.x} cy={b.y} r={b.r||2.7} fill={b.c}
-        stroke="rgba(0,0,0,.35)" strokeWidth=".5"/>)}
+      {dia.balls.map((b,i)=><Ball key={'b'+i} x={b.x} y={b.y} r={b.r} b={b}/>)}
     </svg>
   );
 }
@@ -1605,11 +1667,10 @@ function AtTable(){
   const [seg,setSeg]=useState('clock');
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <div className="modeseg" style={{alignSelf:'center',margin:'4px 0 10px'}}>
-        <button className={seg==='clock'?'on':''} onClick={()=>setSeg('clock')}>⏱ Shot clock</button>
-        <button className={seg==='angle'?'on':''} onClick={()=>setSeg('angle')}>📐 Góc phản xạ</button>
-      </div>
-      {seg==='clock' ? <ShotClock/> : <AngleCalc/>}
+      <Seg val={seg} set={setSeg} opts={[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp'],['angle','📐 Góc']]}/>
+      {seg==='clock' && <ShotClock/>}
+      {seg==='metro' && <Metronome/>}
+      {seg==='angle' && <AngleCalc/>}
     </div>
   );
 }
@@ -1722,29 +1783,27 @@ function AngleCalc(){
   const [A,setA]=useState({x:24,y:38});
   const [B,setB]=useState({x:62,y:18});
   const drag=useRef(null), svgRef=useRef(null);
-  const RX=[6,94,6,46];
-  const POCK=[[7,7],[50,4],[93,7],[7,45],[50,48],[93,45]];
   const toSvg=(e)=>{
     const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
-    return {x:Math.max(RX[0],Math.min(RX[1],(cx-r.left)/r.width*100)),
-            y:Math.max(RX[2],Math.min(RX[3],(cy-r.top)/r.height*52))};
+    return {x:Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100)),
+            y:Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54))};
   };
   const down=(e)=>{ const p=toSvg(e);
     drag.current = Math.hypot(p.x-A.x,p.y-A.y)<Math.hypot(p.x-B.x,p.y-B.y)?'A':'B';
     if(drag.current==='A') setA(p); else setB(p); };
   const move=(e)=>{ if(!drag.current) return; e.preventDefault(); const p=toSvg(e); if(drag.current==='A') setA(p); else setB(p); };
   const up=()=>{ drag.current=null; };
-  const path=reflect(A,B,RX,POCK);
+  const path=reflect(A,B,FELT,POCKETS);
   return (
     <div style={{display:'flex',flexDirection:'column',gap:12,padding:'2px 0'}}>
       <div className="tsub" style={{textAlign:'center'}}>Kéo <b style={{color:'var(--text)'}}>bi cái</b> (trắng) hoặc <b style={{color:'var(--gold)'}}>mốc hướng</b> — app vẽ đường bi nảy qua các băng (góc tới = góc phản).</div>
-      <svg ref={svgRef} className="mtable" viewBox="0 0 100 52" preserveAspectRatio="xMidYMid meet"
+      <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
         style={{width:'100%',maxWidth:'none',touchAction:'none'}}
         onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
         onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
         <defs><marker id="acAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto"><path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/></marker></defs>
-        {POCK.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.4" fill="#06311f"/>)}
+        <TableFrame/>
         <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#ffffff" strokeOpacity=".3" strokeWidth=".6" strokeDasharray="2 2"/>
         <polyline points={path.pts.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#ffd166" strokeWidth="1.3" strokeLinejoin="round" markerEnd="url(#acAh)"/>
         {path.pts.slice(1,path.made?path.pts.length:-1).map((p,i)=><circle key={'k'+i} cx={p.x} cy={p.y} r="1.5" fill="#fff" opacity=".85"/>)}
