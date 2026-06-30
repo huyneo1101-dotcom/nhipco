@@ -952,7 +952,7 @@ function Cue(){
 /* ================= Settings ================= */
 function Settings({theme,setTheme,order,setOrder,close}){
   const fileRef=useRef(null);
-  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.training','nc.ghost'];
+  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.training','nc.ghost'];
   const moveTab=(i,dir)=>{ const j=i+dir; if(j<0||j>=order.length) return; const o=order.slice(); const x=o[i]; o[i]=o[j]; o[j]=x; setOrder(o); };
   const exportData=()=>{
     const data={}; KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) data[k]=v; });
@@ -1263,7 +1263,13 @@ function MatchLog(){
           </>}
       </>}
 
-      {view2==='pos' && <>
+      {view2==='pos' && (()=>{
+        const todo=positions.filter(p=>!p.done);
+        const tipAgg={}; todo.forEach(p=>{ const l=tipLabel(p.tip); tipAgg[l]=(tipAgg[l]||0)+1; });
+        const tipRows=Object.entries(tipAgg).sort((a,b)=>b[1]-a[1]);
+        const tMax=Math.max(1,...tipRows.map(r=>r[1]));
+        return (
+        <>
         <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setPform({})}>＋ Thêm tình huống điều bi</button>
         <div className="tsub">Dựng lại thế bi bạn điều lỗi. Tập lại được rồi thì tick "Đã tập".</div>
         <div className="poslegend">
@@ -1271,6 +1277,15 @@ function MatchLog(){
           <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9</span>
           <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10</span>
         </div>
+        {todo.length>0 &&
+          <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+            <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ &amp; thế bi còn kém</b><span className="muted small">{todo.length} thế cần tập</span></div>
+            {tipRows.map(([l,n])=>(
+              <div key={l} style={{margin:'7px 0'}}>
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>Đầu cơ: {l}</span><span className="muted">{n} thế</span></div>
+                <div className="mbar"><div style={{width:Math.round(n/tMax*100)+'%'}}/></div>
+              </div>))}
+          </div>}
         {positions.length===0 &&
           <Empty ico="🎱" t="Chưa có tình huống nào" s="Bấm nút trên để dựng lại thế bi bạn điều lỗi và rút kinh nghiệm."/>}
         {positions.filter(p=>!p.done).length>0 &&
@@ -1279,7 +1294,9 @@ function MatchLog(){
           <div className="h2">✅ Đã tập ({positions.filter(p=>p.done).length})</div>
           <div className="list">{positions.filter(p=>p.done).map(posCard)}</div>
         </>}
-      </>}
+        </>
+        );
+      })()}
 
       {form && <MatchForm init={form} names={oppNames} lastHc={lastHc} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
       {mform && <MistakeForm onSave={addExtra} close={()=>setMform(false)}/>}
@@ -1501,18 +1518,27 @@ function bandPath(cx,cy,r,b){
   const w=Math.sqrt(Math.max(0,r*r-b*b));
   return `M ${cx-w} ${cy-b} L ${cx+w} ${cy-b} A ${r} ${r} 0 0 1 ${cx+w} ${cy+b} L ${cx-w} ${cy+b} A ${r} ${r} 0 0 1 ${cx-w} ${cy-b} Z`;
 }
+// Màu bi pool 1–15 (1–8 đặc, 9–15 sọc)
+const POOL=[null,'#e8c020','#2456c8','#d8412f','#6b3fa0','#e07b1a','#1f8a4c','#7a2230','#1a1a1a',
+  '#e8c020','#2456c8','#d8412f','#6b3fa0','#e07b1a','#1f8a4c','#7a2230'];
 function Ball({x,y,r,b}){
   r=r||3.05;
   if(b.cue) return <circle cx={x} cy={y} r={r} fill="#f4f1e6" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>;
   if(b.num!=null) return (
     <g>
-      <circle cx={x} cy={y} r={r} fill="#f7f4ea" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>
-      <path d={bandPath(x,y,r,r*0.66)} fill={b.stripe}/>
+      {b.solid
+        ? <circle cx={x} cy={y} r={r} fill={b.solid} stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>
+        : <><circle cx={x} cy={y} r={r} fill="#f7f4ea" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>
+            <path d={bandPath(x,y,r,r*0.66)} fill={b.stripe}/></>}
       <circle cx={x} cy={y} r={r*0.5} fill="#fff"/>
       <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={r*0.72} fontWeight="800" fill="#222">{b.num}</text>
     </g>
   );
   return <circle cx={x} cy={y} r={r} fill={b.c} stroke="rgba(0,0,0,.35)" strokeWidth=".5"/>;
+}
+// Tạo dia.balls cho bài tập tự vẽ: bi cái + các bi số
+function customDia(cue,balls){
+  return {balls:[{x:cue.x,y:cue.y,cue:true},...balls.map((p,i)=>{ const n=i+1; return n<=8?{x:p.x,y:p.y,num:n,solid:POOL[n]}:{x:p.x,y:p.y,num:n,stripe:POOL[n]}; })]};
 }
 function tipLabel(t){
   if(!t) return 'tâm';
@@ -1608,7 +1634,7 @@ function LineChart({vals,color='var(--accent)'}){
     </svg>
   );
 }
-function DrillCard({d,recs,onScore}){
+function DrillCard({d,recs,onScore,onDelete}){
   const [open,setOpen]=useState(false);
   const last=recs[0];
   const best=recs.length? Math.max(...recs.map(r=>r.score)) : null;
@@ -1617,11 +1643,12 @@ function DrillCard({d,recs,onScore}){
   return (
     <div className="card drillC">
       <div className="drillH" onClick={()=>setOpen(o=>!o)}>
-        <span className="catpill" style={{border:'1px solid '+cat.c,color:cat.c}}>{cat.t}</span>
+        <span className="catpill" style={{border:'1px solid '+cat.c,color:cat.c}}>{cat.t}{d.custom?' ✎':''}</span>
         <div className="dn"><b>{d.name}</b><small>Mục tiêu {d.target} · đã tập {recs.length} lần</small></div>
         <div className="sc">{last
           ? <><b>{last.score}/{d.max}</b><small>gần nhất</small></>
           : <span className="muted small">chưa tập</span>}</div>
+        {onDelete && <button className="xbtn" onClick={(e)=>{e.stopPropagation();onDelete();}} style={{marginLeft:6}}>✕</button>}
       </div>
       {open &&
         <div className="drillB">
@@ -1663,6 +1690,99 @@ function ScoreModal({d,onSave,close}){
     </div>
   );
 }
+function SessionBuilder({init,drills,weakKeys,onSave,onDel,close}){
+  const [name,setName]=useState(init?init.name:'');
+  const [date,setDate]=useState(init?(init.date||todayStr()):todayStr());
+  const [keys,setKeys]=useState(init?(init.drills||[]):[]);
+  const toggle=(k)=>setKeys(a=>a.includes(k)?a.filter(x=>x!==k):[...a,k]);
+  const addWeak=()=>setKeys(a=>[...new Set([...a,...(weakKeys||[])])]);
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>{init?'Sửa buổi tập':'Thiết kế buổi tập'}</h3>
+        <div className="field"><label>Tên buổi tập</label>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="VD: Sửa vị trí bi cái / Buổi sáng"/></div>
+        <div className="field"><label>Ngày tập</label>
+          <input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
+        {(weakKeys&&weakKeys.length>0) &&
+          <button className="btn ghost wide" style={{marginBottom:10}} onClick={addWeak}>🎯 Thêm bài theo điểm yếu của tôi</button>}
+        <div className="field"><label>Chọn bài tập ({keys.length})</label>
+          {Object.entries(DRILL_CATS).map(([ck,cv])=>{ const ds=drills.filter(d=>d.cat===ck); if(!ds.length) return null; return (
+            <div key={ck} style={{marginBottom:6}}>
+              <div className="small" style={{margin:'4px 0',color:cv.c,fontWeight:800}}>{cv.t}</div>
+              <div className="presets" style={{justifyContent:'flex-start'}}>
+                {ds.map(d=><button key={d.key} type="button" className={'chip'+(keys.includes(d.key)?' on':'')} onClick={()=>toggle(d.key)}>{d.name}</button>)}
+              </div>
+            </div>); })}
+        </div>
+        <div className="rowbtns">
+          {onDel && <button className="btn ghost" onClick={onDel} style={{color:'var(--danger)',flex:'0 0 auto'}}>🗑 Xoá</button>}
+          <button className="btn" onClick={()=>{ if(!keys.length) return; onSave({...(init||{}),name:name.trim()||'Buổi tập',date,drills:keys}); }}>Lưu buổi tập</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function DrillBuilder({onSave,close}){
+  const [name,setName]=useState(''); const [cat,setCat]=useState('pot');
+  const [max,setMax]=useState(10); const [target,setTarget]=useState('');
+  const [scoring,setScoring]=useState(''); const [setup,setSetup]=useState('');
+  const [cue,setCue]=useState({x:20,y:27});
+  const [balls,setBalls]=useState([{x:54,y:22},{x:70,y:32}]);
+  const drag=useRef(null), svgRef=useRef(null);
+  const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    return {x:Math.round(Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100))),
+            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54)))}; };
+  const place=(k,p)=>{ if(k==='cue') setCue(p); else setBalls(a=>a.map((b,i)=>i===k?p:b)); };
+  const down=(e)=>{ const p=toSvg(e); let best='cue',bd=Math.hypot(p.x-cue.x,p.y-cue.y);
+    balls.forEach((b,i)=>{const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<bd){bd=d;best=i;}});
+    drag.current=best; place(best,p); };
+  const move=(e)=>{ if(drag.current==null) return; e.preventDefault(); place(drag.current,toSvg(e)); };
+  const up=()=>{ drag.current=null; };
+  const addBall=()=>setBalls(a=>a.length>=15?a:[...a,{x:46+(a.length%5)*8, y:24+Math.floor(a.length/5)*7}]);
+  const rmBall=()=>setBalls(a=>a.slice(0,-1));
+  const dia=customDia(cue,balls);
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>Tạo bài tập</h3>
+        <div className="muted small" style={{margin:'-8px 0 6px'}}>Kéo bi để đặt vị trí; thêm tối đa 15 bi + bi cái.</div>
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
+          style={{width:'100%',maxWidth:'none',touchAction:'none'}}
+          onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
+          onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
+          <TableFrame/>
+          {dia.balls.map((b,i)=><Ball key={i} x={b.x} y={b.y} b={b}/>)}
+        </svg>
+        <div className="ghostform" style={{justifyContent:'center',marginTop:8}}>
+          <button className="chip" onClick={rmBall} disabled={!balls.length}>－ Bớt bi</button>
+          <span className="muted small">{balls.length} bi + bi cái</span>
+          <button className="chip" onClick={addBall} disabled={balls.length>=15}>＋ Thêm bi</button>
+        </div>
+        <div className="field" style={{marginTop:8}}><label>Tên bài tập</label>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="VD: Chạy 6 bi vị trí"/></div>
+        <div className="field"><label>Nhóm</label>
+          <div className="presets" style={{justifyContent:'flex-start'}}>
+            {Object.entries(DRILL_CATS).map(([k,v])=><button key={k} type="button" className={'chip'+(cat===k?' on':'')} onClick={()=>setCat(k)}>{v.t}</button>)}
+          </div></div>
+        <div className="field"><label>Cách đặt / mô tả</label>
+          <textarea rows="2" value={setup} onChange={e=>setSetup(e.target.value)} placeholder="Mô tả cách tập..."/></div>
+        <div className="field"><label>Cách chấm điểm</label>
+          <input value={scoring} onChange={e=>setScoring(e.target.value)} placeholder="VD: Số bi pot liên tiếp"/></div>
+        <div style={{display:'flex',gap:10}}>
+          <div className="field" style={{flex:1}}><label>Thang điểm tối đa</label>
+            <input type="number" value={max} onChange={e=>setMax(Math.max(1,Math.min(50,+e.target.value||1)))}/></div>
+          <div className="field" style={{flex:1}}><label>Mục tiêu</label>
+            <input value={target} onChange={e=>setTarget(e.target.value)} placeholder="VD: ≥7/10"/></div>
+        </div>
+        <button className="btn wide" onClick={()=>{ if(!name.trim()) return;
+          onSave({key:uid('cd'),custom:true,cat,name:name.trim(),max:+max,target:target.trim()||('≥'+Math.round(max*0.7)+'/'+max),
+            scoring:scoring.trim()||'Tự chấm theo mục tiêu',setup:setup.trim()||'Bài tập tự tạo.',why:'Bài tập do bạn thiết kế.',fixes:[],dia}); }}>Lưu bài tập</button>
+      </div>
+    </div>
+  );
+}
 function Training(){
   const matches=store.get('nc.matches',[]);
   const [recs,setRecs]=useState(()=>store.get('nc.training',[]));     // {id,date,drill,score,max,note}
@@ -1670,6 +1790,26 @@ function Training(){
   const [scoring,setScoring]=useState(null);
   const [cat,setCat]=useState('all');
   const [tseg,setTseg]=useState('drills');
+  const [plans,setPlans]=useState(()=>store.get('nc.plans',[]));   // buổi tập tự thiết kế
+  const [builder,setBuilder]=useState(null);                       // null | {} | bản ghi
+  const [customDrills,setCustomDrills]=useState(()=>store.get('nc.customDrills',[]));
+  const [hiddenD,setHiddenD]=useState(()=>store.get('nc.hiddenDrills',[]));
+  const [hiddenP,setHiddenP]=useState(()=>store.get('nc.hiddenProblems',[]));
+  const [weakHide,setWeakHide]=useState(()=>store.get('nc.weakHidden',[]));
+  const [planHide,setPlanHide]=useState(()=>{ const ph=store.get('nc.planHidden',null); return (ph&&ph.date===todayStr())?ph.keys:[]; });
+  const [drillBuilder,setDrillBuilder]=useState(false);
+  const savePlans=(l)=>{ setPlans(l); store.set('nc.plans',l); };
+  const upsertPlan=(p)=>{ savePlans(p.id? plans.map(x=>x.id===p.id?p:x) : [{...p,id:uid('pl')},...plans]); setBuilder(null); };
+  const delPlan=(id)=>{ savePlans(plans.filter(x=>x.id!==id)); setBuilder(null); };
+  const addCustomDrill=(d)=>{ const l=[d,...customDrills]; setCustomDrills(l); store.set('nc.customDrills',l); setDrillBuilder(false); };
+  const hideDrill=(k)=>{ if(customDrills.some(x=>x.key===k)){ const l=customDrills.filter(x=>x.key!==k); setCustomDrills(l); store.set('nc.customDrills',l); } else { const l=[...new Set([...hiddenD,k])]; setHiddenD(l); store.set('nc.hiddenDrills',l); } };
+  const restoreDrills=()=>{ setHiddenD([]); store.set('nc.hiddenDrills',[]); };
+  const hideProblem=(k)=>{ const l=[...new Set([...hiddenP,k])]; setHiddenP(l); store.set('nc.hiddenProblems',l); };
+  const restoreProblems=()=>{ setHiddenP([]); store.set('nc.hiddenProblems',[]); };
+  const hideWeak=(m)=>{ const l=[...new Set([...weakHide,m])]; setWeakHide(l); store.set('nc.weakHidden',l); };
+  const hidePlanItem=(k)=>{ const l=[...new Set([...planHide,k])]; setPlanHide(l); store.set('nc.planHidden',{date:todayStr(),keys:l}); };
+  const allDrills=[...customDrills,...DRILLS].filter(d=>!hiddenD.includes(d.key));
+  const drillOf=(k)=>allDrills.find(d=>d.key===k)||drillByKey(k);
 
   const addScore=(r)=>{ const l=[{...r,id:uid('t'),date:todayStr()},...recs]; setRecs(l); store.set('nc.training',l); setScoring(null); };
   const addGhost=(won)=>{ const l=[{id:uid('g'),date:todayStr(),won},...ghost]; setGhost(l); store.set('nc.ghost',l); };
@@ -1704,7 +1844,7 @@ function Training(){
   const plan=[{d:drillByKey('stop'),role:'Khởi động — chuẩn nhịp cơ'},
     ...focusD.map((d,i)=>({d,role:(weak.length? 'Sửa điểm yếu':'Bài cốt lõi')+' '+(i+1)}))];
 
-  const lib=cat==='all'? DRILLS : DRILLS.filter(d=>d.cat===cat);
+  const lib=cat==='all'? allDrills : allDrills.filter(d=>d.cat===cat);
   const g20=ghost.slice(0,20), gw=g20.filter(x=>x.won).length;
   const grate=g20.length? Math.round(gw/g20.length*100):null;
 
@@ -1747,11 +1887,12 @@ function Training(){
 
       <div className="h2">🗓️ Buổi tập hôm nay</div>
       <div className="card plan">
-        {plan.map(({d,role},i)=>(
-          <div key={i} className="planrow">
+        {plan.filter(({d})=>!planHide.includes(d.key)).map(({d,role},i)=>(
+          <div key={d.key} className="planrow">
             <div className="pi">{doneToday(d.key)?'✅':i+1}</div>
             <div className="pt"><b>{d.name}</b><small>{role} · mục tiêu {d.target}</small></div>
             <button className="btn acc sm" onClick={()=>setScoring(d)}>{doneToday(d.key)?'Ghi lại':'Ghi điểm'}</button>
+            <button className="xbtn" onClick={()=>hidePlanItem(d.key)} style={{marginLeft:2}}>✕</button>
           </div>
         ))}
         <div className="planrow">
@@ -1764,16 +1905,42 @@ function Training(){
         </div>
       </div>
 
-      {weak.length>0 && <>
+      <div className="h2">📋 Buổi tập của tôi</div>
+      <div className="tsub" style={{marginTop:2}}>Tự lên lịch & thiết kế buổi tập riêng (cho hôm nay hoặc cho từng điểm yếu).</div>
+      <button className="btn acc wide" style={{marginTop:8}} onClick={()=>setBuilder({})}>＋ Thiết kế buổi tập</button>
+      {plans.length>0 &&
+        <div className="list">
+          {[...plans].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(pl=>(
+            <div key={pl.id} className="card" style={{padding:'12px 14px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+                <div style={{minWidth:0}}><b>{pl.name}</b> <span className="muted small">{pl.date===todayStr()?'· hôm nay':(pl.date?'· '+fmtDate(pl.date):'')}</span></div>
+                <div style={{display:'flex',gap:8,flex:'none'}}>
+                  <button className="chip" onClick={()=>setBuilder(pl)}>✎</button>
+                  <button className="xbtn" onClick={()=>delPlan(pl.id)}>✕</button>
+                </div>
+              </div>
+              <div style={{marginTop:8,display:'flex',flexDirection:'column',gap:6}}>
+                {(pl.drills||[]).map(k=>{ const d=drillOf(k); if(!d) return null; const rs=recsFor(k);
+                  return (
+                  <div key={k} className="planrow">
+                    <div className="pi">{doneToday(k)?'✅':'•'}</div>
+                    <div className="pt"><b>{d.name}</b><small>mục tiêu {d.target}{rs[0]?' · gần nhất '+rs[0].score+'/'+d.max:''}</small></div>
+                    <button className="btn acc sm" onClick={()=>setScoring(d)}>{doneToday(k)?'Ghi lại':'Ghi điểm'}</button>
+                  </div>); })}
+              </div>
+            </div>))}
+        </div>}
+
+      {weak.filter(([m])=>!weakHide.includes(m)).length>0 && <>
         <div className="h2">🎯 Điểm yếu cần sửa (từ Nhật ký)</div>
         <div className="list">
-          {weak.map(([mis,c])=>{
+          {weak.filter(([m])=>!weakHide.includes(m)).map(([mis,c])=>{
             const d=DRILLS.find(x=>x.fixes.includes(mis));
             const rs=d? recsFor(d.key):[];
             const vals=rs.slice(0,8).reverse().map(r=>Math.round(r.score/r.max*100));
             return (
             <div key={mis} className="card drill">
-              <div className="drow"><b className="warn">{mis}</b><span className="muted small">mắc {c} lần</span></div>
+              <div className="drow"><b className="warn">{mis}</b><span style={{display:'flex',alignItems:'center',gap:8}}><span className="muted small">mắc {c} lần</span><button className="xbtn" onClick={()=>hideWeak(mis)}>✕</button></span></div>
               {d && <>
                 <div className="dt">{d.name}</div>
                 <div className="drow2">
@@ -1793,14 +1960,19 @@ function Training(){
         {Object.entries(DRILL_CATS).map(([k,v])=>
           <button key={k} className={'chip'+(cat===k?' on':'')} onClick={()=>setCat(k)}>{v.t}</button>)}
       </div>
+      <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
+        <button className="btn acc sm" onClick={()=>setDrillBuilder(true)}>＋ Tạo bài tập (tự vẽ bàn)</button>
+        {hiddenD.length>0 && <button className="chip" onClick={restoreDrills}>↺ Hiện lại {hiddenD.length} bài đã ẩn</button>}
+      </div>
       <div className="list">
-        {lib.map(d=><DrillCard key={d.key} d={d} recs={recsFor(d.key)} onScore={setScoring}/>)}
+        {lib.map(d=><DrillCard key={d.key} d={d} recs={recsFor(d.key)} onScore={setScoring} onDelete={()=>hideDrill(d.key)}/>)}
       </div>
 
       <div className="h2">🧩 Thế khó thường gặp</div>
       <div className="tsub" style={{marginTop:2}}>Tình huống thực tế + cách xử lý. Chạm để mở.</div>
+      {hiddenP.length>0 && <button className="chip" style={{alignSelf:'flex-start',marginTop:6}} onClick={restoreProblems}>↺ Hiện lại {hiddenP.length} thế đã ẩn</button>}
       <div className="list">
-        {PROBLEMS.map(p=><ProblemCard key={p.key} p={p}/>)}
+        {PROBLEMS.filter(p=>!hiddenP.includes(p.key)).map(p=><ProblemCard key={p.key} p={p} onDelete={()=>hideProblem(p.key)}/>)}
       </div>
 
       <div className="h2">👻 Đấu với Ghost</div>
@@ -1833,6 +2005,10 @@ function Training(){
       <div style={{height:8}}/>
       </>}
       {scoring && <ScoreModal d={scoring} onSave={addScore} close={()=>setScoring(null)}/>}
+      {builder && <SessionBuilder init={builder.id?builder:null} drills={allDrills}
+        weakKeys={[...new Set(weak.flatMap(([m])=>DRILLS.filter(d=>d.fixes.includes(m)).map(d=>d.key)))]}
+        onSave={upsertPlan} onDel={builder.id?()=>delPlan(builder.id):null} close={()=>setBuilder(null)}/>}
+      {drillBuilder && <DrillBuilder onSave={addCustomDrill} close={()=>setDrillBuilder(false)}/>}
     </div>
   );
 }
@@ -1992,7 +2168,7 @@ function AngleCalc(){
     </div>
   );
 }
-function ProblemCard({p}){
+function ProblemCard({p,onDelete}){
   const [open,setOpen]=useState(false);
   return (
     <div className="card drillC">
@@ -2000,6 +2176,7 @@ function ProblemCard({p}){
         <span className="catpill" style={{border:'1px solid var(--warn)',color:'var(--warn)'}}>{p.tag}</span>
         <div className="dn"><b>{p.name}</b><small>{open?'thu gọn':'xem cách xử lý'}</small></div>
         <span className="muted" style={{fontSize:16}}>{open?'▾':'▸'}</span>
+        {onDelete && <button className="xbtn" onClick={(e)=>{e.stopPropagation();onDelete();}} style={{marginLeft:6}}>✕</button>}
       </div>
       {open &&
         <div className="drillB">
