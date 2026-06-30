@@ -384,17 +384,20 @@ const DRILLS=[
     setup:'Cùng một cú thẳng ~1.5 viên gạch: luân phiên đánh CAO (bi cái đi theo) và đánh THẤP (bi cái rút về), đặt trước điểm dừng mong muốn cho bi cái.',
     scoring:'Số cú bi cái dừng đúng vùng đã định, trên 10 cú',
     why:'Theo và rút là hai công cụ ra bi chính. Làm chủ điểm đánh trên/dưới tâm + lực là làm chủ vị trí.',
-    fixes:['Mất vị trí bi cái','Lực quá mạnh','Lực quá nhẹ','Bi cái lủi']},
+    fixes:['Mất vị trí bi cái','Lực quá mạnh','Lực quá nhẹ','Bi cái lủi'],
+    dia:{balls:[{x:40,y:26,c:W},{x:66,y:26,c:R}],line:[43,26,63,26],arrows:[[69,26,86,26],[37,26,18,26]]}},
   {key:'speed',cat:'fund',name:'Cảm giác lực (lag)',max:10,target:'≥6/10',
     setup:'Đẩy bi cái từ vạch đầu chạm băng cuối rồi quay về, cố cho bi dừng càng gần vạch xuất phát càng tốt. 10 lần.',
     scoring:'Số lần bi cái về dừng trong 1 viên gạch quanh vạch, trên 10',
     why:'Lực là nguyên nhân hỏng vị trí số một. Bài này hiệu chỉnh "đồng hồ lực" trong đầu bạn.',
-    fixes:['Lực quá mạnh','Lực quá nhẹ']},
+    fixes:['Lực quá mạnh','Lực quá nhẹ'],
+    dia:{balls:[{x:16,y:26,c:W}],zone:[16,26,8],arrows:[[21,24,90,24]]}},
   {key:'tempo',cat:'men',name:'Nhịp đưa cơ (máy nhịp)',max:20,target:'≥16/20',
     setup:'Mở tab Đếm nhịp ~55 BPM. Mỗi cú: kéo cơ về vào một nhịp, đẩy ra ở nhịp kế. 20 cú thẳng, cổ tay thả lỏng.',
     scoring:'Số cú đưa cơ mượt đúng nhịp, không giật/tăng tốc, trên 20',
     why:'Phần lớn cú trượt do giật hoặc tăng tốc ở cú cuối. Nhịp đều giúp đường cơ ổn định và lặp lại được.',
-    fixes:['Giật tay khi bắn','Nóng vội']},
+    fixes:['Giật tay khi bắn','Nóng vội'],
+    dia:{balls:[{x:64,y:26,c:W}],stick:[14,26,55,26],arrows:[[34,40,60,40],[60,44,34,44]]}},
   {key:'longpot',cat:'pot',name:'Cú thẳng dài',max:10,target:'≥6/10',
     setup:'Bi mục tiêu sát lỗ góc, bi cái ở đầu bàn đối diện — cú thẳng gần hết chiều dài bàn. 10 lần.',
     scoring:'Số bi vào lỗ, trên 10 cú',
@@ -411,12 +414,14 @@ const DRILLS=[
     setup:'Cùng bi mục tiêu, tăng dần độ mỏng cú cắt: 15°→30°→45°→60°→75°. Mỗi mức 3 cú, vào ≥2/3 thì lên mức.',
     scoring:'Mức cắt cao nhất bạn vượt qua (1–5)',
     why:'Cú cắt mỏng là điểm yếu kinh điển. Tập theo bậc giúp mở rộng dần vùng góc tự tin.',
-    fixes:['Chọn sai bi/lỗ','Bỏ lỡ cú dễ']},
+    fixes:['Chọn sai bi/lỗ','Bỏ lỡ cú dễ'],
+    dia:{balls:[{x:24,y:38,c:W},{x:58,y:26,c:R}],line:[27,37,56,27],arrows:[[60,25,92,9]]}},
   {key:'lineup',cat:'pos',name:'Dàn hàng (line-up)',max:15,target:'≥7 liên tiếp',
     setup:'Xếp 10–15 bi dọc theo một đường, chạy lần lượt và ưu tiên ra bi cho viên kế tiếp. Miss thì dừng đếm.',
     scoring:'Số bi pot liên tiếp trước khi miss',
     why:'Mô phỏng run-out thật: vừa vào lỗ vừa quản vị trí và thứ tự bi — kỹ năng quyết định ván cờ.',
-    fixes:['Mất vị trí bi cái','Kế hoạch','Chọn sai bi/lỗ']},
+    fixes:['Mất vị trí bi cái','Kế hoạch','Chọn sai bi/lỗ'],
+    dia:{balls:[{x:16,y:40,c:W},{x:30,y:34,c:R},{x:42,y:30,c:R},{x:54,y:26,c:R},{x:66,y:22,c:R},{x:78,y:18,c:R}],line:[30,34,78,18],arrows:[[19,39,29,35]]}},
   {key:'position3',cat:'pos',name:'Vị trí 3 bi',max:5,target:'≥3/5',
     setup:'Đặt 3 bi. Pot lần lượt, mỗi cú bi cái phải dừng trong vùng đánh được bi kế. Lặp 5 vòng.',
     scoring:'Số vòng đạt vị trí cả 3 cú, trên 5',
@@ -439,17 +444,20 @@ const DRILLS=[
     setup:'Bi mục tiêu giữa bàn, bank một băng vào lỗ. Đổi vị trí 10 lần, dùng một hệ điểm ngắm cố định để học cảm giác.',
     scoring:'Số bi vào, trên 10 cú',
     why:'Bank cho bạn lựa chọn khi không có cú trực tiếp và cứu được nhiều thế bí.',
-    fixes:['Chọn sai bi/lỗ']},
+    fixes:['Chọn sai bi/lỗ'],
+    dia:{balls:[{x:28,y:40,c:W},{x:46,y:32,c:R}],line:[31,39,45,33],arrows:[[47,30,64,8],[64,8,89,45]]}},
   {key:'breakdrill',cat:'brk',name:'Phá bi có kiểm soát',max:10,target:'≥6/10',
     setup:'Phá phom đầy đủ. Mục tiêu mỗi cú: bi cái dừng quanh giữa bàn (không lủi lỗ) và phom tản đều/có bi vào. 10 lần.',
     scoring:'Số cú phá đạt (bi cái về giữa, không lủi), trên 10',
     why:'Phá quyết định cả ván trước khi đánh cú nào. Kiểm soát bi cái khi phá quan trọng hơn phá thật mạnh.',
-    fixes:['Phá phom kém']},
+    fixes:['Phá phom kém'],
+    dia:{balls:[{x:16,y:26,c:W},{x:60,y:26,c:R},{x:66,y:22,c:Y},{x:66,y:30,c:Y},{x:72,y:18,c:Y},{x:72,y:26,c:Y},{x:72,y:34,c:Y}],arrows:[[19,26,57,26]]}},
   {key:'routine20',cat:'men',name:'20 cú kỷ luật',max:20,target:'≥17/20',
     setup:'20 cú bất kỳ. Mỗi cú PHẢI đủ routine + một hơi thở trước khi cúi. Tự trừ điểm nếu bắn khi chưa thật sẵn sàng.',
     scoring:'Số cú giữ trọn kỷ luật routine, trên 20',
     why:'Kỹ thuật chỉ ổn định khi routine ổn định. Đây là bài "tâm" nền tảng nhất, nối thẳng với tab Routine.',
-    fixes:['Nóng vội','Giật tay khi bắn','Thế đứng chưa vững']},
+    fixes:['Nóng vội','Giật tay khi bắn','Thế đứng chưa vững'],
+    dia:{balls:[{x:38,y:26,c:W},{x:68,y:26,c:R}],line:[41,26,66,26],zone:[68,26,7]}},
 ];
 const drillByKey=(k)=>DRILLS.find(d=>d.key===k);
 
@@ -763,6 +771,8 @@ function MatchLog(){
   const mc={}; list.forEach(m=>(m.mistakes||[]).forEach(x=>mc[x]=(mc[x]||0)+1));
   const top=Object.entries(mc).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
+  // Danh sách đối thủ đã từng ghi — gần nhất lên trước, để lần sau chọn lại
+  const oppNames=[]; view.forEach(m=>{ const n=(m.opp||'').trim(); if(n&&!oppNames.includes(n)) oppNames.push(n); });
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -805,11 +815,11 @@ function MatchLog(){
           </div>);
         })}
       </div>
-      {form && <MatchForm init={form} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
+      {form && <MatchForm init={form} names={oppNames} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
     </div>
   );
 }
-function MatchForm({init,onSave,onDel,close}){
+function MatchForm({init,names,onSave,onDel,close}){
   const [m,setM]=useState({opp:'',score:'',note:'',...init});
   const set=(k,v)=>setM(p=>({...p,[k]:v}));
   const toggle=(x)=>setM(p=>({...p,mistakes:(p.mistakes||[]).includes(x)?p.mistakes.filter(y=>y!==x):[...(p.mistakes||[]),x]}));
@@ -820,7 +830,13 @@ function MatchForm({init,onSave,onDel,close}){
         <div className="field"><label>Ngày</label>
           <input type="date" value={m.date} onChange={e=>set('date',e.target.value)}/></div>
         <div className="field"><label>Đối thủ</label>
-          <input value={m.opp} onChange={e=>set('opp',e.target.value)} placeholder="Tên đối thủ"/></div>
+          <input list="nc-opps" value={m.opp} onChange={e=>set('opp',e.target.value)} placeholder="Tên đối thủ (gõ mới hoặc chọn lại)"/>
+          <datalist id="nc-opps">{(names||[]).map(n=><option key={n} value={n}/>)}</datalist>
+          {(names||[]).length>0 &&
+            <div className="presets" style={{justifyContent:'flex-start',marginTop:4}}>
+              {names.slice(0,10).map(n=>
+                <button key={n} type="button" className={'chip'+(m.opp===n?' on':'')} onClick={()=>set('opp',n)}>{n}</button>)}
+            </div>}</div>
         <div className="field"><label>Kết quả</label>
           <div className="modeseg" style={{alignSelf:'flex-start'}}>
             {[['W','Thắng'],['D','Hòa'],['L','Thua']].map(([k,t])=>
@@ -858,13 +874,22 @@ function MiniTable({dia}){
   const pockets=[[4,4],[50,2.6],[96,4],[4,48],[50,49.4],[96,48]];
   return (
     <svg className="mtable" viewBox="0 0 100 52" role="img" aria-label="Sơ đồ đặt bàn">
+      <defs>
+        <marker id="ncAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto">
+          <path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/>
+        </marker>
+      </defs>
       {pockets.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.4" fill="#06311f"/>)}
+      {dia.stick && <line x1={dia.stick[0]} y1={dia.stick[1]} x2={dia.stick[2]} y2={dia.stick[3]}
+        stroke="#caa05a" strokeWidth="2.6" strokeLinecap="round"/>}
       {dia.line && <line x1={dia.line[0]} y1={dia.line[1]} x2={dia.line[2]} y2={dia.line[3]}
-        stroke="#ffffff" strokeOpacity=".45" strokeWidth=".7" strokeDasharray="2 2"/>}
+        stroke="#ffffff" strokeOpacity=".5" strokeWidth=".7" strokeDasharray="2 2"/>}
+      {(dia.arrows||[]).map((a,i)=><line key={'a'+i} x1={a[0]} y1={a[1]} x2={a[2]} y2={a[3]}
+        stroke="#ffd166" strokeWidth="1.1" strokeOpacity=".95" markerEnd="url(#ncAh)"/>)}
       {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="none"
         stroke="#ffd166" strokeWidth=".8" strokeDasharray="2.2 1.6"/>}
-      {dia.balls.map((b,i)=><circle key={i} cx={b.x} cy={b.y} r={b.r||2.7} fill={b.c}
-        stroke="rgba(0,0,0,.3)" strokeWidth=".5"/>)}
+      {dia.balls.map((b,i)=><circle key={'b'+i} cx={b.x} cy={b.y} r={b.r||2.7} fill={b.c}
+        stroke="rgba(0,0,0,.35)" strokeWidth=".5"/>)}
     </svg>
   );
 }
