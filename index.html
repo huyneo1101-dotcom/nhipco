@@ -581,9 +581,13 @@ function MindTab(){
   const [seg,setSeg]=useState('breathe');
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={seg} set={setSeg} opts={[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm']]}/>
+      <Seg val={seg} set={setSeg} opts={[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm'],['music','🎧 Nhạc']]}/>
       {seg==='breathe' && <Breathe/>}
       {seg==='cue' && <Cue/>}
+      {seg==='music' && <div style={{padding:'2px 0'}}>
+        <div className="tsub" style={{textAlign:'center',marginBottom:6}}>Nhạc nghe trong lúc chơi — dán link Spotify/YouTube.</div>
+        <MusicLinks kkey="nc.musicMatch"/>
+      </div>}
     </div>
   );
 }
@@ -613,6 +617,21 @@ const WAR_QUOTES=[
   'Đã cầm cơ thì chơi tới cùng. Sợ thua thì đừng đánh.',
   'Người giỏi không đợi cảm hứng — họ dựa vào thói quen.',
   'Lì đòn, giữ vững, kết liễu khi có cơ hội.',
+  'Thắng bắt đầu từ cú phá. Vào bàn với khí thế.',
+  'Không ai thắng bằng cách sợ thua. Đánh để thắng.',
+  'Mỗi cú dễ là một điểm. Đừng coi thường cú nào.',
+  'Bình tĩnh khi dẫn, lì đòn khi bị rượt.',
+  'Tự tin không phải là không run — là run mà vẫn bắn chuẩn.',
+  'Đối thủ mạnh giúp mày giỏi lên. Cảm ơn rồi đánh bại họ.',
+  'Tập trung vào quy trình, điểm số tự tới.',
+  'Cú quan trọng nhất là cú tiếp theo.',
+  'Thắng cái đầu trước, thắng cái bàn sau.',
+  'Áp lực là khi mày quan tâm. Biến nó thành tập trung.',
+  'Đừng đánh nhanh hơn — hãy đánh chắc hơn.',
+  'Mỗi buổi tập là một viên gạch xây tường thành.',
+  'Khi mệt mỏi, kỷ luật thay cho cảm hứng.',
+  'Người vô địch là người đứng dậy thêm một lần.',
+  'Làm chủ bi cái là làm chủ ván cờ.',
 ];
 const RESET_LINES=[
   'Một cú là một cú. Thở ra, làm lại.',
@@ -876,7 +895,6 @@ function Cue(){
     <div className="cue">
       <div className="card cuecard" onClick={next}>
         <div className="tag">{c.tag}</div>
-        <div className="q">“</div>
         <div className="t">{c.t}</div>
       </div>
       <button className="btn acc wide" onClick={next}>🔀 Câu nhắc khác</button>
@@ -888,7 +906,7 @@ function Cue(){
 /* ================= Settings ================= */
 function Settings({theme,setTheme,order,setOrder,close}){
   const fileRef=useRef(null);
-  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.warvotes','nc.training','nc.ghost'];
+  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.training','nc.ghost'];
   const moveTab=(i,dir)=>{ const j=i+dir; if(j<0||j>=order.length) return; const o=order.slice(); const x=o[i]; o[i]=o[j]; o[j]=x; setOrder(o); };
   const exportData=()=>{
     const data={}; KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) data[k]=v; });
@@ -982,6 +1000,7 @@ function MatchLog(){
   const [form,setForm]=useState(null);
   const [mform,setMform]=useState(false);
   const [pform,setPform]=useState(null);   // editor thế bi (null | {} | bản ghi)
+  const [analysis,setAnalysis]=useState(null);
   const [view2,setView2]=useState('log');
   const save=(l)=>{ setList(l); store.set('nc.matches',l); };
   const saveExtra=(l)=>{ setExtra(l); store.set('nc.mistakes',l); };
@@ -993,7 +1012,7 @@ function MatchLog(){
     const sug=suggestTip(p.cue,p.obj,p.nxt);
     return (
       <div key={p.id} className="card" style={{padding:12,opacity:p.done?0.72:1}}>
-        <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}]}}/>
+        <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}],path:cuePath(p.cue,p.obj,p.tip||{x:0,y:0},p.power!=null?p.power:0.5).pts}}/>
         {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
         <div className="muted small" style={{marginTop:6}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{p.tip?tipLabel(p.tip):'—'}</b> · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
@@ -1008,9 +1027,19 @@ function MatchLog(){
     );
   };
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
+    const isNew=recs.some(m=>!m.id);
     let next=list.slice();
     recs.forEach(m=>{ if(m.id){ next=next.map(x=>x.id===m.id?m:x); } else { next=[{...m,id:uid('m')},...next]; } });
     save(next); setForm(null);
+    if(isNew){ const a=analyze(recs); if(a.fresh.length||a.heavy.length){ setAnalysis(a); setView2('log'); } }
+  };
+  // Tự phân tích trận vừa ghi: lỗi mới + lỗi lặp nhiều cần tập
+  const analyze=(recs)=>{
+    const prior={}; list.forEach(m=>(m.mistakes||[]).forEach(x=>prior[x]=(prior[x]||0)+1)); extra.forEach(e=>(e.tags||[]).forEach(x=>prior[x]=(prior[x]||0)+1));
+    const added={}; recs.forEach(m=>(m.mistakes||[]).forEach(x=>added[x]=(added[x]||0)+1));
+    const fresh=[], heavy=[];
+    Object.keys(added).forEach(x=>{ if(!prior[x]) fresh.push(x); const total=(prior[x]||0)+added[x]; if(total>=3) heavy.push(x+' ('+total+'×)'); });
+    return {fresh,heavy};
   };
   const addExtra=(rec)=>{ saveExtra([{...rec,id:uid('x'),date:todayStr()},...extra]); setMform(false); };
   const delExtra=(id)=>saveExtra(extra.filter(x=>x.id!==id));
@@ -1060,6 +1089,18 @@ function MatchLog(){
         <button className={view2==='mis'?'on':''} onClick={()=>setView2('mis')}>Lỗi</button>
         <button className={view2==='pos'?'on':''} onClick={()=>setView2('pos')}>Điều bi</button>
       </div>
+
+      {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0) &&
+        <div className="card" style={{padding:'12px 14px',marginTop:8,borderColor:'var(--gold)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <b style={{fontSize:14}}>🔎 Phân tích trận vừa ghi</b>
+            <button onClick={()=>setAnalysis(null)} className="xbtn">✕</button>
+          </div>
+          {analysis.fresh.length>0 && <div className="small" style={{marginTop:6}}>🆕 <b>Lỗi mới:</b> {analysis.fresh.join(', ')}</div>}
+          {analysis.heavy.length>0 && <div className="small" style={{marginTop:6}}>⚠️ <b>Lặp nhiều — nên tập:</b> {analysis.heavy.join(', ')}</div>}
+          <div className="muted small" style={{marginTop:6}}>Mở tab <b>Tập luyện</b> để xem bài tập gợi ý, hoặc dựng thế bi khó ở mục <b>Điều bi</b>.</div>
+          <button className="chip" style={{marginTop:8}} onClick={()=>{setView2('mis');setAnalysis(null);}}>→ Xem tổng hợp lỗi</button>
+        </div>}
 
       {view2==='log' && list.length===0 &&
         <Empty ico="📓" t="Chưa ghi trận nào"
@@ -1224,66 +1265,93 @@ function PositionEditor({init,onSave,onDel,close}){
   const [obj,setObj]=useState(init?init.obj:{x:54,y:22});
   const [nxt,setNxt]=useState(init?init.nxt:{x:80,y:38});
   const [tip,setTip]=useState(init&&init.tip?init.tip:{x:0,y:0});
+  const [power,setPower]=useState(init&&init.power!=null?init.power:0.5);
+  const [mode,setMode]=useState('tip');   // 'tip': đầu cơ+lực → đường bi ; 'path': kéo đường bi → đầu cơ
+  const [dest,setDest]=useState(init&&init.dest?init.dest:{x:40,y:44});
   const [note,setNote]=useState(init?(init.note||''):'');
   const drag=useRef(null), svgRef=useRef(null), tipRef=useRef(null), tdrag=useRef(false);
   const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
     return {x:Math.round(Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100))),
             y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54)))}; };
-  const setter={cue:setCue,obj:setObj,nxt:setNxt};
-  const pos={cue,obj,nxt};
+  const setter={cue:setCue,obj:setObj,nxt:setNxt,dest:setDest};
+  const pos={cue,obj,nxt,dest};
+  const keys=mode==='path'?['cue','obj','nxt','dest']:['cue','obj','nxt'];
   const place=(k,p)=>setter[k](p);
-  const down=(e)=>{ const p=toSvg(e); let best='cue',bd=1e9; ['cue','obj','nxt'].forEach(k=>{const d=Math.hypot(p.x-pos[k].x,p.y-pos[k].y); if(d<bd){bd=d;best=k;}}); drag.current=best; place(best,p); };
+  const down=(e)=>{ const p=toSvg(e); let best=keys[0],bd=1e9; keys.forEach(k=>{const d=Math.hypot(p.x-pos[k].x,p.y-pos[k].y); if(d<bd){bd=d;best=k;}}); drag.current=best; place(best,p); };
   const move=(e)=>{ if(!drag.current) return; e.preventDefault(); place(drag.current,toSvg(e)); };
   const up=()=>{ drag.current=null; };
-  // chọn đầu cơ trên mặt bi cái
   const tipAt=(e)=>{ const r=tipRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
     let x=(cx-r.left)/r.width*2-1, y=(cy-r.top)/r.height*2-1; const m=Math.hypot(x,y); if(m>1){x/=m;y/=m;}
     setTip({x:Math.round(x*100)/100,y:Math.round(y*100)/100}); };
-  const tdown=(e)=>{ tdrag.current=true; e.preventDefault(); tipAt(e); };
+  const tdown=(e)=>{ if(mode!=='tip') return; tdrag.current=true; e.preventDefault(); tipAt(e); };
   const tmove=(e)=>{ if(!tdrag.current) return; e.preventDefault(); tipAt(e); };
   const tup=()=>{ tdrag.current=false; };
   const sug=suggestTip(cue,obj,nxt);
+  const ux=obj.x-cue.x, uy=obj.y-cue.y, ul=Math.hypot(ux,uy)||1, U={x:ux/ul,y:uy/ul}, T={x:-U.y,y:U.x};
+  const contact={x:obj.x-U.x*2*3.05, y:obj.y-U.y*2*3.05};
+  let effTip=tip, effPower=power, cpPts=[];
+  if(mode==='path'){
+    const dx=dest.x-contact.x, dy=dest.y-contact.y, dl=Math.hypot(dx,dy)||1;
+    const fol=(dx/dl)*U.x+(dy/dl)*U.y, lat=(dx/dl)*T.x+(dy/dl)*T.y;
+    effTip={x:Math.max(-1,Math.min(1,Math.round(lat*100)/100)), y:Math.max(-1,Math.min(1,Math.round(-fol*100)/100))};
+    effPower=Math.max(0.05,Math.min(1,Math.round(dl/80*100)/100));
+    cpPts=[contact,dest];
+  } else { cpPts=cuePath(cue,obj,tip,power).pts; }
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
         <h3>{init?'Sửa tình huống':'Dựng thế bi'}</h3>
-        <div className="muted small" style={{margin:'-8px 0 8px'}}>Kéo từng bi vào đúng vị trí trên bàn.</div>
+        <div className="muted small" style={{margin:'-8px 0 8px'}}>Kéo bi cái / bi 9 / bi 10 vào vị trí{mode==='path'?'; kéo điểm xanh = đích bi cái':''}.</div>
         <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
           style={{width:'100%',maxWidth:'none',touchAction:'none'}}
           onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
           onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
+          <defs><marker id="cpAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto"><path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#5fb6ff"/></marker></defs>
           <TableFrame/>
+          {cpPts.length>1 && <polyline points={cpPts.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth="1.3" strokeLinejoin="round" strokeDasharray="3 2" markerEnd="url(#cpAh)"/>}
           <Ball x={cue.x} y={cue.y} b={{cue:true}}/>
           <Ball x={obj.x} y={obj.y} b={{num:9,stripe:'#e8c020'}}/>
           <Ball x={nxt.x} y={nxt.y} b={{num:10,stripe:'#2f6fd6'}}/>
+          {mode==='path' && <circle cx={dest.x} cy={dest.y} r="3.6" fill="none" stroke="#5fb6ff" strokeWidth="1.6" strokeDasharray="2 1.4"/>}
         </svg>
         <div className="poslegend">
           <span><i className="posdot" style={{background:'#f4f1e6'}}/>Bi cái</span>
-          <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9 (mục tiêu)</span>
-          <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10 (kế)</span>
+          <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9</span>
+          <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10</span>
+          <span><i className="posdot" style={{background:'#5fb6ff'}}/>Đường bi cái</span>
+        </div>
+
+        <div className="modeseg" style={{alignSelf:'center',margin:'10px 0 2px',maxWidth:'100%',overflowX:'auto'}}>
+          <button className={mode==='tip'?'on':''} onClick={()=>setMode('tip')}>🎯 Đầu cơ→Đường bi</button>
+          <button className={mode==='path'?'on':''} onClick={()=>setMode('path')}>➡️ Đường bi→Đầu cơ</button>
         </div>
 
         <div className="field" style={{alignItems:'center',marginTop:6}}>
-          <label style={{alignSelf:'flex-start'}}>Đầu cơ bạn đã đánh (chạm điểm trên bi cái)</label>
+          <label style={{alignSelf:'flex-start'}}>{mode==='tip'?'Đầu cơ bạn đánh (chạm điểm trên bi cái)':'Đầu cơ tương ứng (app tự tính)'}</label>
           <svg ref={tipRef} className="cueball" viewBox="0 0 100 100"
             onMouseDown={tdown} onMouseMove={tmove} onMouseUp={tup} onMouseLeave={tup}
-            onTouchStart={tdown} onTouchMove={tmove} onTouchEnd={tup}>
+            onTouchStart={tdown} onTouchMove={tmove} onTouchEnd={tup}
+            style={{cursor:mode==='tip'?'pointer':'default'}}>
             <circle cx="50" cy="50" r="46" fill="#f4f1e6" stroke="var(--line)" strokeWidth="2"/>
             <line x1="50" y1="8" x2="50" y2="92" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
             <line x1="8" y1="50" x2="92" y2="50" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
             <circle cx={50+sug.x*40} cy={50+sug.y*40} r="10" fill="none" stroke="var(--gold)" strokeWidth="2.5" strokeDasharray="4 3"/>
-            <circle cx={50+tip.x*40} cy={50+tip.y*40} r="9" fill="var(--accent)" stroke="#04231a" strokeWidth="1.5"/>
+            <circle cx={50+effTip.x*40} cy={50+effTip.y*40} r="9" fill="var(--accent)" stroke="#04231a" strokeWidth="1.5"/>
           </svg>
-          <div className="muted small" style={{marginTop:4,textAlign:'center'}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{tipLabel(tip)}</b> · <span style={{color:'var(--gold)'}}>Gợi ý: {tipLabel(sug)}</span> <span style={{display:'block',fontSize:11,opacity:.8}}>(vòng vàng nét đứt = gợi ý)</span></div>
+          <div className="muted small" style={{marginTop:4,textAlign:'center'}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{tipLabel(effTip)}</b> · lực <b>{Math.round(effPower*100)}%</b><br/><span style={{color:'var(--gold)'}}>Gợi ý đầu cơ tới bi 10: {tipLabel(sug)}</span></div>
         </div>
+
+        {mode==='tip' &&
+          <div className="field"><label>Lực đánh: {Math.round(power*100)}%</label>
+            <input type="range" min="0" max="100" value={Math.round(power*100)} onChange={e=>setPower(+e.target.value/100)} style={{width:'100%',accentColor:'var(--gold)'}}/></div>}
 
         <div className="field"><label>Ghi chú (điều bi sai chỗ nào, nên đánh thế nào)</label>
           <textarea rows="3" value={note} onChange={e=>setNote(e.target.value)} placeholder="VD: định ra giữa bàn nhưng bi cái đi quá, kẹt sau bi 10..."/></div>
         <div className="rowbtns">
           {onDel && <button className="btn ghost" onClick={onDel} style={{color:'var(--danger)',flex:'0 0 auto'}}>🗑 Xoá</button>}
-          <button className="btn" onClick={()=>onSave({...(init||{}),cue,obj,nxt,tip,note:note.trim()})}>Lưu</button>
+          <button className="btn" onClick={()=>onSave({...(init||{}),cue,obj,nxt,tip:effTip,power:effPower,note:note.trim()})}>Lưu</button>
         </div>
       </div>
     </div>
@@ -1414,6 +1482,31 @@ function suggestTip(cue,obj,nxt){
   const x=cross>0.3?0.5:(cross<-0.3?-0.5:0);
   return {x,y};
 }
+// Đường bi cái sau khi chạm bi mục tiêu (mô hình gần đúng: theo/rút + xoáy, nảy băng)
+function reflectPath2(p0,d,len,RX){
+  const x0=RX[0],x1=RX[1],y0=RX[2],y1=RX[3];
+  let p={x:p0.x,y:p0.y}, dx=d.x, dy=d.y; const pts=[{x:p.x,y:p.y}]; let budget=len;
+  for(let it=0; it<8 && budget>0.5; it++){
+    let tx=Infinity,ty=Infinity;
+    if(dx>1e-6) tx=(x1-p.x)/dx; else if(dx<-1e-6) tx=(x0-p.x)/dx;
+    if(dy>1e-6) ty=(y1-p.y)/dy; else if(dy<-1e-6) ty=(y0-p.y)/dy;
+    const twall=Math.min(tx,ty); const t=Math.min(twall,budget);
+    const np={x:p.x+dx*t,y:p.y+dy*t}; pts.push(np); budget-=t; p=np;
+    if(t>=twall-1e-9){ if(t===tx)dx=-dx; if(t===ty)dy=-dy; } else break;
+  }
+  return pts;
+}
+function cuePath(cue,obj,tip,power){
+  const ux=obj.x-cue.x, uy=obj.y-cue.y, ul=Math.hypot(ux,uy)||1; const u={x:ux/ul,y:uy/ul};
+  const t={x:-u.y,y:u.x}; const r=3.05;
+  const contact={x:obj.x-u.x*2*r, y:obj.y-u.y*2*r};
+  const follow=-tip.y, lateral=tip.x;
+  let dx=follow*u.x+lateral*t.x, dy=follow*u.y+lateral*t.y;
+  const dl=Math.hypot(dx,dy);
+  if(dl<0.12) return {contact, pts:[], stop:true};
+  dx/=dl; dy/=dl;
+  return {contact, pts:reflectPath2(contact,{x:dx,y:dy}, 8+power*80, FELT), stop:false};
+}
 function MiniTable({dia}){
   if(!dia) return null;
   return (
@@ -1432,6 +1525,9 @@ function MiniTable({dia}){
         stroke="#ffd166" strokeWidth="1.1" strokeOpacity=".95" markerEnd="url(#ncAh)"/>)}
       {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="none"
         stroke="#ffd166" strokeWidth=".8" strokeDasharray="2.2 1.6"/>}
+      {dia.path && dia.path.length>1 &&
+        <polyline points={dia.path.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff"
+          strokeWidth="1.2" strokeLinejoin="round" strokeDasharray="3 2"/>}
       {dia.balls.map((b,i)=><Ball key={'b'+i} x={b.x} y={b.y} r={b.r} b={b}/>)}
     </svg>
   );
@@ -1597,6 +1693,9 @@ function Training(){
             <LineChart vals={winVals} color="var(--gold)"/>
           </div>}
       </>}
+
+      <div className="h2">📌 Ghi nhớ cách chơi đúng</div>
+      <MyTips/>
 
       <div className="h2">🗓️ Buổi tập hôm nay</div>
       <div className="card plan">
@@ -1952,7 +2051,6 @@ function WarQuote(){
   return (
     <div style={{marginTop:6}}>
       <div className="card cuecard" style={{minHeight:128}}>
-        <div className="q">“</div>
         <div className="t" style={{fontSize:19}}>{cur}</div>
       </div>
       <div style={{display:'flex',gap:8,marginTop:10}}>
@@ -1966,10 +2064,11 @@ function WarQuote(){
 }
 function platformIco(u){ if(/spotify/i.test(u)) return '🟢'; if(/youtu/i.test(u)) return '▶️'; return '🔗'; }
 function platformName(u){ if(/spotify/i.test(u)) return 'Spotify'; if(/youtu/i.test(u)) return 'YouTube'; return 'Link nhạc'; }
-function MusicLinks(){
-  const [list,setList]=useState(()=>store.get('nc.music',[]));
+function MusicLinks({kkey}){
+  const KK=kkey||'nc.music';
+  const [list,setList]=useState(()=>store.get(KK,[]));
   const [url,setUrl]=useState(''); const [label,setLabel]=useState('');
-  const save=(l)=>{ setList(l); store.set('nc.music',l); };
+  const save=(l)=>{ setList(l); store.set(KK,l); };
   const add=()=>{ let u=url.trim(); if(!u) return; if(!/^https?:\/\//i.test(u)) u='https://'+u;
     save([{id:uid('mu'),url:u,label:label.trim()||platformName(u)},...list]); setUrl(''); setLabel(''); };
   const del=(id)=>save(list.filter(x=>x.id!==id));
@@ -1986,6 +2085,30 @@ function MusicLinks(){
                 <span style={{fontSize:20}}>{platformIco(m.url)}</span>
                 <a href={m.url} target="_blank" rel="noopener noreferrer" className="musicLink">{m.label||m.url}</a>
                 <button onClick={()=>del(m.id)} className="xbtn">✕</button>
+              </div>))}
+          </div>}
+    </div>
+  );
+}
+function MyTips(){
+  const [list,setList]=useState(()=>store.get('nc.tips',[]));
+  const [txt,setTxt]=useState('');
+  const save=(l)=>{ setList(l); store.set('nc.tips',l); };
+  const add=()=>{ const t=txt.trim(); if(!t) return; save([{id:uid('tip'),t},...list]); setTxt(''); };
+  const del=(id)=>save(list.filter(x=>x.id!==id));
+  return (
+    <div>
+      <div className="editrow"><input value={txt} onChange={e=>setTxt(e.target.value)}
+        placeholder="VD: Giữ cơ sau khi bắn · mắt ở bi mục tiêu" onKeyDown={e=>{ if(e.key==='Enter') add(); }}/></div>
+      <button className="btn ghost wide" onClick={add} style={{marginBottom:10}}>＋ Thêm ghi nhớ</button>
+      {list.length===0
+        ? <div className="muted small">Ghi lại những điều muốn tự nhắc về cách chơi đúng — hiện ngay đây mỗi buổi tập.</div>
+        : <div className="list">
+            {list.map(t=>(
+              <div key={t.id} className="card" style={{padding:'11px 13px',display:'flex',gap:10,alignItems:'flex-start'}}>
+                <span style={{color:'var(--gold)',fontSize:16,flex:'none'}}>📌</span>
+                <div className="preline" style={{flex:1,fontSize:14,lineHeight:1.5}}>{t.t}</div>
+                <button onClick={()=>del(t.id)} className="xbtn">✕</button>
               </div>))}
           </div>}
     </div>
