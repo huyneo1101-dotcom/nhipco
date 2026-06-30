@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0d2b22" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icon.svg" />
+<link rel="apple-touch-icon" href="./icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Nhịp Cơ" />
+<title>Nhịp Cơ — bạn đồng hành khi đứng bàn bi-a</title>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
+<style>
+:root{
+  --bg:#0a241c; --bg2:#0d2b22; --card:#103a2e; --card2:#0e3328;
+  --line:#1d5743; --text:#eafff5; --muted:#8fc7b2; --soft:#bfe9d6;
+  --gold:#f4c95d; --on-gold:#1a1206; --accent:#34d399; --accent2:#10b981;
+  --warn:#fbbf24; --danger:#f87171; --ok:#34d399;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --r:18px;
+}
+body.theme-midnight{
+  --bg:#0b1020; --bg2:#0e1530; --card:#161f3d; --card2:#131b35;
+  --line:#293561; --text:#eaf0ff; --muted:#93a0cf; --soft:#c3cdf2;
+  --gold:#9db4ff; --on-gold:#0b1020; --accent:#7c9bff; --accent2:#5d7cf0;
+}
+body.theme-coffee{
+  --bg:#1b120c; --bg2:#231811; --card:#33241a; --card2:#2c2016;
+  --line:#5a4230; --text:#fbeede; --muted:#c8a98a; --soft:#e7d2b8;
+  --gold:#e6a44e; --on-gold:#241405; --accent:#e0995a; --accent2:#c97f3e;
+}
+body.theme-court{ /* light */
+  --bg:#eef4f0; --bg2:#e3ede8; --card:#ffffff; --card2:#f4f8f6;
+  --line:#d4e3da; --text:#11302a; --muted:#5b7a70; --soft:#23463d;
+  --gold:#0f9d6b; --on-gold:#ffffff; --accent:#10b981; --accent2:#059669;
+  --shadow:0 8px 24px rgba(16,60,48,.12);
+}
+body.theme-racing{
+  --bg:#161311; --bg2:#1d1815; --card:#241d1a; --card2:#1f1815;
+  --line:#3d322d; --text:#fbeeea; --muted:#c4a99f; --soft:#e6cfc6;
+  --gold:#ff8a5b; --on-gold:#161311; --accent:#e2483c; --accent2:#c43a30;
+}
+body.theme-neon{
+  --bg:#0c1408; --bg2:#111c0b; --card:#15210f; --card2:#111a0c;
+  --line:#2a3d1c; --text:#eafce0; --muted:#9fc488; --soft:#c9e6b4;
+  --gold:#b6ff5a; --on-gold:#0c1408; --accent:#7ddb3a; --accent2:#5fb82a;
+}
+body.theme-peach{ /* light */
+  --bg:#fff1ea; --bg2:#ffe6db; --card:#ffffff; --card2:#fff7f3;
+  --line:#f6d8c8; --text:#4a2a1c; --muted:#9c7261; --soft:#6b4434;
+  --gold:#e2733e; --on-gold:#ffffff; --accent:#f08a5a; --accent2:#d96a38;
+  --shadow:0 8px 24px rgba(120,60,30,.12);
+}
+body.theme-sage{ /* light */
+  --bg:#eef6ee; --bg2:#e3efe2; --card:#ffffff; --card2:#f4f9f3;
+  --line:#d8e8d6; --text:#1d3a22; --muted:#5e7d61; --soft:#2e5234;
+  --gold:#4f9d52; --on-gold:#ffffff; --accent:#5fb56a; --accent2:#469a51;
+  --shadow:0 8px 24px rgba(30,70,40,.12);
+}
+body.theme-periwinkle{ /* light */
+  --bg:#eef0fc; --bg2:#e3e6f7; --card:#ffffff; --card2:#f5f6fd;
+  --line:#dadff5; --text:#232a4a; --muted:#6670a0; --soft:#353e6b;
+  --gold:#4f5fd6; --on-gold:#ffffff; --accent:#6b7bf0; --accent2:#4f5fd6;
+  --shadow:0 8px 24px rgba(40,50,120,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  background:radial-gradient(120% 90% at 50% -10%,var(--bg2),var(--bg));
+  color:var(--text);
+  font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+}
+#root{min-height:100%;display:flex;flex-direction:column}
+.app{max-width:520px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) 0 0 0}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 6px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--gold),#d8a83b);color:var(--on-gold);
+  font-weight:900;font-size:18px;box-shadow:var(--shadow)}
+.brand b{font-size:18px;letter-spacing:.3px}
+.brand small{display:block;color:var(--muted);font-size:11px;font-weight:600;margin-top:1px}
+.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--text);
+  width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer;display:grid;place-items:center}
+.iconbtn:active{transform:scale(.94)}
+
+.body{flex:1;padding:6px 16px 14px;display:flex;flex-direction:column}
+
+.tabs{display:flex;gap:6px;padding:8px 12px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,var(--bg) 60%,transparent);position:sticky;bottom:0}
+.tab{flex:1;border:1px solid var(--line);background:var(--card2);color:var(--muted);
+  border-radius:12px;padding:8px 2px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:3px;font-size:10px;font-weight:700;transition:.15s;white-space:nowrap}
+.tab .ico{font-size:18px;line-height:1}
+.tab.on{background:linear-gradient(160deg,var(--card),var(--card2));color:var(--text);
+  border-color:var(--gold);box-shadow:var(--shadow)}
+.tab.on .ico{filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
+.tab:active{transform:scale(.96)}
+
+.card{background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--line);
+  border-radius:var(--r);box-shadow:var(--shadow)}
+.h{font-size:13px;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.8px}
+.muted{color:var(--muted)}
+.btn{border:none;border-radius:14px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;
+  background:linear-gradient(160deg,var(--gold),#dca93c);color:var(--on-gold)}
+.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.btn.acc{background:linear-gradient(160deg,var(--accent),var(--accent2));color:#04231a}
+.btn:active{transform:scale(.97)}
+.btn.wide{width:100%}
+.chip{border:1px solid var(--line);background:var(--card2);color:var(--soft);border-radius:999px;
+  padding:7px 13px;font-weight:700;font-size:13px;cursor:pointer}
+.chip.on{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+
+/* ----- Metronome / shared ----- */
+.metro{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:0}
+.pendwrap{width:200px;height:200px;position:relative;flex:none}
+.pend{position:absolute;bottom:16px;left:50%;margin-left:-3px;transform-origin:bottom center}
+.arm{width:6px;height:150px;background:linear-gradient(var(--accent),var(--accent2));border-radius:6px}
+.bob{width:32px;height:32px;border-radius:50%;background:var(--gold);position:absolute;top:-14px;left:50%;
+  transform:translateX(-50%);box-shadow:0 0 22px -4px var(--gold)}
+.pivot{position:absolute;bottom:10px;left:50%;width:18px;height:18px;border-radius:50%;background:var(--accent);
+  transform:translateX(-50%);box-shadow:0 0 16px -2px var(--accent)}
+.bpmbox{display:flex;align-items:center;gap:18px}
+.bpmbox button{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:var(--card);
+  color:var(--text);font-size:26px;font-weight:800;cursor:pointer}
+.bpmbox button:active{transform:scale(.92)}
+.bpmnum{text-align:center;min-width:90px}
+.bpmnum b{font-size:46px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.bpmnum small{display:block;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:1px;margin-top:2px}
+.metro input[type=range]{width:100%;max-width:320px;accent-color:var(--gold)}
+.clockbtns{display:flex;gap:10px;width:100%;max-width:330px}
+.clockbtns .btn{flex:1}
+.presets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.modeseg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.modeseg button{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:13px;
+  padding:7px 14px;border-radius:9px;cursor:pointer}
+.modeseg button.on{background:var(--gold);color:var(--on-gold)}
+
+/* ----- Breathing ----- */
+.breathe{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+.orb{width:min(70vw,260px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,var(--accent),var(--accent2));
+  color:#04231a;box-shadow:0 0 60px -10px var(--accent);transition:transform 1s linear,background .4s}
+.orb .ph{font-size:22px;font-weight:900;text-align:center}
+.orb .ct{font-size:46px;font-weight:900;font-variant-numeric:tabular-nums}
+.breathe .sub{color:var(--muted);text-align:center;max-width:300px;font-size:14px;line-height:1.5}
+
+/* ----- Routine ----- */
+.steps{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.step{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid var(--line);
+  border-radius:14px;background:var(--card2);cursor:pointer;transition:.15s}
+.step .n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:900;
+  background:var(--card);border:1px solid var(--line);color:var(--muted);flex:none;font-size:14px}
+.step .tx{flex:1;font-weight:700}
+.step .tx small{display:block;color:var(--muted);font-weight:600;font-size:12px;margin-top:2px}
+.step.done{border-color:var(--accent);background:linear-gradient(160deg,var(--card),var(--card2))}
+.step.done .n{background:var(--accent);color:#04231a;border-color:var(--accent)}
+.step.done .tx{text-decoration:line-through;opacity:.65}
+.step.cur{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.step.cur .n{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+.rowbtns{display:flex;gap:10px;margin-top:14px}
+.rowbtns .btn{flex:1}
+
+/* ----- Cue cards ----- */
+.cue{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.cuecard{width:100%;min-height:220px;padding:28px 24px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;text-align:center;cursor:pointer}
+.cuecard .q{font-size:40px}
+.cuecard .t{font-size:21px;font-weight:800;line-height:1.45}
+.cuecard .tag{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}
+
+/* ----- Lists / match journal + training ----- */
+.list{display:flex;flex-direction:column;gap:10px;margin-top:10px;padding-bottom:6px}
+.preline{white-space:pre-wrap}
+.mcard{padding:13px;display:flex;flex-direction:column;gap:7px;cursor:pointer}
+.mtop{display:flex;align-items:center;gap:10px}
+.rbadge{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-weight:900;
+  font-size:14px;flex:none}
+.rbadge.W{background:var(--ok);color:#04231a} .rbadge.L{background:var(--danger);color:#3b0a0a}
+.rbadge.D{background:var(--line);color:var(--text)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag2{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--card2);
+  border:1px solid var(--line);color:var(--muted)}
+.statstrip{display:flex;gap:8px;margin:12px 0 4px}
+.stat{flex:1;text-align:center;padding:10px 4px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.stat b{display:block;font-size:21px;line-height:1.1} .stat small{color:var(--muted);font-size:11px;font-weight:700}
+.small{font-size:12px}
+.h2{font-size:13px;font-weight:800;color:var(--gold);margin:18px 0 0;letter-spacing:.3px}
+.drill{padding:14px;display:flex;flex-direction:column;gap:6px}
+.drow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.drow .warn{color:var(--warn);font-size:15px}
+.dt{font-weight:800;font-size:15px}
+.dd{font-size:13.5px;line-height:1.5}
+.drow2{display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap}
+.okbadge{font-size:12px;font-weight:700;color:var(--ok)}
+.btn.sm{padding:9px 14px;font-size:13px;border-radius:11px}
+.lesson{padding:13px;display:flex;flex-direction:column;gap:5px}
+.lesson .lz{font-size:14px;line-height:1.5;white-space:pre-wrap}
+/* training — plan + library + ghost */
+.tsub{color:var(--muted);font-size:13px;margin:2px 0 0;line-height:1.5}
+.plan{margin-top:8px;padding:4px 4px}
+.planrow{display:flex;align-items:center;gap:11px;padding:11px 10px;border-bottom:1px solid var(--line)}
+.planrow:last-child{border-bottom:none}
+.planrow .pi{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;
+  font-size:15px;background:var(--card2);border:1px solid var(--line)}
+.planrow .pt{flex:1;min-width:0}
+.planrow .pt b{font-weight:800;font-size:14px}
+.planrow .pt small{display:block;color:var(--muted);font-size:11.5px;font-weight:600;margin-top:1px}
+.catbar{display:flex;gap:7px;overflow-x:auto;padding:9px 0 3px;scrollbar-width:none}
+.catbar::-webkit-scrollbar{display:none}
+.catbar .chip{flex:none}
+.drillC{padding:0;overflow:hidden;margin-top:0}
+.drillH{display:flex;align-items:center;gap:9px;padding:12px 14px;cursor:pointer}
+.drillH .dn{flex:1;min-width:0}
+.drillH .dn b{font-weight:800;font-size:14.5px}
+.drillH .dn small{display:block;color:var(--muted);font-size:11.5px;font-weight:600;margin-top:1px}
+.drillH .sc{text-align:right;flex:none}
+.drillH .sc b{font-size:17px;line-height:1;font-variant-numeric:tabular-nums}
+.drillH .sc small{display:block;color:var(--muted);font-size:10px;font-weight:700}
+.catpill{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;text-transform:uppercase;
+  letter-spacing:.4px;background:transparent;flex:none}
+.drillB{padding:2px 14px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.kv{font-size:13px;line-height:1.55}
+.kv b{color:var(--soft);font-weight:800}
+.statline{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:700}
+.statline b{color:var(--text)}
+.mtable{width:100%;max-width:270px;align-self:center;background:#0b5d3b;border-radius:8px;
+  border:4px solid #6b4a2a;box-shadow:inset 0 0 14px rgba(0,0,0,.35)}
+.ghostform{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px}
+.dot.W{background:var(--ok)} .dot.L{background:var(--danger)}
+.stepper{display:flex;align-items:center;gap:18px;justify-content:center;margin:8px 0 4px}
+.stepper button{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);
+  background:var(--card);color:var(--text);font-size:24px;font-weight:800;cursor:pointer}
+.stepper button:active{transform:scale(.92)}
+.stepper .sv{font-size:42px;font-weight:900;min-width:96px;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
+.stepper .sv small{display:block;font-size:12px;color:var(--muted);font-weight:700}
+
+/* ----- Sheets / modal ----- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;
+  justify-content:center;z-index:40}
+.sheet{width:100%;max-width:520px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));
+  box-shadow:0 -10px 40px rgba(0,0,0,.4);max-height:82vh;overflow:auto}
+.sheet h3{margin:2px 0 14px;font-size:17px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;font-weight:700;color:var(--soft)}
+.field input,.field select,.field textarea{background:var(--card2);border:1px solid var(--line);color:var(--text);
+  border-radius:11px;padding:11px 12px;font-size:15px;font-family:inherit}
+.field textarea{resize:vertical;min-height:88px;line-height:1.5}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:46px;height:46px;border-radius:12px;cursor:pointer;border:2px solid transparent;position:relative}
+.sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--gold)}
+.editrow{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.editrow input{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--text);
+  border-radius:10px;padding:9px 11px;font-size:14px;font-family:inherit}
+.editrow .x{background:transparent;border:none;color:var(--danger);font-size:20px;cursor:pointer;padding:4px 6px}
+.diag{position:fixed;inset:0;background:#0a241c;color:#eafff5;padding:30px;font-family:monospace;
+  font-size:13px;z-index:99;display:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="diag" class="diag"></div>
+<script>
+/* chống nháy theme + báo lỗi nếu thiếu thư viện */
+(function(){
+  try{var t=localStorage.getItem('nc.theme');if(t)document.body.className='theme-'+t;}catch(e){}
+  window.addEventListener('error',function(ev){
+    var d=document.getElementById('diag');
+    if(d){d.style.display='block';d.textContent='Lỗi tải app:\n'+(ev.message||ev.error)+'\n\nKiểm tra mạng (CDN React/Babel) rồi mở lại.';}
+  });
+  setTimeout(function(){
+    if(!window.React||!window.ReactDOM){
+      var d=document.getElementById('diag');
+      d.style.display='block';
+      d.textContent='Không tải được React/Babel từ CDN.\nApp cần Internet ở lần mở đầu tiên.\nKiểm tra kết nối rồi tải lại trang.';
+    }
+  },4000);
+})();
+</script>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useRef,useCallback} = React;
+
+/* ---------- store ---------- */
+const mem={};
+const store={
+  get(k,d){ try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return k in mem?mem[k]:d;} },
+  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){mem[k]=v;} }
+};
+
+const THEMES=[
+  {key:'felt',     name:'Dạ xanh',  c:'#0d2b22', g:'#f4c95d'},
+  {key:'midnight', name:'Đêm xanh', c:'#0e1530', g:'#9db4ff'},
+  {key:'coffee',   name:'Cà phê',   c:'#231811', g:'#e6a44e'},
+  {key:'court',    name:'Sáng',     c:'#e3ede8', g:'#0f9d6b'},
+  {key:'racing',     name:'Đỏ đua',        c:'#161311', g:'#ff8a5b'},
+  {key:'neon',       name:'Lục dạ quang',  c:'#0c1408', g:'#b6ff5a'},
+  {key:'peach',      name:'Đào',           c:'#fff1ea', g:'#e2733e'},
+  {key:'sage',       name:'Cỏ xanh',       c:'#eef6ee', g:'#4f9d52'},
+  {key:'periwinkle', name:'Tử đinh hương', c:'#eef0fc', g:'#4f5fd6'},
+];
+function applyTheme(k){ document.body.className = k==='felt' ? '' : 'theme-'+k; store.set('nc.theme',k); }
+
+const DEFAULT_ROUTINE=[
+  {t:'Đọc bàn',        s:'Bi nào dễ? Có chùm bi cần phá không?'},
+  {t:'Chọn lỗ & bi kế',s:'Đánh bi này để mở đường cho bi sau'},
+  {t:'Ngắm đường cơ',  s:'Tâm bi → điểm chạm → lỗ, một đường thẳng'},
+  {t:'Tì tay & nhắm',  s:'Vào thế vững, mắt ở điểm chạm'},
+  {t:'Đưa cơ thử',     s:'2–3 nhịp nhẹ, thả lỏng cổ tay'},
+  {t:'Bắn dứt khoát',  s:'Nhìn bi mục tiêu, đẩy thẳng, giữ cơ'},
+];
+
+const CUES=[
+  {tag:'Tập trung', t:'Chỉ nghĩ về cú đánh này. Tỉ số để sau.'},
+  {tag:'Bình tĩnh', t:'Thua 1 cú không thua cả ván. Thở ra, làm lại.'},
+  {tag:'Nhịp độ',   t:'Đừng vội theo nhịp đối thủ. Đánh theo nhịp của bạn.'},
+  {tag:'Kỹ thuật',  t:'Đẩy cơ thẳng và giữ cơ sau khi bắn — đừng giật tay.'},
+  {tag:'Chiến thuật',t:'Không có cú dễ? Đánh phòng thủ, giấu bi cái.'},
+  {tag:'Tự tin',    t:'Bạn đã đánh cú này hàng trăm lần. Tin vào tay mình.'},
+  {tag:'Quan sát',  t:'Đối thủ hay để bi ở đâu? Học đường ra bi của họ.'},
+  {tag:'Vị trí',    t:'Bi cái đi đâu sau cú này? Đánh để bi cái nằm đẹp.'},
+  {tag:'Kiểm soát', t:'Mạnh tay thường hỏng vị trí. Đủ lực là được.'},
+  {tag:'Hiện tại',  t:'Bỏ qua cú trước. Bàn lúc này mới quan trọng.'},
+  {tag:'Thói quen', t:'Lặp đúng routine mỗi cú — ổn định hơn là xuất thần.'},
+  {tag:'Mắt',       t:'Cú cuối: mắt dán vào bi mục tiêu, không nhìn theo cơ.'},
+  {tag:'Hơi thở',   t:'Trước cú khó, hít sâu một hơi rồi mới cúi xuống bàn.'},
+  {tag:'Buông bỏ',  t:'Đánh hỏng thì quên ngay. Tiếc nuối làm hỏng cú tiếp theo.'},
+  {tag:'Kế hoạch',  t:'Nghĩ trước 2–3 bi, đừng chỉ nhìn bi trước mặt.'},
+  {tag:'An toàn',   t:'Khi đang dẫn điểm, chắc chắn quan trọng hơn liều lĩnh.'},
+  {tag:'Tốc độ',    t:'Đi chậm lại. Người giỏi không bao giờ vội cúi xuống bàn.'},
+  {tag:'Hình dung', t:'Thấy rõ bi cái dừng ở đâu trước khi bạn bắn.'},
+  {tag:'Tư thế',    t:'Chân vững, thân yên. Chỉ có tay sau chuyển động.'},
+  {tag:'Bản lĩnh',  t:'Ai bình tĩnh hơn người đó thắng. Hãy là người đó.'},
+  {tag:'Khởi động', t:'Vài cú đầu cứ đánh chắc để lấy cảm giác cơ.'},
+  {tag:'Đọc bàn',   t:'Xử lý bi khó khi nó còn dễ, đừng để dồn về cuối ván.'},
+  {tag:'Dứt khoát', t:'Chọn cú rồi thì cam kết. Lưỡng lự là trượt.'},
+  {tag:'Kiên nhẫn', t:'Không phải cú nào cũng phải ăn. Chờ cơ hội của mình.'},
+  {tag:'Thả lỏng',  t:'Tay run? Thở ra dài, hạ vai xuống, rồi mới đánh.'},
+  {tag:'Tĩnh lặng', t:'Tắt tiếng ồn xung quanh. Chỉ còn bạn và đường cơ.'},
+  {tag:'Phòng thủ', t:'Một cú safety hay đáng giá bằng một cú ăn đẹp.'},
+  {tag:'Tôn trọng', t:'Coi nhẹ cú dễ là lúc dễ trượt nhất. Cú nào cũng nghiêm túc.'},
+  {tag:'Nhịp tay',  t:'Đưa cơ đều như con lắc — không nhanh dần, không giật.'},
+];
+
+const GAMES=['8-bi','9-bi','10-bi','Carom','Lỗ khác'];
+const MISTAKES=['Đẩy cơ lệch','Lực quá mạnh','Lực quá nhẹ','Mất vị trí bi cái','Bi cái lủi',
+  'Chọn sai bi/lỗ','Nóng vội','Phá phom kém','Bỏ lỡ cú dễ','Thế đứng chưa vững',
+  'Thiếu phòng thủ','Giật tay khi bắn'];
+const FEELS=[{v:1,e:'😞'},{v:2,e:'😐'},{v:3,e:'🙂'},{v:4,e:'😄'},{v:5,e:'🔥'}];
+
+const BREATH=[
+  {key:'box', name:'Hộp 4-4-4-4', note:'Cân bằng, ổn định nhịp tim — hợp trước cú quan trọng.',
+    phases:[['Hít vào',4,1.35],['Giữ',4,1.35],['Thở ra',4,1],['Giữ',4,1]]},
+  {key:'478', name:'Thư giãn 4-7-8', note:'Hạ nhịp tim sâu, thư giãn — hợp lúc ngồi chờ đối thủ.',
+    phases:[['Hít vào',4,1.35],['Giữ',7,1.35],['Thở ra',8,1]]},
+];
+
+/* Thư viện bài tập — dựa trên phương pháp luyện bi-a có hệ thống (deliberate practice):
+   mỗi bài có cách đặt bàn, thang điểm đo được, mục tiêu chuẩn, lý do, và lỗi nó sửa. */
+const DRILL_CATS={
+  fund:{t:'Nền tảng',  c:'#22b07f'},
+  pot :{t:'Vào lỗ',    c:'#d3a23e'},
+  pos :{t:'Vị trí',    c:'#3fb0e0'},
+  saf :{t:'Phòng thủ', c:'#9b7bf0'},
+  brk :{t:'Phá bi',    c:'#e2724a'},
+  men :{t:'Tâm lý',    c:'#1fb6cc'},
+};
+const W='#f3f1e8', R='#e0556b', Y='#f4c95d', G='#7f8a99'; // màu bi: cái / mục tiêu / phụ / chắn
+const DRILLS=[
+  {key:'stop',cat:'fund',name:'Cú dừng (stun)',max:10,target:'≥8/10',
+    setup:'Bi cái cách bi mục tiêu ~1 viên gạch, đánh đúng tâm bi với lực vừa. Bi cái phải DỪNG ngay tại điểm chạm, không lăn theo hay rút về.',
+    scoring:'Đếm số lần bi cái dừng trong phạm vi 1 thân bi, trên 10 cú',
+    why:'Cú dừng chuẩn là gốc của mọi kiểm soát bi cái. Sai ở đây thì mọi cú ra bi đều lệch theo.',
+    fixes:['Đẩy cơ lệch','Giật tay khi bắn','Mất vị trí bi cái','Bi cái lủi'],
+    dia:{balls:[{x:22,y:26,c:W},{x:60,y:26,c:R}],line:[24,26,58,26]}},
+  {key:'follow_draw',cat:'fund',name:'Theo & rút (follow/draw)',max:10,target:'≥7/10',
+    setup:'Cùng một cú thẳng ~1.5 viên gạch: luân phiên đánh CAO (bi cái đi theo) và đánh THẤP (bi cái rút về), đặt trước điểm dừng mong muốn cho bi cái.',
+    scoring:'Số cú bi cái dừng đúng vùng đã định, trên 10 cú',
+    why:'Theo và rút là hai công cụ ra bi chính. Làm chủ điểm đánh trên/dưới tâm + lực là làm chủ vị trí.',
+    fixes:['Mất vị trí bi cái','Lực quá mạnh','Lực quá nhẹ','Bi cái lủi']},
+  {key:'speed',cat:'fund',name:'Cảm giác lực (lag)',max:10,target:'≥6/10',
+    setup:'Đẩy bi cái từ vạch đầu chạm băng cuối rồi quay về, cố cho bi dừng càng gần vạch xuất phát càng tốt. 10 lần.',
+    scoring:'Số lần bi cái về dừng trong 1 viên gạch quanh vạch, trên 10',
+    why:'Lực là nguyên nhân hỏng vị trí số một. Bài này hiệu chỉnh "đồng hồ lực" trong đầu bạn.',
+    fixes:['Lực quá mạnh','Lực quá nhẹ']},
+  {key:'tempo',cat:'men',name:'Nhịp đưa cơ (máy nhịp)',max:20,target:'≥16/20',
+    setup:'Mở tab Đếm nhịp ~55 BPM. Mỗi cú: kéo cơ về vào một nhịp, đẩy ra ở nhịp kế. 20 cú thẳng, cổ tay thả lỏng.',
+    scoring:'Số cú đưa cơ mượt đúng nhịp, không giật/tăng tốc, trên 20',
+    why:'Phần lớn cú trượt do giật hoặc tăng tốc ở cú cuối. Nhịp đều giúp đường cơ ổn định và lặp lại được.',
+    fixes:['Giật tay khi bắn','Nóng vội']},
+  {key:'longpot',cat:'pot',name:'Cú thẳng dài',max:10,target:'≥6/10',
+    setup:'Bi mục tiêu sát lỗ góc, bi cái ở đầu bàn đối diện — cú thẳng gần hết chiều dài bàn. 10 lần.',
+    scoring:'Số bi vào lỗ, trên 10 cú',
+    why:'Cú thẳng dài phơi bày mọi lỗi ngắm và đưa cơ. Vào đều là bằng chứng nền tảng đã vững.',
+    fixes:['Đẩy cơ lệch','Bỏ lỡ cú dễ','Thế đứng chưa vững'],
+    dia:{balls:[{x:13,y:39,c:W},{x:78,y:13,c:R}],line:[15,38,95,5]}},
+  {key:'wagon',cat:'pot',name:'Bánh xe (wagon wheel)',max:6,target:'≥5/6',
+    setup:'Đặt 1 bi mục tiêu ở chấm giữa bàn. Lần lượt đặt bi cái ở 6 hướng quanh nó và pot vào lỗ phù hợp với từng góc.',
+    scoring:'Số bi vào, trên 6 vị trí (đi 2 vòng thì trên 12)',
+    why:'Luyện vào lỗ từ MỌI góc cắt. Điểm yếu phổ biến là chỉ quen vài góc thuận tay.',
+    fixes:['Bỏ lỡ cú dễ','Đẩy cơ lệch'],
+    dia:{balls:[{x:50,y:26,c:R},{x:30,y:13,c:W,r:2},{x:50,y:11,c:W,r:2},{x:70,y:13,c:W,r:2},{x:30,y:39,c:W,r:2},{x:50,y:41,c:W,r:2},{x:70,y:39,c:W,r:2}]}},
+  {key:'cutladder',cat:'pot',name:'Thang cú cắt',max:5,target:'≥3/5',
+    setup:'Cùng bi mục tiêu, tăng dần độ mỏng cú cắt: 15°→30°→45°→60°→75°. Mỗi mức 3 cú, vào ≥2/3 thì lên mức.',
+    scoring:'Mức cắt cao nhất bạn vượt qua (1–5)',
+    why:'Cú cắt mỏng là điểm yếu kinh điển. Tập theo bậc giúp mở rộng dần vùng góc tự tin.',
+    fixes:['Chọn sai bi/lỗ','Bỏ lỡ cú dễ']},
+  {key:'lineup',cat:'pos',name:'Dàn hàng (line-up)',max:15,target:'≥7 liên tiếp',
+    setup:'Xếp 10–15 bi dọc theo một đường, chạy lần lượt và ưu tiên ra bi cho viên kế tiếp. Miss thì dừng đếm.',
+    scoring:'Số bi pot liên tiếp trước khi miss',
+    why:'Mô phỏng run-out thật: vừa vào lỗ vừa quản vị trí và thứ tự bi — kỹ năng quyết định ván cờ.',
+    fixes:['Mất vị trí bi cái','Kế hoạch','Chọn sai bi/lỗ']},
+  {key:'position3',cat:'pos',name:'Vị trí 3 bi',max:5,target:'≥3/5',
+    setup:'Đặt 3 bi. Pot lần lượt, mỗi cú bi cái phải dừng trong vùng đánh được bi kế. Lặp 5 vòng.',
+    scoring:'Số vòng đạt vị trí cả 3 cú, trên 5',
+    why:'Tách kỹ năng ra bi ra khỏi áp lực run-out dài, sửa trực tiếp lỗi "mất vị trí".',
+    fixes:['Mất vị trí bi cái'],
+    dia:{balls:[{x:18,y:26,c:W},{x:44,y:15,c:R},{x:63,y:35,c:R},{x:82,y:19,c:R}]}},
+  {key:'cuecircle',cat:'pos',name:'Khoanh vùng bi cái',max:10,target:'≥6/10',
+    setup:'Hình dung một vòng tròn ~2 viên gạch trên bàn. Pot bi mục tiêu VÀ dừng bi cái trong vòng đó. 10 cú.',
+    scoring:'Số cú vừa vào lỗ vừa dừng bi cái trong vùng, trên 10',
+    why:'Buộc bạn nghĩ "bi cái dừng ở đâu" thay vì chỉ "vào hay không" — bước nhảy về tư duy vị trí.',
+    fixes:['Mất vị trí bi cái','Lực quá mạnh'],
+    dia:{balls:[{x:30,y:26,c:W},{x:72,y:26,c:R}],zone:[42,30,9]}},
+  {key:'safety',cat:'saf',name:'Giấu bi cái (safety)',max:5,target:'≥3/5',
+    setup:'Tạo thế không có cú ăn. Đánh safety để đối thủ bị che (snooker) hoặc không còn cú dễ. 5 tình huống khác nhau.',
+    scoring:'Số safety khiến đối thủ bị che hoặc rất khó, trên 5',
+    why:'Phòng thủ tốt thắng nhiều ván hơn cú ăn đẹp, mà hầu hết người chơi nghiệp dư bỏ quên.',
+    fixes:['Thiếu phòng thủ','Nóng vội'],
+    dia:{balls:[{x:26,y:26,c:W},{x:50,y:26,c:G},{x:74,y:26,c:R}]}},
+  {key:'bank',cat:'pot',name:'Cú băng (bank)',max:10,target:'≥4/10',
+    setup:'Bi mục tiêu giữa bàn, bank một băng vào lỗ. Đổi vị trí 10 lần, dùng một hệ điểm ngắm cố định để học cảm giác.',
+    scoring:'Số bi vào, trên 10 cú',
+    why:'Bank cho bạn lựa chọn khi không có cú trực tiếp và cứu được nhiều thế bí.',
+    fixes:['Chọn sai bi/lỗ']},
+  {key:'breakdrill',cat:'brk',name:'Phá bi có kiểm soát',max:10,target:'≥6/10',
+    setup:'Phá phom đầy đủ. Mục tiêu mỗi cú: bi cái dừng quanh giữa bàn (không lủi lỗ) và phom tản đều/có bi vào. 10 lần.',
+    scoring:'Số cú phá đạt (bi cái về giữa, không lủi), trên 10',
+    why:'Phá quyết định cả ván trước khi đánh cú nào. Kiểm soát bi cái khi phá quan trọng hơn phá thật mạnh.',
+    fixes:['Phá phom kém']},
+  {key:'routine20',cat:'men',name:'20 cú kỷ luật',max:20,target:'≥17/20',
+    setup:'20 cú bất kỳ. Mỗi cú PHẢI đủ routine + một hơi thở trước khi cúi. Tự trừ điểm nếu bắn khi chưa thật sẵn sàng.',
+    scoring:'Số cú giữ trọn kỷ luật routine, trên 20',
+    why:'Kỹ thuật chỉ ổn định khi routine ổn định. Đây là bài "tâm" nền tảng nhất, nối thẳng với tab Routine.',
+    fixes:['Nóng vội','Giật tay khi bắn','Thế đứng chưa vững']},
+];
+const drillByKey=(k)=>DRILLS.find(d=>d.key===k);
+
+const todayStr=()=> new Date().toISOString().slice(0,10);
+const fmtDate=(s)=>{ if(!s) return ''; const p=s.split('-'); return p.length===3? p[2]+'/'+p[1] : s; };
+const uid=(p)=> p+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
+
+/* ================= App ================= */
+function App(){
+  const [tab,setTab]=useState('breathe');
+  const [theme,setTheme]=useState(store.get('nc.theme','felt'));
+  const [settings,setSettings]=useState(false);
+  useEffect(()=>{applyTheme(theme);},[theme]);
+
+  return (
+    <div className="app">
+      <div className="top">
+        <div className="brand">
+          <div className="logo">◉</div>
+          <div><b>Nhịp Cơ</b><small>Giữ tập trung khi đứng bàn</small></div>
+        </div>
+        <button className="iconbtn" onClick={()=>setSettings(true)} aria-label="Cài đặt">⚙️</button>
+      </div>
+
+      <div className="body">
+        {tab==='breathe' && <Breathe/>}
+        {tab==='metro'   && <Metronome/>}
+        {tab==='routine' && <Routine/>}
+        {tab==='cue'     && <Cue/>}
+        {tab==='log'     && <MatchLog/>}
+        {tab==='train'   && <Training/>}
+      </div>
+
+      <div className="tabs">
+        <TabBtn id="breathe" cur={tab} set={setTab} ico="🫁" lab="Nhịp thở"/>
+        <TabBtn id="metro"   cur={tab} set={setTab} ico="🎵" lab="Đếm nhịp"/>
+        <TabBtn id="routine" cur={tab} set={setTab} ico="✓"  lab="Routine"/>
+        <TabBtn id="cue"     cur={tab} set={setTab} ico="🧘" lab="Tịnh tâm"/>
+        <TabBtn id="log"     cur={tab} set={setTab} ico="📓" lab="Nhật ký"/>
+        <TabBtn id="train"   cur={tab} set={setTab} ico="🎯" lab="Tập luyện"/>
+      </div>
+
+      {settings && <Settings theme={theme} setTheme={setTheme} close={()=>setSettings(false)}/>}
+    </div>
+  );
+}
+function TabBtn({id,cur,set,ico,lab}){
+  return <button className={'tab'+(cur===id?' on':'')} onClick={()=>set(id)}>
+    <span className="ico">{ico}</span>{lab}
+  </button>;
+}
+
+/* ---------- buzz ---------- */
+function buzz(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} }
+
+/* ================= Đếm nhịp (metronome) ================= */
+function Metronome(){
+  const [bpm,setBpm]=useState(()=>store.get('nc.bpm',55));
+  const [on,setOn]=useState(false);
+  const [beat,setBeat]=useState(0);
+  const [sound,setSound]=useState(()=>store.get('nc.metroSound',true));
+  const acRef=useRef(null), soundRef=useRef(sound), tapRef=useRef([]), timer=useRef(null);
+  useEffect(()=>{ soundRef.current=sound; store.set('nc.metroSound',sound); },[sound]);
+  useEffect(()=>{ store.set('nc.bpm',bpm); },[bpm]);
+
+  const click=()=>{
+    if(!soundRef.current) return;
+    try{
+      if(!acRef.current) acRef.current=new (window.AudioContext||window.webkitAudioContext)();
+      const c=acRef.current; if(c.state==='suspended') c.resume();
+      const o=c.createOscillator(), g=c.createGain(), t=c.currentTime;
+      o.frequency.value=1000; o.connect(g); g.connect(c.destination);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.5,t+0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+      o.start(t); o.stop(t+0.06);
+    }catch(e){}
+  };
+  useEffect(()=>{
+    if(!on){ clearInterval(timer.current); return; }
+    const tick=()=>{ setBeat(b=>b+1); click(); buzz(25); };
+    tick();
+    timer.current=setInterval(tick,60000/bpm);
+    return ()=>clearInterval(timer.current);
+  },[on,bpm]);
+
+  const tap=()=>{
+    const t=Date.now(), a=tapRef.current;
+    if(a.length && t-a[a.length-1]>2000) a.length=0;
+    a.push(t); if(a.length>5) a.shift();
+    if(a.length>=2){
+      let s=0; for(let i=1;i<a.length;i++) s+=a[i]-a[i-1];
+      const b=Math.round(60000/(s/(a.length-1)));
+      setBpm(Math.max(30,Math.min(120,b)));
+    }
+  };
+  const ang = on ? (beat%2===0? 15 : -15) : 0;
+  return (
+    <div className="metro">
+      <div className="pendwrap">
+        <div className="pend" style={{transform:`rotate(${ang}deg)`,
+          transitionDuration:on?(60/bpm)+'s':'.3s',transitionTimingFunction:'ease-in-out'}}>
+          <div className="bob"/><div className="arm"/>
+        </div>
+        <div className="pivot"/>
+      </div>
+      <div className="bpmbox">
+        <button onClick={()=>setBpm(b=>Math.max(30,b-1))}>－</button>
+        <div className="bpmnum"><b>{bpm}</b><small>BPM</small></div>
+        <button onClick={()=>setBpm(b=>Math.min(120,b+1))}>＋</button>
+      </div>
+      <input type="range" min="30" max="120" value={bpm} onChange={e=>setBpm(+e.target.value)}/>
+      <div className="presets" style={{justifyContent:'center'}}>
+        {[50,55,60,72].map(p=><button key={p} className={'chip'+(bpm===p?' on':'')} onClick={()=>setBpm(p)}>{p}</button>)}
+        <button className="chip" onClick={tap}>👆 Gõ nhịp</button>
+      </div>
+      <div className="clockbtns" style={{maxWidth:330}}>
+        <button className="btn acc" onClick={()=>setOn(o=>!o)}>{on?'⏸ Dừng':'▶ Bắt đầu'}</button>
+        <button className="btn ghost" onClick={()=>setSound(s=>!s)}>{sound?'🔊 Tiếng':'🔇 Tắt tiếng'}</button>
+      </div>
+      <div className="muted" style={{fontSize:13,textAlign:'center',maxWidth:320,lineHeight:1.5}}>
+        Đưa cơ theo tiếng tách để nhịp tay đều và mượt. Chậm (50–60) cho cú chuẩn xác.
+      </div>
+    </div>
+  );
+}
+
+/* ================= Nhịp thở (Box / 4-7-8) ================= */
+function Breathe(){
+  const [pk,setPk]=useState(()=>store.get('nc.breath','box'));
+  const pat=BREATH.find(p=>p.key===pk)||BREATH[0];
+  const phases=pat.phases;
+  const [on,setOn]=useState(false);
+  const [pi,setPi]=useState(0);
+  const [left,setLeft]=useState(phases[0][1]);
+  const [cycles,setCycles]=useState(0);
+  const ref=useRef(null);
+
+  useEffect(()=>{ store.set('nc.breath',pk); setOn(false); setPi(0); setLeft(pat.phases[0][1]); setCycles(0); },[pk]);
+
+  useEffect(()=>{
+    if(!on){ clearInterval(ref.current); return; }
+    ref.current=setInterval(()=>{
+      setLeft(l=>{
+        if(l>1) return l-1;
+        setPi(p=>{ const np=(p+1)%phases.length; if(np===0) setCycles(c=>c+1); buzz(60); return np; });
+        return phases[(pi+1)%phases.length][1];
+      });
+    },1000);
+    return ()=>clearInterval(ref.current);
+  },[on,pi,pk]);
+
+  const start=()=>{ setPi(0); setLeft(phases[0][1]); setCycles(0); setOn(true); buzz(60); };
+  const stop=()=>{ setOn(false); };
+
+  const ph=phases[pi];
+  return (
+    <div className="breathe">
+      <div className="presets" style={{justifyContent:'center'}}>
+        {BREATH.map(p=><button key={p.key} className={'chip'+(pk===p.key?' on':'')} onClick={()=>setPk(p.key)}>{p.name}</button>)}
+      </div>
+      <div className="orb" style={{transform:`scale(${on?ph[2]:1.1})`,transitionDuration: on?ph[1]+'s':'.6s'}}>
+        <div>
+          <div className="ph">{on?ph[0]:'Sẵn sàng'}</div>
+          <div className="ct">{on?left:pat.phases.map(p=>p[1]).join('·')}</div>
+        </div>
+      </div>
+      <div className="sub">
+        {pat.note}<br/>
+        {on? <b style={{color:'var(--gold)'}}>{cycles} vòng hoàn thành</b> : 'Làm 3–4 vòng để tay vững trước cú khó.'}
+      </div>
+      {on
+        ? <button className="btn ghost wide" onClick={stop}>⏹ Dừng</button>
+        : <button className="btn acc wide" onClick={start}>▶ Bắt đầu thở</button>}
+    </div>
+  );
+}
+
+/* ================= Routine ================= */
+function Routine(){
+  const [steps,setSteps]=useState(()=>store.get('nc.routine',DEFAULT_ROUTINE));
+  const [done,setDone]=useState(()=>steps.map(()=>false));
+  const [edit,setEdit]=useState(false);
+
+  useEffect(()=>{ setDone(d=> steps.map((_,i)=> d[i]||false)); },[steps]);
+
+  const cur = done.findIndex(x=>!x);
+  const toggle=(i)=> setDone(d=> d.map((x,j)=> j===i?!x:x));
+  const reset=()=> setDone(steps.map(()=>false));
+  const allDone = done.length>0 && done.every(Boolean);
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div className="h">Quy trình trước cú đánh</div>
+        <button className="chip" onClick={()=>setEdit(true)}>✎ Sửa</button>
+      </div>
+      <div className="steps">
+        {steps.map((s,i)=>
+          <div key={i} className={'step'+(done[i]?' done':'')+(!done[i]&&i===cur?' cur':'')} onClick={()=>toggle(i)}>
+            <div className="n">{done[i]?'✓':i+1}</div>
+            <div className="tx">{s.t}{s.s&&<small>{s.s}</small>}</div>
+          </div>)}
+      </div>
+      <div className="rowbtns">
+        <button className="btn acc" onClick={reset}>{allDone?'🎯 Xong! Làm lại':'↺ Lượt mới'}</button>
+      </div>
+      {edit && <RoutineEdit steps={steps} save={(s)=>{setSteps(s);store.set('nc.routine',s);setEdit(false);}}
+                close={()=>setEdit(false)}/>}
+    </div>
+  );
+}
+function RoutineEdit({steps,save,close}){
+  const [list,setList]=useState(steps.map(s=>({...s})));
+  const upd=(i,k,v)=>setList(l=>l.map((s,j)=>j===i?{...s,[k]:v}:s));
+  const add=()=>setList(l=>[...l,{t:'Bước mới',s:''}]);
+  const del=(i)=>setList(l=>l.filter((_,j)=>j!==i));
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>Sửa quy trình</h3>
+        {list.map((s,i)=>
+          <div key={i} style={{marginBottom:12,paddingBottom:12,borderBottom:'1px solid var(--line)'}}>
+            <div className="editrow">
+              <input value={s.t} onChange={e=>upd(i,'t',e.target.value)} placeholder="Tên bước"/>
+              <button className="x" onClick={()=>del(i)}>✕</button>
+            </div>
+            <div className="editrow"><input value={s.s||''} onChange={e=>upd(i,'s',e.target.value)} placeholder="Ghi chú (tuỳ chọn)"/></div>
+          </div>)}
+        <button className="btn ghost wide" onClick={add} style={{marginBottom:10}}>＋ Thêm bước</button>
+        <div className="rowbtns">
+          <button className="btn ghost" onClick={()=>{save(DEFAULT_ROUTINE);}}>↺ Mặc định</button>
+          <button className="btn" onClick={()=>save(list.filter(s=>s.t.trim()))}>Lưu</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================= Cue ================= */
+function Cue(){
+  const [i,setI]=useState(()=>Math.floor((Date.now()/1000)%CUES.length));
+  const next=()=>setI(p=>{ let n=p; while(n===p) n=Math.floor(Math.random()*CUES.length); return n; });
+  const c=CUES[i];
+  return (
+    <div className="cue">
+      <div className="card cuecard" onClick={next}>
+        <div className="tag">{c.tag}</div>
+        <div className="q">“</div>
+        <div className="t">{c.t}</div>
+      </div>
+      <button className="btn acc wide" onClick={next}>🔀 Câu nhắc khác</button>
+      <div className="muted" style={{fontSize:13}}>Chạm thẻ để đổi câu</div>
+    </div>
+  );
+}
+
+/* ================= Settings ================= */
+function Settings({theme,setTheme,close}){
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>Cài đặt</h3>
+        <div className="field">
+          <label>🎨 Giao diện</label>
+          <div className="swatches">
+            {THEMES.map(t=>
+              <div key={t.key} className={'sw'+(theme===t.key?' on':'')}
+                style={{background:`linear-gradient(145deg,${t.c},${t.g})`}}
+                title={t.name} onClick={()=>setTheme(t.key)}/>)}
+          </div>
+          <div className="muted" style={{fontSize:12,marginTop:6}}>{THEMES.find(t=>t.key===theme)?.name}</div>
+        </div>
+        <div className="muted" style={{fontSize:12,lineHeight:1.6,marginTop:8}}>
+          <b style={{color:'var(--soft)'}}>Mẹo dùng:</b><br/>
+          • <b>Nhịp thở</b>: chọn Hộp hoặc 4-7-8, làm 3–4 vòng khi hồi hộp.<br/>
+          • <b>Đếm nhịp</b>: bật tiếng tách, đưa cơ theo nhịp cho đều tay (Gõ nhịp để tự dò BPM).<br/>
+          • <b>Routine</b>: chạm tích từng bước, sửa theo thói quen riêng.<br/>
+          • <b>Nhật ký → Tập luyện</b>: ghi lỗi sau mỗi trận, app gợi ý bài tập đúng điểm yếu.
+        </div>
+        <button className="btn wide" onClick={close} style={{marginTop:14}}>Đóng</button>
+      </div>
+    </div>
+  );
+}
+
+/* ================= shared bits ================= */
+function Empty({ico,t,s}){
+  return (
+    <div style={{textAlign:'center',padding:'46px 20px',color:'var(--muted)'}}>
+      <div style={{fontSize:46,marginBottom:10}}>{ico}</div>
+      <div style={{fontWeight:800,fontSize:16,color:'var(--soft)',marginBottom:6}}>{t}</div>
+      <div style={{fontSize:13,lineHeight:1.5,maxWidth:300,margin:'0 auto'}}>{s}</div>
+    </div>
+  );
+}
+
+/* ================= Nhật ký trận đấu ================= */
+function MatchLog(){
+  const [list,setList]=useState(()=>store.get('nc.matches',[]));
+  const [form,setForm]=useState(null);
+  const save=(l)=>{ setList(l); store.set('nc.matches',l); };
+  const upsert=(m)=>{
+    const isNew=!m.id;
+    save(isNew? [{...m,id:uid('m')},...list] : list.map(x=>x.id===m.id?m:x));
+    setForm(null);
+  };
+  const del=(id)=>{ save(list.filter(x=>x.id!==id)); setForm(null); };
+  const w=list.filter(m=>m.result==='W').length, l=list.filter(m=>m.result==='L').length;
+  const rate=(w+l)? Math.round(w/(w+l)*100):0;
+  const mc={}; list.forEach(m=>(m.mistakes||[]).forEach(x=>mc[x]=(mc[x]||0)+1));
+  const top=Object.entries(mc).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div className="h">Nhật ký trận đấu</div>
+        <button className="chip on" onClick={()=>setForm({date:todayStr(),result:'W',game:'8-bi',mistakes:[],feel:3})}>＋ Ghi trận</button>
+      </div>
+      {list.length>0 &&
+        <div className="statstrip">
+          <div className="stat"><b>{list.length}</b><small>trận</small></div>
+          <div className="stat"><b style={{color:'var(--ok)'}}>{w}</b><small>thắng</small></div>
+          <div className="stat"><b style={{color:'var(--danger)'}}>{l}</b><small>thua</small></div>
+          <div className="stat"><b style={{color:'var(--gold)'}}>{rate}%</b><small>tỉ lệ</small></div>
+        </div>}
+      {top.length>0 &&
+        <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+          <div className="h" style={{marginBottom:8}}>⚠️ Lỗi hay mắc nhất</div>
+          <div className="tags">
+            {top.map(([m,c])=><span key={m} className="tag2" style={{color:'var(--warn)',borderColor:'var(--warn)'}}>{m} · {c}×</span>)}
+          </div>
+        </div>}
+      {list.length===0 &&
+        <Empty ico="📓" t="Chưa ghi trận nào"
+          s="Ghi lại kết quả, đối thủ và lỗi mắc phải sau mỗi trận — app tự tổng kết tỉ lệ thắng và lỗi bạn hay lặp."/>}
+      <div className="list">
+        {view.map(m=>{
+          const feel=FEELS.find(f=>f.v===m.feel);
+          return (
+          <div key={m.id} className="card mcard" onClick={()=>setForm(m)}>
+            <div className="mtop">
+              <div className={'rbadge '+m.result}>{m.result==='W'?'T':m.result==='L'?'B':'H'}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:800}}>{m.opp||'Không rõ đối thủ'}{m.score&&<span className="muted" style={{fontWeight:700}}> · {m.score}</span>}</div>
+                <div className="muted" style={{fontSize:12,fontWeight:600}}>{fmtDate(m.date)} · {m.game}</div>
+              </div>
+              {feel&&<div style={{fontSize:22}}>{feel.e}</div>}
+            </div>
+            {(m.mistakes||[]).length>0 &&
+              <div className="tags">{m.mistakes.map(x=><span key={x} className="tag2">{x}</span>)}</div>}
+            {m.note&&<div className="muted preline" style={{fontSize:13}}>“{m.note}”</div>}
+          </div>);
+        })}
+      </div>
+      {form && <MatchForm init={form} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
+    </div>
+  );
+}
+function MatchForm({init,onSave,onDel,close}){
+  const [m,setM]=useState({opp:'',score:'',note:'',...init});
+  const set=(k,v)=>setM(p=>({...p,[k]:v}));
+  const toggle=(x)=>setM(p=>({...p,mistakes:(p.mistakes||[]).includes(x)?p.mistakes.filter(y=>y!==x):[...(p.mistakes||[]),x]}));
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>{init.id?'Sửa trận':'Ghi trận đấu'}</h3>
+        <div className="field"><label>Ngày</label>
+          <input type="date" value={m.date} onChange={e=>set('date',e.target.value)}/></div>
+        <div className="field"><label>Đối thủ</label>
+          <input value={m.opp} onChange={e=>set('opp',e.target.value)} placeholder="Tên đối thủ"/></div>
+        <div className="field"><label>Kết quả</label>
+          <div className="modeseg" style={{alignSelf:'flex-start'}}>
+            {[['W','Thắng'],['D','Hòa'],['L','Thua']].map(([k,t])=>
+              <button key={k} className={m.result===k?'on':''} onClick={()=>set('result',k)}>{t}</button>)}
+          </div></div>
+        <div className="field"><label>Tỉ số (tuỳ ý)</label>
+          <input value={m.score} onChange={e=>set('score',e.target.value)} placeholder="VD: 5-3"/></div>
+        <div className="field"><label>Thể loại</label>
+          <div className="presets" style={{justifyContent:'flex-start'}}>
+            {GAMES.map(g=><button key={g} className={'chip'+(m.game===g?' on':'')} onClick={()=>set('game',g)}>{g}</button>)}
+          </div></div>
+        <div className="field"><label>Phong độ của bạn</label>
+          <div className="presets" style={{justifyContent:'flex-start'}}>
+            {FEELS.map(f=><button key={f.v} className={'chip'+(m.feel===f.v?' on':'')} style={{fontSize:19}} onClick={()=>set('feel',f.v)}>{f.e}</button>)}
+          </div></div>
+        <div className="field"><label>Lỗi mắc phải (chọn nhiều)</label>
+          <div className="presets" style={{justifyContent:'flex-start'}}>
+            {MISTAKES.map(x=><button key={x} className={'chip'+((m.mistakes||[]).includes(x)?' on':'')} onClick={()=>toggle(x)}>{x}</button>)}
+          </div></div>
+        <div className="field"><label>Ghi chú / bài học</label>
+          <textarea rows="4" value={m.note} onChange={e=>set('note',e.target.value)}
+            placeholder="Rút ra điều gì cho lần sau? Có thể xuống dòng, ghi nhiều ý."/></div>
+        <div className="rowbtns">
+          {init.id && <button className="btn ghost" onClick={()=>onDel(init.id)} style={{color:'var(--danger)',flex:'0 0 auto'}}>🗑 Xoá</button>}
+          <button className="btn" onClick={()=>onSave({...m,opp:(m.opp||'').trim()})}>Lưu</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================= Tập luyện ================= */
+function MiniTable({dia}){
+  if(!dia) return null;
+  const pockets=[[4,4],[50,2.6],[96,4],[4,48],[50,49.4],[96,48]];
+  return (
+    <svg className="mtable" viewBox="0 0 100 52" role="img" aria-label="Sơ đồ đặt bàn">
+      {pockets.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.4" fill="#06311f"/>)}
+      {dia.line && <line x1={dia.line[0]} y1={dia.line[1]} x2={dia.line[2]} y2={dia.line[3]}
+        stroke="#ffffff" strokeOpacity=".45" strokeWidth=".7" strokeDasharray="2 2"/>}
+      {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="none"
+        stroke="#ffd166" strokeWidth=".8" strokeDasharray="2.2 1.6"/>}
+      {dia.balls.map((b,i)=><circle key={i} cx={b.x} cy={b.y} r={b.r||2.7} fill={b.c}
+        stroke="rgba(0,0,0,.3)" strokeWidth=".5"/>)}
+    </svg>
+  );
+}
+function Spark({vals}){
+  if(!vals||vals.length<2) return null;
+  const w=72,h=22;
+  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*w},${(h-2)-(v/100)*(h-4)}`).join(' ');
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{display:'block'}}>
+      <polyline points={pts} fill="none" stroke="var(--accent)" strokeWidth="1.8"
+        strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function DrillCard({d,recs,onScore}){
+  const [open,setOpen]=useState(false);
+  const last=recs[0];
+  const best=recs.length? Math.max(...recs.map(r=>r.score)) : null;
+  const vals=recs.slice(0,8).reverse().map(r=>Math.round(r.score/r.max*100));
+  const cat=DRILL_CATS[d.cat];
+  return (
+    <div className="card drillC">
+      <div className="drillH" onClick={()=>setOpen(o=>!o)}>
+        <span className="catpill" style={{border:'1px solid '+cat.c,color:cat.c}}>{cat.t}</span>
+        <div className="dn"><b>{d.name}</b><small>Mục tiêu {d.target} · đã tập {recs.length} lần</small></div>
+        <div className="sc">{last
+          ? <><b>{last.score}/{d.max}</b><small>gần nhất</small></>
+          : <span className="muted small">chưa tập</span>}</div>
+      </div>
+      {open &&
+        <div className="drillB">
+          {d.dia && <MiniTable dia={d.dia}/>}
+          <div className="kv"><b>Cách đặt:</b> {d.setup}</div>
+          <div className="kv"><b>Chấm điểm:</b> {d.scoring}.</div>
+          <div className="kv"><b>Vì sao tập:</b> {d.why}</div>
+          {d.fixes&&d.fixes.length>0 &&
+            <div className="tags">{d.fixes.map(f=><span key={f} className="tag2">sửa: {f}</span>)}</div>}
+          {recs.length>0 &&
+            <div className="statline">
+              {best!=null && <span>Tốt nhất <b>{best}/{d.max}</b></span>}
+              {vals.length>=2 && <span style={{display:'flex',alignItems:'center',gap:6}}>Tiến bộ <Spark vals={vals}/></span>}
+            </div>}
+          <button className="btn acc sm" style={{alignSelf:'flex-start'}} onClick={()=>onScore(d)}>＋ Ghi điểm buổi tập</button>
+        </div>}
+    </div>
+  );
+}
+function ScoreModal({d,onSave,close}){
+  const [score,setScore]=useState(()=>Math.round(d.max*0.6));
+  const [note,setNote]=useState('');
+  return (
+    <div className="scrim" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>{d.name}</h3>
+        <div className="muted small" style={{margin:'-8px 0 6px'}}>{d.scoring} · mục tiêu {d.target}</div>
+        <div className="stepper">
+          <button onClick={()=>setScore(s=>Math.max(0,s-1))} aria-label="Giảm">－</button>
+          <div className="sv">{score}<small>trên {d.max}</small></div>
+          <button onClick={()=>setScore(s=>Math.min(d.max,s+1))} aria-label="Tăng">＋</button>
+        </div>
+        <input type="range" min="0" max={d.max} value={score} onChange={e=>setScore(+e.target.value)}
+          style={{width:'100%',accentColor:'var(--gold)',margin:'6px 0 14px'}}/>
+        <div className="field"><label>Ghi chú (tuỳ chọn)</label>
+          <input value={note} onChange={e=>setNote(e.target.value)} placeholder="Cảm giác, điều cần nhớ cho lần sau..."/></div>
+        <button className="btn wide" onClick={()=>onSave({drill:d.key,max:d.max,score,note:note.trim()})}>Lưu kết quả</button>
+      </div>
+    </div>
+  );
+}
+function Training(){
+  const matches=store.get('nc.matches',[]);
+  const [recs,setRecs]=useState(()=>store.get('nc.training',[]));     // {id,date,drill,score,max,note}
+  const [ghost,setGhost]=useState(()=>store.get('nc.ghost',[]));      // {id,date,game,won}
+  const [scoring,setScoring]=useState(null);
+  const [cat,setCat]=useState('all');
+
+  const addScore=(r)=>{ const l=[{...r,id:uid('t'),date:todayStr()},...recs]; setRecs(l); store.set('nc.training',l); setScoring(null); };
+  const addGhost=(won)=>{ const l=[{id:uid('g'),date:todayStr(),won},...ghost]; setGhost(l); store.set('nc.ghost',l); };
+  const recsFor=(k)=>recs.filter(r=>r.drill===k&&typeof r.score==='number');
+  const doneToday=(k)=>recs.some(r=>r.drill===k&&r.date===todayStr());
+
+  const scored=recs.filter(r=>typeof r.score==='number');
+  const mc={}; matches.forEach(m=>(m.mistakes||[]).forEach(x=>mc[x]=(mc[x]||0)+1));
+  const weak=Object.entries(mc).sort((a,b)=>b[1]-a[1]);
+  const lessons=matches.filter(m=>m.note&&m.note.trim());
+
+  // Điểm phong độ = trung bình % của 12 lượt chấm gần nhất
+  const recent=scored.slice(0,12);
+  const skill=recent.length? Math.round(recent.reduce((s,r)=>s+r.score/r.max,0)/recent.length*100):null;
+
+  // Chuỗi ngày luyện liên tiếp (tính cả ghi điểm lẫn đấu ghost)
+  const days=new Set([...recs.map(r=>r.date),...ghost.map(g=>g.date)]);
+  const dk=(dt)=>dt.toISOString().slice(0,10);
+  let streak=0, probe=new Date(dk(new Date()));
+  if(!days.has(dk(probe))) probe.setDate(probe.getDate()-1);
+  while(days.has(dk(probe))){ streak++; probe.setDate(probe.getDate()-1); }
+
+  // Kế hoạch buổi tập hôm nay: khởi động + 2 bài theo điểm yếu + ghost
+  const focusD=[];
+  for(const [mis] of weak){
+    const d=DRILLS.find(x=>x.fixes.includes(mis)&&x.key!=='stop'&&!focusD.includes(x));
+    if(d) focusD.push(d);
+    if(focusD.length>=2) break;
+  }
+  for(const k of ['longpot','position3','cuecircle']){ if(focusD.length>=2) break; const d=drillByKey(k); if(d&&!focusD.includes(d)) focusD.push(d); }
+  const plan=[{d:drillByKey('stop'),role:'Khởi động — chuẩn nhịp cơ'},
+    ...focusD.map((d,i)=>({d,role:(weak.length? 'Sửa điểm yếu':'Bài cốt lõi')+' '+(i+1)}))];
+
+  const lib=cat==='all'? DRILLS : DRILLS.filter(d=>d.cat===cat);
+  const g20=ghost.slice(0,20), gw=g20.filter(x=>x.won).length;
+  const grate=g20.length? Math.round(gw/g20.length*100):null;
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Tập luyện</div>
+      <div className="tsub">Luyện có mục tiêu, chấm điểm và theo dõi tiến bộ — không chỉ "đánh cho vui".</div>
+
+      {scored.length>0 &&
+        <div className="statstrip">
+          <div className="stat"><b style={{color:'var(--gold)'}}>{skill}</b><small>điểm phong độ /100</small></div>
+          <div className="stat"><b>{streak}</b><small>ngày liên tiếp</small></div>
+          <div className="stat"><b>{scored.length}</b><small>lượt đã chấm</small></div>
+        </div>}
+
+      <div className="h2">🗓️ Buổi tập hôm nay</div>
+      <div className="card plan">
+        {plan.map(({d,role},i)=>(
+          <div key={i} className="planrow">
+            <div className="pi">{doneToday(d.key)?'✅':i+1}</div>
+            <div className="pt"><b>{d.name}</b><small>{role} · mục tiêu {d.target}</small></div>
+            <button className="btn acc sm" onClick={()=>setScoring(d)}>{doneToday(d.key)?'Ghi lại':'Ghi điểm'}</button>
+          </div>
+        ))}
+        <div className="planrow">
+          <div className="pi">👻</div>
+          <div className="pt"><b>Đấu với Ghost</b><small>Kết thúc bằng 1 ván benchmark với chính mình</small></div>
+          <div style={{display:'flex',gap:6}}>
+            <button className="btn acc sm" onClick={()=>addGhost(true)}>Thắng</button>
+            <button className="btn ghost sm" onClick={()=>addGhost(false)}>Thua</button>
+          </div>
+        </div>
+      </div>
+
+      {weak.length>0 && <>
+        <div className="h2">🎯 Điểm yếu cần sửa (từ Nhật ký)</div>
+        <div className="list">
+          {weak.map(([mis,c])=>{
+            const d=DRILLS.find(x=>x.fixes.includes(mis));
+            const rs=d? recsFor(d.key):[];
+            const vals=rs.slice(0,8).reverse().map(r=>Math.round(r.score/r.max*100));
+            return (
+            <div key={mis} className="card drill">
+              <div className="drow"><b className="warn">{mis}</b><span className="muted small">mắc {c} lần</span></div>
+              {d && <>
+                <div className="dt">{d.name}</div>
+                <div className="drow2">
+                  {rs[0] && <span className="okbadge">gần nhất {rs[0].score}/{d.max}</span>}
+                  {vals.length>=2 && <Spark vals={vals}/>}
+                  <button className="btn acc sm" style={{marginLeft:'auto'}} onClick={()=>setScoring(d)}>Tập &amp; ghi điểm</button>
+                </div>
+              </>}
+            </div>);
+          })}
+        </div>
+      </>}
+
+      <div className="h2">📚 Thư viện bài tập</div>
+      <div className="catbar">
+        <button className={'chip'+(cat==='all'?' on':'')} onClick={()=>setCat('all')}>Tất cả</button>
+        {Object.entries(DRILL_CATS).map(([k,v])=>
+          <button key={k} className={'chip'+(cat===k?' on':'')} onClick={()=>setCat(k)}>{v.t}</button>)}
+      </div>
+      <div className="list">
+        {lib.map(d=><DrillCard key={d.key} d={d} recs={recsFor(d.key)} onScore={setScoring}/>)}
+      </div>
+
+      <div className="h2">👻 Đấu với Ghost</div>
+      <div className="card" style={{padding:'13px 14px',marginTop:8}}>
+        <div className="tsub" style={{marginTop:0}}>"Ghost" là đối thủ ảo hoàn hảo: bạn phá rồi phải dọn sạch một lượt; trượt là thua. Mốc tự đánh giá kinh điển.</div>
+        {g20.length>0
+          ? <div style={{margin:'10px 0 2px'}}>
+              <span style={{fontSize:22,fontWeight:900,color:'var(--gold)'}}>{grate}%</span>
+              <span className="muted small"> thắng ({gw}/{g20.length} gần đây)</span>
+              <div style={{marginTop:8}}>{g20.slice(0,14).map((x,i)=><span key={i} className={'dot '+(x.won?'W':'L')}/>)}</div>
+            </div>
+          : <div className="muted small" style={{margin:'8px 0'}}>Chưa có ván nào. Đấu một ván rồi ghi lại bên dưới.</div>}
+        <div className="ghostform">
+          <button className="btn acc sm" onClick={()=>addGhost(true)}>👍 Thắng Ghost</button>
+          <button className="btn ghost sm" onClick={()=>addGhost(false)}>👎 Thua Ghost</button>
+        </div>
+      </div>
+
+      {lessons.length>0 && <>
+        <div className="h2">📝 Bài học bạn tự ghi</div>
+        <div className="list">
+          {lessons.map(m=>(
+            <div key={m.id} className="card lesson">
+              <div className="muted small">{fmtDate(m.date)} · {m.opp||'?'} · {m.result==='W'?'Thắng':m.result==='L'?'Thua':'Hòa'}</div>
+              <div className="lz">“{m.note}”</div>
+            </div>))}
+        </div>
+      </>}
+
+      <div style={{height:8}}/>
+      {scoring && <ScoreModal d={scoring} onSave={addScore} close={()=>setScoring(null)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<script>
+/* PWA: đăng ký service worker khi chạy trên web https (bỏ qua khi mở bằng file://) */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
