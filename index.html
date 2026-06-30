@@ -356,6 +356,7 @@ const CUES=[
 ];
 
 const GAMES=['8-bi','9-bi','10-bi','Carom','Lỗ khác'];
+const HANDICAPS=['Đồng cơ','Tôi chấp 1 bi','Tôi chấp 2 bi','Tôi chấp 3 bi','Được chấp 1 bi','Được chấp 2 bi','Chấp 7','Chấp 7-8','Chấp đề','Chấp băng'];
 const MISTAKES=['Đẩy cơ lệch','Lực quá mạnh','Lực quá nhẹ','Mất vị trí bi cái','Bi cái lủi',
   'Chọn sai bi/lỗ','Nóng vội','Phá phom kém','Bỏ lỡ cú dễ','Thế đứng chưa vững',
   'Thiếu phòng thủ','Giật tay khi bắn'];
@@ -815,12 +816,15 @@ function MatchLog(){
   const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
   // Danh sách đối thủ đã từng ghi — gần nhất lên trước, để lần sau chọn lại
   const oppNames=[]; view.forEach(m=>{ const n=(m.opp||'').trim(); if(n&&!oppNames.includes(n)) oppNames.push(n); });
-  // Đối đầu theo từng đối thủ
-  const omap={};
+  // Đối đầu theo từng đối thủ (view đã sắp mới→cũ nên kèo gặp đầu tiên là kèo gần nhất)
+  const omap={}, lastHc={};
   view.forEach(m=>{ const n=(m.opp||'').trim(); if(!n) return;
-    const o=omap[n]||(omap[n]={name:n,n:0,w:0,l:0,d:0,games:{},mis:{},last:''});
+    const hc=(m.handicap||'').trim();
+    if(hc&&!lastHc[n]) lastHc[n]=hc;
+    const o=omap[n]||(omap[n]={name:n,n:0,w:0,l:0,d:0,games:{},mis:{},last:'',hc:''});
     o.n++; if(m.result==='W')o.w++; else if(m.result==='L')o.l++; else o.d++;
     if(m.game)o.games[m.game]=(o.games[m.game]||0)+1;
+    if(hc&&!o.hc)o.hc=hc;
     (m.mistakes||[]).forEach(x=>o.mis[x]=(o.mis[x]||0)+1);
     if((m.date||'')>o.last)o.last=m.date;
   });
@@ -866,7 +870,7 @@ function MatchLog(){
                 <div className={'rbadge '+m.result}>{m.result==='W'?'T':m.result==='L'?'B':'H'}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:800}}>{m.opp||'Không rõ đối thủ'}{m.score&&<span className="muted" style={{fontWeight:700}}> · {m.score}</span>}</div>
-                  <div className="muted" style={{fontSize:12,fontWeight:600}}>{fmtDate(m.date)} · {m.game}</div>
+                  <div className="muted" style={{fontSize:12,fontWeight:600}}>{fmtDate(m.date)} · {m.game}{m.handicap? ' · '+m.handicap:''}</div>
                 </div>
                 {feel&&<div style={{fontSize:22}}>{feel.e}</div>}
               </div>
@@ -902,6 +906,8 @@ function MatchLog(){
                   <div className="hh">
                     <span className="w">{o.w} thắng</span><span className="l">{o.l} thua</span>{o.d>0&&<span className="d">{o.d} hòa</span>}
                   </div>
+                  {o.hc &&
+                    <div className="muted" style={{fontSize:12.5,fontWeight:600}}>🎯 Kèo gần nhất: <b style={{color:'var(--gold)'}}>{o.hc}</b></div>}
                   {tm.length>0 &&
                     <div className="tags">{tm.map(([x,c])=><span key={x} className="tag2">{x} · {c}×</span>)}</div>}
                 </div>);
@@ -909,13 +915,15 @@ function MatchLog(){
             </div>}
       </>}
 
-      {form && <MatchForm init={form} names={oppNames} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
+      {form && <MatchForm init={form} names={oppNames} lastHc={lastHc} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
     </div>
   );
 }
-function MatchForm({init,names,onSave,onDel,close}){
-  const [m,setM]=useState({opp:'',score:'',note:'',...init});
+function MatchForm({init,names,lastHc,onSave,onDel,close}){
+  const [m,setM]=useState({opp:'',score:'',note:'',handicap:'',...init});
   const set=(k,v)=>setM(p=>({...p,[k]:v}));
+  // Chọn lại đối thủ cũ: tự điền kèo chấp lần trước nếu chưa nhập
+  const pickOpp=(n)=>setM(p=>({...p,opp:n,handicap:(p.handicap&&p.handicap.trim())?p.handicap:((lastHc&&lastHc[n])||'')}));
   const toggle=(x)=>setM(p=>({...p,mistakes:(p.mistakes||[]).includes(x)?p.mistakes.filter(y=>y!==x):[...(p.mistakes||[]),x]}));
   return (
     <div className="scrim" onClick={close}>
@@ -929,8 +937,17 @@ function MatchForm({init,names,onSave,onDel,close}){
           {(names||[]).length>0 &&
             <div className="presets" style={{justifyContent:'flex-start',marginTop:4}}>
               {names.slice(0,10).map(n=>
-                <button key={n} type="button" className={'chip'+(m.opp===n?' on':'')} onClick={()=>set('opp',n)}>{n}</button>)}
+                <button key={n} type="button" className={'chip'+(m.opp===n?' on':'')} onClick={()=>pickOpp(n)}>{n}</button>)}
             </div>}</div>
+        <div className="field"><label>Chấp / kèo</label>
+          <input value={m.handicap} onChange={e=>set('handicap',e.target.value)} placeholder="VD: Tôi chấp 2 bi · Đồng cơ"/>
+          {lastHc && (m.opp||'').trim() && lastHc[(m.opp||'').trim()] && lastHc[(m.opp||'').trim()]!==m.handicap &&
+            <div style={{marginTop:4}}>
+              <button type="button" className="chip" onClick={()=>set('handicap',lastHc[(m.opp||'').trim()])}>↩ Lần trước: {lastHc[(m.opp||'').trim()]}</button>
+            </div>}
+          <div className="presets" style={{justifyContent:'flex-start',marginTop:4}}>
+            {HANDICAPS.map(h=><button key={h} type="button" className={'chip'+(m.handicap===h?' on':'')} onClick={()=>set('handicap',m.handicap===h?'':h)}>{h}</button>)}
+          </div></div>
         <div className="field"><label>Kết quả</label>
           <div className="modeseg" style={{alignSelf:'flex-start'}}>
             {[['W','Thắng'],['D','Hòa'],['L','Thua']].map(([k,t])=>
@@ -955,7 +972,7 @@ function MatchForm({init,names,onSave,onDel,close}){
             placeholder="Rút ra điều gì cho lần sau? Có thể xuống dòng, ghi nhiều ý."/></div>
         <div className="rowbtns">
           {init.id && <button className="btn ghost" onClick={()=>onDel(init.id)} style={{color:'var(--danger)',flex:'0 0 auto'}}>🗑 Xoá</button>}
-          <button className="btn" onClick={()=>onSave({...m,opp:(m.opp||'').trim()})}>Lưu</button>
+          <button className="btn" onClick={()=>onSave({...m,opp:(m.opp||'').trim(),handicap:(m.handicap||'').trim()})}>Lưu</button>
         </div>
       </div>
     </div>
