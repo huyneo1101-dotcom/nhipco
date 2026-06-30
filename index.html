@@ -1634,7 +1634,7 @@ function LineChart({vals,color='var(--accent)'}){
     </svg>
   );
 }
-function DrillCard({d,recs,onScore,onDelete}){
+function DrillCard({d,recs,onScore,onDelete,onEdit}){
   const [open,setOpen]=useState(false);
   const last=recs[0];
   const best=recs.length? Math.max(...recs.map(r=>r.score)) : null;
@@ -1648,7 +1648,8 @@ function DrillCard({d,recs,onScore,onDelete}){
         <div className="sc">{last
           ? <><b>{last.score}/{d.max}</b><small>gần nhất</small></>
           : <span className="muted small">chưa tập</span>}</div>
-        {onDelete && <button className="xbtn" onClick={(e)=>{e.stopPropagation();onDelete();}} style={{marginLeft:6}}>✕</button>}
+        {onEdit && <button className="chip" onClick={(e)=>{e.stopPropagation();onEdit();}} style={{marginLeft:6,flex:'none'}}>✎</button>}
+        {onDelete && <button className="xbtn" onClick={(e)=>{e.stopPropagation();onDelete();}} style={{marginLeft:4}}>✕</button>}
       </div>
       {open &&
         <div className="drillB">
@@ -1723,12 +1724,14 @@ function SessionBuilder({init,drills,weakKeys,onSave,onDel,close}){
     </div>
   );
 }
-function DrillBuilder({onSave,close}){
-  const [name,setName]=useState(''); const [cat,setCat]=useState('pot');
-  const [max,setMax]=useState(10); const [target,setTarget]=useState('');
-  const [scoring,setScoring]=useState(''); const [setup,setSetup]=useState('');
-  const [cue,setCue]=useState({x:20,y:27});
-  const [balls,setBalls]=useState([{x:54,y:22},{x:70,y:32}]);
+function DrillBuilder({init,onSave,close}){
+  const iBalls=init&&init.dia? init.dia.balls.filter(b=>b.num!=null).sort((a,b)=>a.num-b.num).map(b=>({x:b.x,y:b.y})) : [{x:54,y:22},{x:70,y:32}];
+  const iCue=init&&init.dia? (init.dia.balls.find(b=>b.cue)||{x:20,y:27}) : {x:20,y:27};
+  const [name,setName]=useState(init?init.name:''); const [cat,setCat]=useState(init?init.cat:'pot');
+  const [max,setMax]=useState(init?init.max:10); const [target,setTarget]=useState(init?(init.target||''):'');
+  const [scoring,setScoring]=useState(init?(init.scoring||''):''); const [setup,setSetup]=useState(init?(init.setup||''):'');
+  const [cue,setCue]=useState({x:iCue.x,y:iCue.y});
+  const [balls,setBalls]=useState(iBalls);
   const drag=useRef(null), svgRef=useRef(null);
   const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
@@ -1746,7 +1749,7 @@ function DrillBuilder({onSave,close}){
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
-        <h3>Tạo bài tập</h3>
+        <h3>{init?'Sửa bài tập':'Tạo bài tập'}</h3>
         <div className="muted small" style={{margin:'-8px 0 6px'}}>Kéo bi để đặt vị trí; thêm tối đa 15 bi + bi cái.</div>
         <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
           style={{width:'100%',maxWidth:'none',touchAction:'none'}}
@@ -1777,17 +1780,19 @@ function DrillBuilder({onSave,close}){
             <input value={target} onChange={e=>setTarget(e.target.value)} placeholder="VD: ≥7/10"/></div>
         </div>
         <button className="btn wide" onClick={()=>{ if(!name.trim()) return;
-          onSave({key:uid('cd'),custom:true,cat,name:name.trim(),max:+max,target:target.trim()||('≥'+Math.round(max*0.7)+'/'+max),
-            scoring:scoring.trim()||'Tự chấm theo mục tiêu',setup:setup.trim()||'Bài tập tự tạo.',why:'Bài tập do bạn thiết kế.',fixes:[],dia}); }}>Lưu bài tập</button>
+          onSave({...(init||{}),key:init?init.key:uid('cd'),custom:true,cat,name:name.trim(),max:+max,target:target.trim()||('≥'+Math.round(max*0.7)+'/'+max),
+            scoring:scoring.trim()||'Tự chấm theo mục tiêu',setup:setup.trim()||'Bài tập tự tạo.',why:init?(init.why||'Bài tập do bạn thiết kế.'):'Bài tập do bạn thiết kế.',fixes:init?(init.fixes||[]):[],dia}); }}>{init?'Lưu sửa':'Lưu bài tập'}</button>
       </div>
     </div>
   );
 }
-function ProblemBuilder({onSave,close}){
-  const [name,setName]=useState(''); const [tag,setTag]=useState('');
-  const [sit,setSit]=useState(''); const [fix,setFix]=useState('');
-  const [cue,setCue]=useState({x:22,y:30});
-  const [balls,setBalls]=useState([{x:52,y:26},{x:72,y:32}]);
+function ProblemBuilder({init,onSave,close}){
+  const iBalls=init&&init.dia? init.dia.balls.filter(b=>b.num!=null).sort((a,b)=>a.num-b.num).map(b=>({x:b.x,y:b.y})) : [{x:52,y:26},{x:72,y:32}];
+  const iCue=init&&init.dia? (init.dia.balls.find(b=>b.cue)||{x:22,y:30}) : {x:22,y:30};
+  const [name,setName]=useState(init?init.name:''); const [tag,setTag]=useState(init?(init.tag||''):'');
+  const [sit,setSit]=useState(init?(init.sit||''):''); const [fix,setFix]=useState(init?(init.fix||''):'');
+  const [cue,setCue]=useState({x:iCue.x,y:iCue.y});
+  const [balls,setBalls]=useState(iBalls);
   const drag=useRef(null), svgRef=useRef(null);
   const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
@@ -1804,7 +1809,7 @@ function ProblemBuilder({onSave,close}){
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
-        <h3>Thêm thế khó</h3>
+        <h3>{init?'Sửa thế khó':'Thêm thế khó'}</h3>
         <div className="muted small" style={{margin:'-8px 0 6px'}}>Dựng thế bi minh hoạ, rồi ghi cách xử lý.</div>
         <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
           style={{width:'100%',maxWidth:'none',touchAction:'none'}}
@@ -1827,7 +1832,7 @@ function ProblemBuilder({onSave,close}){
         <div className="field"><label>Cách xử lý</label>
           <textarea rows="3" value={fix} onChange={e=>setFix(e.target.value)} placeholder="Nên đánh thế nào..."/></div>
         <button className="btn wide" onClick={()=>{ if(!name.trim()) return;
-          onSave({custom:true,name:name.trim(),tag:tag.trim()||'Tự ghi',sit:sit.trim(),fix:fix.trim()||'(chưa ghi)',dia}); }}>Lưu thế khó</button>
+          onSave({...(init||{}),custom:true,name:name.trim(),tag:tag.trim()||'Tự ghi',sit:sit.trim(),fix:fix.trim()||'(chưa ghi)',dia}); }}>{init?'Lưu sửa':'Lưu thế khó'}</button>
       </div>
     </div>
   );
@@ -1847,16 +1852,16 @@ function Training(){
   const [weakHide,setWeakHide]=useState(()=>store.get('nc.weakHidden',[]));
   const [planHide,setPlanHide]=useState(()=>{ const ph=store.get('nc.planHidden',null); return (ph&&ph.date===todayStr())?ph.keys:[]; });
   const [customProblems,setCustomProblems]=useState(()=>store.get('nc.customProblems',[]));
-  const [drillBuilder,setDrillBuilder]=useState(false);
-  const [pbuilder,setPbuilder]=useState(false);
+  const [drillBuilder,setDrillBuilder]=useState(null);  // null | {} (mới) | bài (sửa)
+  const [pbuilder,setPbuilder]=useState(null);
   const [lessonV,setLessonV]=useState(0);   // ép render khi sửa bài học (nc.matches)
-  const addCustomProblem=(p)=>{ const l=[{...p,key:uid('cp')},...customProblems]; setCustomProblems(l); store.set('nc.customProblems',l); setPbuilder(false); };
+  const addCustomProblem=(p)=>{ const exists=p.key&&customProblems.some(x=>x.key===p.key); const l=exists?customProblems.map(x=>x.key===p.key?p:x):[{...p,key:p.key||uid('cp')},...customProblems]; setCustomProblems(l); store.set('nc.customProblems',l); setPbuilder(null); };
   const clearGhost=()=>{ if(window.confirm('Xoá toàn bộ lịch sử đấu Ghost?')){ setGhost([]); store.set('nc.ghost',[]); } };
   const clearLesson=(id)=>{ const ms=store.get('nc.matches',[]).map(m=>m.id===id?{...m,note:''}:m); store.set('nc.matches',ms); setLessonV(v=>v+1); };
   const savePlans=(l)=>{ setPlans(l); store.set('nc.plans',l); };
   const upsertPlan=(p)=>{ savePlans(p.id? plans.map(x=>x.id===p.id?p:x) : [{...p,id:uid('pl')},...plans]); setBuilder(null); };
   const delPlan=(id)=>{ savePlans(plans.filter(x=>x.id!==id)); setBuilder(null); };
-  const addCustomDrill=(d)=>{ const l=[d,...customDrills]; setCustomDrills(l); store.set('nc.customDrills',l); setDrillBuilder(false); };
+  const addCustomDrill=(d)=>{ const exists=customDrills.some(x=>x.key===d.key); const l=exists?customDrills.map(x=>x.key===d.key?d:x):[d,...customDrills]; setCustomDrills(l); store.set('nc.customDrills',l); setDrillBuilder(null); };
   const hideDrill=(k)=>{ if(customDrills.some(x=>x.key===k)){ const l=customDrills.filter(x=>x.key!==k); setCustomDrills(l); store.set('nc.customDrills',l); } else { const l=[...new Set([...hiddenD,k])]; setHiddenD(l); store.set('nc.hiddenDrills',l); } };
   const restoreDrills=()=>{ setHiddenD([]); store.set('nc.hiddenDrills',[]); };
   const hideProblem=(k)=>{ if(customProblems.some(x=>x.key===k)){ const l=customProblems.filter(x=>x.key!==k); setCustomProblems(l); store.set('nc.customProblems',l); } else { const l=[...new Set([...hiddenP,k])]; setHiddenP(l); store.set('nc.hiddenProblems',l); } };
@@ -2017,39 +2022,23 @@ function Training(){
           <button key={k} className={'chip'+(cat===k?' on':'')} onClick={()=>setCat(k)}>{v.t}</button>)}
       </div>
       <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
-        <button className="btn acc sm" onClick={()=>setDrillBuilder(true)}>＋ Tạo bài tập (tự vẽ bàn)</button>
-        {hiddenD.length>0 && <button className="chip" onClick={restoreDrills}>↺ Hiện lại {hiddenD.length} bài đã ẩn</button>}
+        <button className="btn acc sm" onClick={()=>setDrillBuilder({})}>＋ Tạo bài tập (tự vẽ bàn)</button>
       </div>
       <div className="list">
-        {lib.map(d=><DrillCard key={d.key} d={d} recs={recsFor(d.key)} onScore={setScoring} onDelete={()=>hideDrill(d.key)}/>)}
+        {lib.map(d=><DrillCard key={d.key} d={d} recs={recsFor(d.key)} onScore={setScoring} onDelete={()=>hideDrill(d.key)} onEdit={d.custom?()=>setDrillBuilder(d):undefined}/>)}
       </div>
 
       <div className="h2">🧩 Thế khó thường gặp</div>
       <div className="tsub" style={{marginTop:2}}>Tình huống thực tế + cách xử lý. Chạm để mở.</div>
       <div style={{display:'flex',gap:8,marginTop:6,flexWrap:'wrap'}}>
-        <button className="btn acc sm" onClick={()=>setPbuilder(true)}>＋ Thêm thế khó (tự vẽ bàn)</button>
-        {hiddenP.length>0 && <button className="chip" onClick={restoreProblems}>↺ Hiện lại {hiddenP.length} thế đã ẩn</button>}
+        <button className="btn acc sm" onClick={()=>setPbuilder({})}>＋ Thêm thế khó (tự vẽ bàn)</button>
       </div>
       <div className="list">
-        {allProblems.map(p=><ProblemCard key={p.key} p={p} onDelete={()=>hideProblem(p.key)}/>)}
+        {allProblems.map(p=><ProblemCard key={p.key} p={p} onDelete={()=>hideProblem(p.key)} onEdit={p.custom?()=>setPbuilder(p):undefined}/>)}
       </div>
 
       <div className="h2">👻 Đấu với Ghost</div>
-      <div className="card" style={{padding:'13px 14px',marginTop:8}}>
-        <div className="tsub" style={{marginTop:0}}>"Ghost" là đối thủ ảo hoàn hảo: bạn phá rồi phải dọn sạch một lượt; trượt là thua. Mốc tự đánh giá kinh điển.</div>
-        {g20.length>0
-          ? <div style={{margin:'10px 0 2px'}}>
-              <span style={{fontSize:22,fontWeight:900,color:'var(--gold)'}}>{grate}%</span>
-              <span className="muted small"> thắng ({gw}/{g20.length} gần đây)</span>
-              <div style={{marginTop:8}}>{g20.slice(0,14).map((x,i)=><span key={i} className={'dot '+(x.won?'W':'L')}/>)}</div>
-            </div>
-          : <div className="muted small" style={{margin:'8px 0'}}>Chưa có ván nào. Đấu một ván rồi ghi lại bên dưới.</div>}
-        <div className="ghostform">
-          <button className="btn acc sm" onClick={()=>addGhost(true)}>👍 Thắng Ghost</button>
-          <button className="btn ghost sm" onClick={()=>addGhost(false)}>👎 Thua Ghost</button>
-          {ghost.length>0 && <button className="xbtn" style={{marginLeft:'auto'}} onClick={clearGhost} title="Xoá lịch sử">🗑</button>}
-        </div>
-      </div>
+      <GhostSection ghost={ghost} setGhost={setGhost}/>
 
       {lessons.length>0 && <>
         <div className="h2">📝 Bài học bạn tự ghi</div>
@@ -2071,8 +2060,8 @@ function Training(){
       {builder && <SessionBuilder init={builder.id?builder:null} drills={allDrills}
         weakKeys={[...new Set(weak.flatMap(([m])=>DRILLS.filter(d=>d.fixes.includes(m)).map(d=>d.key)))]}
         onSave={upsertPlan} onDel={builder.id?()=>delPlan(builder.id):null} close={()=>setBuilder(null)}/>}
-      {drillBuilder && <DrillBuilder onSave={addCustomDrill} close={()=>setDrillBuilder(false)}/>}
-      {pbuilder && <ProblemBuilder onSave={addCustomProblem} close={()=>setPbuilder(false)}/>}
+      {drillBuilder && <DrillBuilder init={drillBuilder.key?drillBuilder:null} onSave={addCustomDrill} close={()=>setDrillBuilder(null)}/>}
+      {pbuilder && <ProblemBuilder init={pbuilder.key?pbuilder:null} onSave={addCustomProblem} close={()=>setPbuilder(null)}/>}
     </div>
   );
 }
@@ -2232,7 +2221,7 @@ function AngleCalc(){
     </div>
   );
 }
-function ProblemCard({p,onDelete}){
+function ProblemCard({p,onDelete,onEdit}){
   const [open,setOpen]=useState(false);
   return (
     <div className="card drillC">
@@ -2240,7 +2229,8 @@ function ProblemCard({p,onDelete}){
         <span className="catpill" style={{border:'1px solid var(--warn)',color:'var(--warn)'}}>{p.tag}</span>
         <div className="dn"><b>{p.name}</b><small>{open?'thu gọn':'xem cách xử lý'}</small></div>
         <span className="muted" style={{fontSize:16}}>{open?'▾':'▸'}</span>
-        {onDelete && <button className="xbtn" onClick={(e)=>{e.stopPropagation();onDelete();}} style={{marginLeft:6}}>✕</button>}
+        {onEdit && <button className="chip" onClick={(e)=>{e.stopPropagation();onEdit();}} style={{marginLeft:6,flex:'none'}}>✎</button>}
+        {onDelete && <button className="xbtn" onClick={(e)=>{e.stopPropagation();onDelete();}} style={{marginLeft:4}}>✕</button>}
       </div>
       {open &&
         <div className="drillB">
@@ -2382,14 +2372,22 @@ function MusicLinks({kkey}){
 function MyTips(){
   const [list,setList]=useState(()=>store.get('nc.tips',[]));
   const [txt,setTxt]=useState('');
+  const [editId,setEditId]=useState(null);
   const save=(l)=>{ setList(l); store.set('nc.tips',l); };
-  const add=()=>{ const t=txt.trim(); if(!t) return; save([{id:uid('tip'),t},...list]); setTxt(''); };
-  const del=(id)=>save(list.filter(x=>x.id!==id));
+  const submit=()=>{ const t=txt.trim(); if(!t) return;
+    if(editId){ save(list.map(x=>x.id===editId?{...x,t}:x)); setEditId(null); }
+    else save([{id:uid('tip'),t},...list]);
+    setTxt(''); };
+  const startEdit=(it)=>{ setEditId(it.id); setTxt(it.t); };
+  const del=(id)=>{ save(list.filter(x=>x.id!==id)); if(editId===id){setEditId(null);setTxt('');} };
   return (
     <div>
       <div className="editrow"><input value={txt} onChange={e=>setTxt(e.target.value)}
-        placeholder="VD: Giữ cơ sau khi bắn · mắt ở bi mục tiêu" onKeyDown={e=>{ if(e.key==='Enter') add(); }}/></div>
-      <button className="btn ghost wide" onClick={add} style={{marginBottom:10}}>＋ Thêm ghi nhớ</button>
+        placeholder="VD: Giữ cơ sau khi bắn · mắt ở bi mục tiêu" onKeyDown={e=>{ if(e.key==='Enter') submit(); }}/></div>
+      <div style={{display:'flex',gap:8,marginBottom:10}}>
+        <button className="btn ghost" style={{flex:1}} onClick={submit}>{editId?'💾 Lưu sửa':'＋ Thêm ghi nhớ'}</button>
+        {editId && <button className="chip" onClick={()=>{setEditId(null);setTxt('');}}>Huỷ</button>}
+      </div>
       {list.length===0
         ? <div className="muted small">Ghi lại những điều muốn tự nhắc về cách chơi đúng — hiện ngay đây mỗi buổi tập.</div>
         : <div className="list">
@@ -2397,9 +2395,69 @@ function MyTips(){
               <div key={t.id} className="card" style={{padding:'11px 13px',display:'flex',gap:10,alignItems:'flex-start'}}>
                 <span style={{color:'var(--gold)',fontSize:16,flex:'none'}}>📌</span>
                 <div className="preline" style={{flex:1,fontSize:14,lineHeight:1.5}}>{t.t}</div>
+                <button onClick={()=>startEdit(t)} className="chip" style={{flex:'none'}}>✎</button>
                 <button onClick={()=>del(t.id)} className="xbtn">✕</button>
               </div>))}
           </div>}
+    </div>
+  );
+}
+function GhostSection({ghost,setGhost}){
+  const [types,setTypes]=useState(()=>{ const t=store.get('nc.ghostTypes',[]); return t.length?t:[{id:'def',name:'Ghost 9-bi'}]; });
+  const [editId,setEditId]=useState(null);      // mở lịch sử để sửa
+  const [renameId,setRenameId]=useState(null);
+  const [nmeta,setNmeta]=useState('');          // tên đang nhập (thêm/đổi tên)
+  const [adding,setAdding]=useState(false);
+  const saveTypes=(l)=>{ setTypes(l); store.set('nc.ghostTypes',l); };
+  const saveG=(l)=>{ setGhost(l); store.set('nc.ghost',l); };
+  const add=(won,type)=>saveG([{id:uid('g'),date:todayStr(),won,type},...ghost]);
+  const toggleRes=(id)=>saveG(ghost.map(g=>g.id===id?{...g,won:!g.won}:g));
+  const delRes=(id)=>saveG(ghost.filter(g=>g.id!==id));
+  const recsOf=(id)=>ghost.filter(g=>(g.type||'def')===id);
+  const addType=()=>{ const n=nmeta.trim(); if(!n) return; saveTypes([...types,{id:uid('gt'),name:n}]); setNmeta(''); setAdding(false); };
+  const rename=(id)=>{ const n=nmeta.trim(); if(!n) return; saveTypes(types.map(t=>t.id===id?{...t,name:n}:t)); setRenameId(null); setNmeta(''); };
+  const delType=(id)=>{ if(!window.confirm('Xoá bài Ghost này và toàn bộ kết quả của nó?')) return; saveTypes(types.filter(t=>t.id!==id)); saveG(ghost.filter(g=>(g.type||'def')!==id)); };
+  return (
+    <div>
+      <div className="tsub" style={{marginTop:0}}>"Ghost" = đối thủ ảo: phá rồi dọn sạch một lượt, trượt là thua. Tự tạo các bài Ghost (9-bi, 10-bi…) và ghi kết quả.</div>
+      {types.map(t=>{ const rs=recsOf(t.id), r20=rs.slice(0,20), w=r20.filter(x=>x.won).length, rate=r20.length?Math.round(w/r20.length*100):null;
+        return (
+        <div key={t.id} className="card" style={{padding:'12px 14px',marginTop:8}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+            <div style={{minWidth:0}}><b>{t.name}</b> <span className="muted small">{rate!=null? rate+'% ('+w+'/'+r20.length+')':'chưa có'}</span></div>
+            <div style={{display:'flex',gap:8,flex:'none'}}>
+              <button className="chip" onClick={()=>{ setRenameId(renameId===t.id?null:t.id); setNmeta(t.name); }}>✎</button>
+              <button className="xbtn" onClick={()=>delType(t.id)}>✕</button>
+            </div>
+          </div>
+          {renameId===t.id &&
+            <div className="editrow" style={{marginTop:8}}>
+              <input value={nmeta} onChange={e=>setNmeta(e.target.value)} placeholder="Tên bài Ghost"/>
+              <button className="chip" onClick={()=>rename(t.id)}>Lưu</button>
+            </div>}
+          {r20.length>0 && <div style={{marginTop:8}}>{r20.slice(0,16).map((x,i)=><span key={i} className={'dot '+(x.won?'W':'L')}/>)}</div>}
+          <div className="ghostform">
+            <button className="btn acc sm" onClick={()=>add(true,t.id)}>👍 Thắng</button>
+            <button className="btn ghost sm" onClick={()=>add(false,t.id)}>👎 Thua</button>
+            {rs.length>0 && <button className="chip" style={{marginLeft:'auto'}} onClick={()=>setEditId(editId===t.id?null:t.id)}>{editId===t.id?'Xong':'✎ Sửa kết quả'}</button>}
+          </div>
+          {editId===t.id &&
+            <div className="list" style={{marginTop:8}}>
+              {rs.slice(0,30).map(g=>(
+                <div key={g.id} style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',border:'1px solid var(--line)',borderRadius:10}}>
+                  <span className="muted small" style={{flex:1}}>{fmtDate(g.date)}</span>
+                  <button className={'chip'+(g.won?' on':'')} onClick={()=>toggleRes(g.id)}>{g.won?'Thắng':'Thua'}</button>
+                  <button className="xbtn" onClick={()=>delRes(g.id)}>✕</button>
+                </div>))}
+            </div>}
+        </div>); })}
+      {adding
+        ? <div className="editrow" style={{marginTop:10}}>
+            <input value={nmeta} onChange={e=>setNmeta(e.target.value)} placeholder="VD: Ghost 10-bi · Ghost phá-dọn"/>
+            <button className="chip" onClick={addType}>Thêm</button>
+            <button className="chip" onClick={()=>{setAdding(false);setNmeta('');}}>✕</button>
+          </div>
+        : <button className="btn ghost wide" style={{marginTop:10}} onClick={()=>{setAdding(true);setNmeta('');}}>＋ Thêm bài Ghost</button>}
     </div>
   );
 }
