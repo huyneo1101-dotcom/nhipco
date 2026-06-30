@@ -230,6 +230,12 @@ body{
 .kv b{color:var(--soft);font-weight:800}
 .statline{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:700}
 .statline b{color:var(--text)}
+.oav{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:17px;
+  background:var(--card2);border:1px solid var(--line);color:var(--gold);flex:none;text-transform:uppercase}
+.hh{display:flex;gap:14px;align-items:center;font-size:13px;font-weight:800;margin-top:2px}
+.hh .w{color:var(--ok)} .hh .l{color:var(--danger)} .hh .d{color:var(--muted)}
+.chartcap{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.chartcap b{color:var(--text);font-size:13px}
 .mtable{width:100%;max-width:270px;align-self:center;background:#0b5d3b;border-radius:8px;
   border:4px solid #6b4a2a;box-shadow:inset 0 0 14px rgba(0,0,0,.35)}
 .ghostform{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
@@ -717,6 +723,32 @@ function Cue(){
 
 /* ================= Settings ================= */
 function Settings({theme,setTheme,close}){
+  const fileRef=useRef(null);
+  const KEYS=['nc.theme','nc.breath','nc.bpm','nc.metroSound','nc.routine','nc.matches','nc.training','nc.ghost'];
+  const exportData=()=>{
+    const data={}; KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) data[k]=v; });
+    const blob=new Blob([JSON.stringify({app:'nhipco',version:1,exportedAt:todayStr(),data},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='nhipco-backup-'+todayStr()+'.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+  };
+  const importData=(e)=>{
+    const f=e.target.files&&e.target.files[0]; e.target.value='';
+    if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const obj=JSON.parse(r.result); const data=(obj&&obj.data)?obj.data:obj;
+        if(!data||typeof data!=='object') throw 0;
+        const keys=Object.keys(data).filter(k=>k.indexOf('nc.')===0);
+        if(!keys.length) throw 0;
+        if(!window.confirm('Nhập sẽ GHI ĐÈ dữ liệu hiện tại trên máy này. Tiếp tục?')) return;
+        keys.forEach(k=>localStorage.setItem(k, typeof data[k]==='string'?data[k]:JSON.stringify(data[k])));
+        window.alert('Đã nhập xong. Tải lại app...'); location.reload();
+      }catch(err){ window.alert('File sao lưu không hợp lệ.'); }
+    };
+    r.readAsText(f);
+  };
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
@@ -730,6 +762,15 @@ function Settings({theme,setTheme,close}){
                 title={t.name} onClick={()=>setTheme(t.key)}/>)}
           </div>
           <div className="muted" style={{fontSize:12,marginTop:6}}>{THEMES.find(t=>t.key===theme)?.name}</div>
+        </div>
+        <div className="field">
+          <label>💾 Sao lưu dữ liệu</label>
+          <div className="muted" style={{fontSize:12,marginBottom:8,lineHeight:1.5}}>Dữ liệu lưu trên máy này. Xuất file để giữ an toàn hoặc chuyển sang máy/điện thoại khác.</div>
+          <div style={{display:'flex',gap:10}}>
+            <button className="btn ghost" style={{flex:1}} onClick={exportData}>⬇️ Xuất file</button>
+            <button className="btn ghost" style={{flex:1}} onClick={()=>fileRef.current&&fileRef.current.click()}>⬆️ Nhập file</button>
+          </div>
+          <input ref={fileRef} type="file" accept="application/json,.json" style={{display:'none'}} onChange={importData}/>
         </div>
         <div className="muted" style={{fontSize:12,lineHeight:1.6,marginTop:8}}>
           <b style={{color:'var(--soft)'}}>Mẹo dùng:</b><br/>
@@ -759,6 +800,7 @@ function Empty({ico,t,s}){
 function MatchLog(){
   const [list,setList]=useState(()=>store.get('nc.matches',[]));
   const [form,setForm]=useState(null);
+  const [view2,setView2]=useState('log');
   const save=(l)=>{ setList(l); store.set('nc.matches',l); };
   const upsert=(m)=>{
     const isNew=!m.id;
@@ -773,48 +815,100 @@ function MatchLog(){
   const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
   // Danh sách đối thủ đã từng ghi — gần nhất lên trước, để lần sau chọn lại
   const oppNames=[]; view.forEach(m=>{ const n=(m.opp||'').trim(); if(n&&!oppNames.includes(n)) oppNames.push(n); });
+  // Đối đầu theo từng đối thủ
+  const omap={};
+  view.forEach(m=>{ const n=(m.opp||'').trim(); if(!n) return;
+    const o=omap[n]||(omap[n]={name:n,n:0,w:0,l:0,d:0,games:{},mis:{},last:''});
+    o.n++; if(m.result==='W')o.w++; else if(m.result==='L')o.l++; else o.d++;
+    if(m.game)o.games[m.game]=(o.games[m.game]||0)+1;
+    (m.mistakes||[]).forEach(x=>o.mis[x]=(o.mis[x]||0)+1);
+    if((m.date||'')>o.last)o.last=m.date;
+  });
+  const opps=Object.values(omap).sort((a,b)=>b.n-a.n||(b.last>a.last?1:-1));
+
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <div className="h">Nhật ký trận đấu</div>
         <button className="chip on" onClick={()=>setForm({date:todayStr(),result:'W',game:'8-bi',mistakes:[],feel:3})}>＋ Ghi trận</button>
       </div>
+
       {list.length>0 &&
+        <div className="modeseg" style={{alignSelf:'flex-start',margin:'10px 0 2px'}}>
+          <button className={view2==='log'?'on':''} onClick={()=>setView2('log')}>Lịch sử</button>
+          <button className={view2==='opps'?'on':''} onClick={()=>setView2('opps')}>Đối thủ ({opps.length})</button>
+        </div>}
+
+      {list.length===0 &&
+        <Empty ico="📓" t="Chưa ghi trận nào"
+          s="Ghi lại kết quả, đối thủ và lỗi mắc phải sau mỗi trận — app tự tổng kết tỉ lệ thắng và lỗi bạn hay lặp."/>}
+
+      {view2==='log' && list.length>0 && <>
         <div className="statstrip">
           <div className="stat"><b>{list.length}</b><small>trận</small></div>
           <div className="stat"><b style={{color:'var(--ok)'}}>{w}</b><small>thắng</small></div>
           <div className="stat"><b style={{color:'var(--danger)'}}>{l}</b><small>thua</small></div>
           <div className="stat"><b style={{color:'var(--gold)'}}>{rate}%</b><small>tỉ lệ</small></div>
-        </div>}
-      {top.length>0 &&
-        <div className="card" style={{padding:'12px 14px',marginTop:8}}>
-          <div className="h" style={{marginBottom:8}}>⚠️ Lỗi hay mắc nhất</div>
-          <div className="tags">
-            {top.map(([m,c])=><span key={m} className="tag2" style={{color:'var(--warn)',borderColor:'var(--warn)'}}>{m} · {c}×</span>)}
-          </div>
-        </div>}
-      {list.length===0 &&
-        <Empty ico="📓" t="Chưa ghi trận nào"
-          s="Ghi lại kết quả, đối thủ và lỗi mắc phải sau mỗi trận — app tự tổng kết tỉ lệ thắng và lỗi bạn hay lặp."/>}
-      <div className="list">
-        {view.map(m=>{
-          const feel=FEELS.find(f=>f.v===m.feel);
-          return (
-          <div key={m.id} className="card mcard" onClick={()=>setForm(m)}>
-            <div className="mtop">
-              <div className={'rbadge '+m.result}>{m.result==='W'?'T':m.result==='L'?'B':'H'}</div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontWeight:800}}>{m.opp||'Không rõ đối thủ'}{m.score&&<span className="muted" style={{fontWeight:700}}> · {m.score}</span>}</div>
-                <div className="muted" style={{fontSize:12,fontWeight:600}}>{fmtDate(m.date)} · {m.game}</div>
-              </div>
-              {feel&&<div style={{fontSize:22}}>{feel.e}</div>}
+        </div>
+        {top.length>0 &&
+          <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+            <div className="h" style={{marginBottom:8}}>⚠️ Lỗi hay mắc nhất</div>
+            <div className="tags">
+              {top.map(([m,c])=><span key={m} className="tag2" style={{color:'var(--warn)',borderColor:'var(--warn)'}}>{m} · {c}×</span>)}
             </div>
-            {(m.mistakes||[]).length>0 &&
-              <div className="tags">{m.mistakes.map(x=><span key={x} className="tag2">{x}</span>)}</div>}
-            {m.note&&<div className="muted preline" style={{fontSize:13}}>“{m.note}”</div>}
-          </div>);
-        })}
-      </div>
+          </div>}
+        <div className="list">
+          {view.map(m=>{
+            const feel=FEELS.find(f=>f.v===m.feel);
+            return (
+            <div key={m.id} className="card mcard" onClick={()=>setForm(m)}>
+              <div className="mtop">
+                <div className={'rbadge '+m.result}>{m.result==='W'?'T':m.result==='L'?'B':'H'}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:800}}>{m.opp||'Không rõ đối thủ'}{m.score&&<span className="muted" style={{fontWeight:700}}> · {m.score}</span>}</div>
+                  <div className="muted" style={{fontSize:12,fontWeight:600}}>{fmtDate(m.date)} · {m.game}</div>
+                </div>
+                {feel&&<div style={{fontSize:22}}>{feel.e}</div>}
+              </div>
+              {(m.mistakes||[]).length>0 &&
+                <div className="tags">{m.mistakes.map(x=><span key={x} className="tag2">{x}</span>)}</div>}
+              {m.note&&<div className="muted preline" style={{fontSize:13}}>“{m.note}”</div>}
+            </div>);
+          })}
+        </div>
+      </>}
+
+      {view2==='opps' && <>
+        {opps.length===0
+          ? <Empty ico="🧑‍🤝‍🧑" t="Chưa có đối thủ nào" s="Ghi tên đối thủ trong mỗi trận để xem thành tích đối đầu với từng người."/>
+          : <div className="list">
+              {opps.map(o=>{
+                const r=(o.w+o.l)? Math.round(o.w/(o.w+o.l)*100):0;
+                const gms=Object.entries(o.games).sort((a,b)=>b[1]-a[1]).map(g=>g[0]);
+                const tm=Object.entries(o.mis).sort((a,b)=>b[1]-a[1]).slice(0,3);
+                return (
+                <div key={o.name} className="card mcard" style={{cursor:'default'}}>
+                  <div className="mtop">
+                    <div className="oav">{o.name.slice(0,1)}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:800}}>{o.name}</div>
+                      <div className="muted" style={{fontSize:12,fontWeight:600}}>{o.n} trận · gần nhất {fmtDate(o.last)}{gms.length? ' · '+gms.slice(0,2).join('/'):''}</div>
+                    </div>
+                    <div style={{textAlign:'right'}}>
+                      <b style={{fontSize:20,color:'var(--gold)',display:'block',lineHeight:1}}>{r}%</b>
+                      <small className="muted" style={{fontSize:10,fontWeight:700}}>bạn thắng</small>
+                    </div>
+                  </div>
+                  <div className="hh">
+                    <span className="w">{o.w} thắng</span><span className="l">{o.l} thua</span>{o.d>0&&<span className="d">{o.d} hòa</span>}
+                  </div>
+                  {tm.length>0 &&
+                    <div className="tags">{tm.map(([x,c])=><span key={x} className="tag2">{x} · {c}×</span>)}</div>}
+                </div>);
+              })}
+            </div>}
+      </>}
+
       {form && <MatchForm init={form} names={oppNames} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
     </div>
   );
@@ -901,6 +995,23 @@ function Spark({vals}){
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{display:'block'}}>
       <polyline points={pts} fill="none" stroke="var(--accent)" strokeWidth="1.8"
         strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function LineChart({vals,color='var(--accent)'}){
+  if(!vals||vals.length<2) return <div className="muted small" style={{padding:'6px 0'}}>Cần ≥2 mốc dữ liệu để vẽ.</div>;
+  const W=300,H=104,pad=8;
+  const x=(i)=> pad + i/(vals.length-1)*(W-2*pad);
+  const y=(v)=> (H-pad) - (v/100)*(H-2*pad);
+  const pts=vals.map((v,i)=>`${x(i)},${y(v)}`).join(' ');
+  const lastI=vals.length-1;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',display:'block'}} preserveAspectRatio="none">
+      {[0,50,100].map(g=><line key={g} x1={pad} y1={y(g)} x2={W-pad} y2={y(g)}
+        stroke="var(--line)" strokeWidth="1" strokeDasharray="3 4"/>)}
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2.6"
+        strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+      <circle cx={x(lastI)} cy={y(vals[lastI])} r="3.5" fill={color}/>
     </svg>
   );
 }
@@ -1002,6 +1113,12 @@ function Training(){
   const g20=ghost.slice(0,20), gw=g20.filter(x=>x.won).length;
   const grate=g20.length? Math.round(gw/g20.length*100):null;
 
+  // Biểu đồ tiến bộ: điểm từng lượt chấm + tỉ lệ thắng tích lũy theo trận
+  const perfVals=[...scored].reverse().map(r=>Math.round(r.score/r.max*100));
+  const mSorted=[...matches].sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.id>b.id?1:-1));
+  let cw=0,cl=0; const winVals=[];
+  mSorted.forEach(m=>{ if(m.result==='W')cw++; else if(m.result==='L')cl++; if(cw+cl>0) winVals.push(Math.round(cw/(cw+cl)*100)); });
+
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Tập luyện</div>
@@ -1013,6 +1130,20 @@ function Training(){
           <div className="stat"><b>{streak}</b><small>ngày liên tiếp</small></div>
           <div className="stat"><b>{scored.length}</b><small>lượt đã chấm</small></div>
         </div>}
+
+      {(perfVals.length>=2 || winVals.length>=2) && <>
+        <div className="h2">📈 Tiến bộ</div>
+        {perfVals.length>=2 &&
+          <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+            <div className="chartcap"><span><b>Điểm phong độ</b> theo lượt chấm</span><span>hiện <b>{perfVals[perfVals.length-1]}</b>/100</span></div>
+            <LineChart vals={perfVals}/>
+          </div>}
+        {winVals.length>=2 &&
+          <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+            <div className="chartcap"><span><b>Tỉ lệ thắng</b> tích lũy</span><span>hiện <b>{winVals[winVals.length-1]}%</b></span></div>
+            <LineChart vals={winVals} color="var(--gold)"/>
+          </div>}
+      </>}
 
       <div className="h2">🗓️ Buổi tập hôm nay</div>
       <div className="card plan">
