@@ -406,6 +406,52 @@ const MISTAKE_CATS=[
 ];
 const MISTAKES=MISTAKE_CATS.reduce((a,c)=>a.concat(c.items),[]);
 const mistakeCat=(m)=>{ const c=MISTAKE_CATS.find(c=>c.items.includes(m)); return c?c.t:'Khác'; };
+// Bỏ dấu tiếng Việt + thường hoá, để dò từ khoá trong ghi chú dù viết có/không dấu
+const normVN=(s)=> (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+// Từ khoá (không dấu) → lỗi; quét ghi chú để tự tổng hợp lỗi từ văn bản
+const MISTAKE_KW={
+  'Đẩy cơ lệch':['day co lech','lech co','co lech','danh lech','dam bi'],
+  'Đưa cơ không thẳng':['dua co khong thang','co khong thang','co bi run','dua co run'],
+  'Giật tay khi bắn':['giat tay','giat co','bi giat','giut tay'],
+  'Nhổm đầu sớm':['nhom dau','nhac dau','ngang dau','dung len som','ngoc dau'],
+  'Cầm cơ quá chặt':['cam co chat','siet co','ghi co chat','bop co'],
+  'Thế đứng chưa vững':['the dung','tu the','dung khong vung','chan khong vung','dung chua chuan'],
+  'Mắt rời điểm chạm':['mat roi','nhin theo co','khong nhin diem cham','roi mat'],
+  'Ngắm sai điểm chạm':['ngam sai','sai diem cham','ngam le','nham sai'],
+  'Sai góc cắt':['sai goc cat','goc cat sai','cat sai goc'],
+  'Bù xoáy/throw sai':['throw','bu xoay','xoay sai','tinh xoay sai'],
+  'Cú thẳng dài hỏng':['cu thang dai','thang dai','thang xa hong'],
+  'Cú cắt mỏng hỏng':['cat mong','cu cat mong','mong hong','cat le'],
+  'Cú băng (bank) kém':['cu bang','bank','danh bang','bi bang'],
+  'Cú đề/phé kém':['cu de','phe','dat bi'],
+  'Cú rút (draw) kém':['rut bi','cu rut','draw','keo bi ve','danh thap'],
+  'Cú theo (follow) kém':['theo bi','follow','cu theo','danh cao'],
+  'Cú lỗ xa kém':['lo xa','cu xa','bi xa lo','vao lo xa'],
+  'Cú combo/chùm kém':['combo','chum bi','cu chum','an doi'],
+  'Lực quá mạnh':['qua manh','manh tay','luc manh','danh manh','manh qua'],
+  'Lực quá nhẹ':['qua nhe','nhe tay','luc nhe','danh nhe','thieu luc','nhe qua'],
+  'Mất vị trí bi cái':['mat vi tri','sai vi tri','vi tri bi cai','position','ra bi xau','khong ra duoc bi','dieu bi loi','dieu bi sai'],
+  'Chết cái':['chet cai','bi cai lui','lui lo','scratch','bi cai vao lo','loi bi cai'],
+  'Bi cái đi quá đường':['di qua duong','bi cai qua','qua da','di qua tay','luot qua'],
+  'Không tính đường ra bi':['khong tinh duong','duong ra bi','khong nghi ra bi','khong tinh ra bi'],
+  'Chọn sai bi/lỗ':['chon sai','sai bi','sai lo','chon lo sai','chon bi sai'],
+  'Bỏ lỡ cú dễ':['bo lo','cu de','truot cu de','miss de','hong cu de'],
+  'Tính sai đường bi':['tinh sai duong','sai duong bi','tinh duong sai'],
+  'Đọc bàn sai':['doc ban sai','khong doc ban','ke hoach ban sai','khong co ke hoach'],
+  'Sai thứ tự bi':['thu tu bi','sai thu tu','danh sai thu tu'],
+  'Phá cụm sai thời điểm':['pha cum','cum bi','tach cum','xu ly cum'],
+  'Thiếu phòng thủ':['phong thu','safety','thieu safety','khong phong thu','khong danh safe'],
+  'Safety hớ':['safety ho','phong thu ho','de mo','safe ho'],
+  'Cú phá kém':['pha bi','cu pha','pha phom','break','pha khong tot'],
+  'Không khoá bi':['khoa bi','khong khoa','che bi doi thu'],
+  'Nóng vội':['nong voi','voi vang','hap tap','danh nhanh','voi'],
+  'Mất tập trung':['mat tap trung','lo dang','khong tap trung','xao nhang','phan tam'],
+  'Thiếu kiên nhẫn':['thieu kien nhan','khong kien nhan','sot ruot','khong cho'],
+  'Run tay khi căng':['run tay','tay run','cang qua run'],
+  'Mất bình tĩnh sau lỗi':['mat binh tinh','noi nong','tilt','cau','buc minh'],
+};
+const scanNote=(note)=>{ const n=normVN(note); if(!n) return []; const out=[]; Object.keys(MISTAKE_KW).forEach(m=>{ if(MISTAKE_KW[m].some(kw=>n.includes(kw))) out.push(m); }); return out; };
+const entryMistakes=(arr,key)=>{ const s=new Set(arr[key]||[]); scanNote(arr.note).forEach(x=>s.add(x)); return [...s]; };
 const FEELS=[{v:1,e:'😞'},{v:2,e:'😐'},{v:3,e:'🙂'},{v:4,e:'😄'},{v:5,e:'🔥'}];
 
 const BREATH=[
@@ -1031,22 +1077,23 @@ function MatchLog(){
     let next=list.slice();
     recs.forEach(m=>{ if(m.id){ next=next.map(x=>x.id===m.id?m:x); } else { next=[{...m,id:uid('m')},...next]; } });
     save(next); setForm(null);
-    if(isNew){ const a=analyze(recs); if(a.fresh.length||a.heavy.length){ setAnalysis(a); setView2('log'); } }
+    if(isNew){ const a=analyze(recs); if(a.fresh.length||a.heavy.length||a.detected.length){ setAnalysis(a); setView2('log'); } }
   };
-  // Tự phân tích trận vừa ghi: lỗi mới + lỗi lặp nhiều cần tập
+  // Tự phân tích trận vừa ghi: lỗi mới + lỗi lặp nhiều + lỗi tự dò từ ghi chú
   const analyze=(recs)=>{
-    const prior={}; list.forEach(m=>(m.mistakes||[]).forEach(x=>prior[x]=(prior[x]||0)+1)); extra.forEach(e=>(e.tags||[]).forEach(x=>prior[x]=(prior[x]||0)+1));
-    const added={}; recs.forEach(m=>(m.mistakes||[]).forEach(x=>added[x]=(added[x]||0)+1));
+    const prior={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>prior[x]=(prior[x]||0)+1)); extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>prior[x]=(prior[x]||0)+1));
+    const added={}, detSet=new Set();
+    recs.forEach(m=>{ const chips=new Set(m.mistakes||[]); scanNote(m.note).forEach(d=>{ if(!chips.has(d)) detSet.add(d); }); entryMistakes(m,'mistakes').forEach(x=>added[x]=(added[x]||0)+1); });
     const fresh=[], heavy=[];
     Object.keys(added).forEach(x=>{ if(!prior[x]) fresh.push(x); const total=(prior[x]||0)+added[x]; if(total>=3) heavy.push(x+' ('+total+'×)'); });
-    return {fresh,heavy};
+    return {fresh,heavy,detected:[...detSet]};
   };
   const addExtra=(rec)=>{ saveExtra([{...rec,id:uid('x'),date:todayStr()},...extra]); setMform(false); };
   const delExtra=(id)=>saveExtra(extra.filter(x=>x.id!==id));
   const del=(id)=>{ save(list.filter(x=>x.id!==id)); setForm(null); };
   const w=list.filter(m=>m.result==='W').length, l=list.filter(m=>m.result==='L').length;
   const rate=(w+l)? Math.round(w/(w+l)*100):0;
-  const mc={}; list.forEach(m=>(m.mistakes||[]).forEach(x=>mc[x]=(mc[x]||0)+1));
+  const mc={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>mc[x]=(mc[x]||0)+1));
   const top=Object.entries(mc).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
   // Danh sách đối thủ đã từng ghi — gần nhất lên trước, để lần sau chọn lại
@@ -1067,8 +1114,8 @@ function MatchLog(){
 
   // Tổng hợp tất cả lỗi (từ trận + lỗi tự ghi) → gom theo nhóm
   const allMis={};
-  list.forEach(m=>(m.mistakes||[]).forEach(x=>allMis[x]=(allMis[x]||0)+1));
-  extra.forEach(e=>(e.tags||[]).forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
   const misTotal=Object.values(allMis).reduce((s,c)=>s+c,0);
   const misMax=Math.max(1,...Object.values(allMis));
   const catOrder=MISTAKE_CATS.map(c=>c.t).concat('Khác');
@@ -1090,7 +1137,7 @@ function MatchLog(){
         <button className={view2==='pos'?'on':''} onClick={()=>setView2('pos')}>Điều bi</button>
       </div>
 
-      {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0) &&
+      {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0||(analysis.detected&&analysis.detected.length>0)) &&
         <div className="card" style={{padding:'12px 14px',marginTop:8,borderColor:'var(--gold)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <b style={{fontSize:14}}>🔎 Phân tích trận vừa ghi</b>
@@ -1098,6 +1145,7 @@ function MatchLog(){
           </div>
           {analysis.fresh.length>0 && <div className="small" style={{marginTop:6}}>🆕 <b>Lỗi mới:</b> {analysis.fresh.join(', ')}</div>}
           {analysis.heavy.length>0 && <div className="small" style={{marginTop:6}}>⚠️ <b>Lặp nhiều — nên tập:</b> {analysis.heavy.join(', ')}</div>}
+          {analysis.detected&&analysis.detected.length>0 && <div className="small" style={{marginTop:6}}>🔎 <b>Tự nhận ra từ ghi chú:</b> {analysis.detected.join(', ')}</div>}
           <div className="muted small" style={{marginTop:6}}>Mở tab <b>Tập luyện</b> để xem bài tập gợi ý, hoặc dựng thế bi khó ở mục <b>Điều bi</b>.</div>
           <button className="chip" style={{marginTop:8}} onClick={()=>{setView2('mis');setAnalysis(null);}}>→ Xem tổng hợp lỗi</button>
         </div>}
@@ -1629,8 +1677,8 @@ function Training(){
   const doneToday=(k)=>recs.some(r=>r.drill===k&&r.date===todayStr());
 
   const scored=recs.filter(r=>typeof r.score==='number');
-  const mc={}; matches.forEach(m=>(m.mistakes||[]).forEach(x=>mc[x]=(mc[x]||0)+1));
-  store.get('nc.mistakes',[]).forEach(e=>(e.tags||[]).forEach(x=>mc[x]=(mc[x]||0)+1));
+  const mc={}; matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>mc[x]=(mc[x]||0)+1));
+  store.get('nc.mistakes',[]).forEach(e=>entryMistakes(e,'tags').forEach(x=>mc[x]=(mc[x]||0)+1));
   const weak=Object.entries(mc).sort((a,b)=>b[1]-a[1]);
   const lessons=matches.filter(m=>m.note&&m.note.trim());
 
