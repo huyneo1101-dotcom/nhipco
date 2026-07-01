@@ -14,6 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 :root{
   --bg:#0a241c; --bg2:#0d2b22; --card:#103a2e; --card2:#0e3328;
@@ -332,11 +333,57 @@ body{
 <script type="text/babel" data-presets="react">
 const {useState,useEffect,useRef,useCallback} = React;
 
+/* ---------- Đồng bộ đám mây (Supabase) ---------- */
+const SB_URL='https://ltmlueqkajqmduoqghdf.supabase.co';
+const SB_KEY='sb_publishable_74Lm6cc0CkoOOzy3A4IRrQ_BX0jHQcg';
+let sbc=null; try{ if(window.supabase&&window.supabase.createClient) sbc=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}}); }catch(e){}
+const SB_OK=!!sbc;
+let cloudUser=null, cloudStatus='off';
+const cloudSubs=[];
+const onCloud=(f)=>{ cloudSubs.push(f); return ()=>{ const i=cloudSubs.indexOf(f); if(i>=0) cloudSubs.splice(i,1); }; };
+const cloudNotify=()=>cloudSubs.forEach(f=>{ try{f();}catch(e){} });
+const setStatus=(s)=>{ cloudStatus=s; cloudNotify(); };
+const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
+const SYNC_KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine',
+  'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
+  'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
+  'nc.ghostTypes','nc.training','nc.ghost'];
+const cloudSnap=()=>{ const d={}; SYNC_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) d[k]=v; }); return d; };
+const cloudApply=(data)=>{ if(!data) return; Object.keys(data).forEach(k=>{ if(k.indexOf('nc.')===0 && k!=='nc._syncAt'){ const v=data[k]; try{ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }catch(e){} } }); };
+const cloudHasLocal=()=>['nc.matches','nc.training','nc.ghost','nc.positions','nc.mistakes','nc.plans','nc.customDrills','nc.customProblems','nc.tips'].some(k=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v && (Array.isArray(v)? v.length : Object.keys(v).length); }catch(e){ return false; } });
+let pushT=null;
+const schedulePush=()=>{ if(!sbc||!cloudUser) return; setStatus('syncing'); clearTimeout(pushT); pushT=setTimeout(cloudPush,1500); };
+async function cloudPush(){ if(!sbc||!cloudUser) return; try{ const at=new Date().toISOString();
+  const {error}=await sbc.from('nhipco_state').upsert({user_id:cloudUser.id,data:cloudSnap(),updated_at:at});
+  if(error) throw error; localStorage.setItem('nc._syncAt',at); setStatus('synced'); }catch(e){ setStatus('error'); } }
+async function cloudRow(){ if(!sbc||!cloudUser) return null; try{ const {data,error}=await sbc.from('nhipco_state').select('data,updated_at').eq('user_id',cloudUser.id).maybeSingle(); if(error) throw error; return data; }catch(e){ return null; } }
+async function cloudPullOnMount(){ setStatus('syncing'); const row=await cloudRow();
+  if(!row){ if(cloudHasLocal()) await cloudPush(); else setStatus('synced'); return; }
+  const remoteHas=row.data && Object.keys(row.data).length;
+  if(remoteHas && row.updated_at!==localStorage.getItem('nc._syncAt')){ cloudApply(row.data); localStorage.setItem('nc._syncAt',row.updated_at); location.reload(); return; }
+  if(!remoteHas && cloudHasLocal()) await cloudPush(); else setStatus('synced'); }
+async function cloudFreshLogin(){ setStatus('syncing'); const row=await cloudRow();
+  const remoteHas=row && row.data && Object.keys(row.data).length;
+  if(remoteHas && cloudHasLocal() && row.updated_at!==localStorage.getItem('nc._syncAt')){
+    if(window.confirm('Tài khoản này đã có dữ liệu trên mây.\n\nOK = TẢI VỀ (ghi đè máy này).\nCancel = ĐẨY dữ liệu máy này lên mây.')){ cloudApply(row.data); localStorage.setItem('nc._syncAt',row.updated_at); location.reload(); }
+    else { await cloudPush(); }
+  } else if(remoteHas){ cloudApply(row.data); localStorage.setItem('nc._syncAt',row.updated_at); location.reload(); }
+  else { await cloudPush(); } }
+async function cloudPullManual(){ setStatus('syncing'); const row=await cloudRow();
+  if(row && row.data && Object.keys(row.data).length){ cloudApply(row.data); localStorage.setItem('nc._syncAt',row.updated_at); location.reload(); }
+  else { setStatus('synced'); window.alert('Trên mây chưa có dữ liệu.'); } }
+async function cloudSignIn(email,pass){ const {data,error}=await sbc.auth.signInWithPassword({email,password:pass}); if(error) throw error; return data; }
+async function cloudSignUp(email,pass){ const {data,error}=await sbc.auth.signUp({email,password:pass}); if(error) throw error; return data; }
+async function cloudSignOut(){ try{ await sbc.auth.signOut(); }catch(e){} localStorage.removeItem('nc._syncAt'); }
+function cloudInit(){ if(!sbc) return;
+  sbc.auth.getSession().then(({data})=>{ cloudUser=data.session?data.session.user:null; cloudNotify(); if(cloudUser){ cloudPullOnMount(); } });
+  sbc.auth.onAuthStateChange((ev,session)=>{ cloudUser=session?session.user:null; if(!cloudUser) setStatus('off'); cloudNotify(); }); }
+
 /* ---------- store ---------- */
 const mem={};
 const store={
   get(k,d){ try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return k in mem?mem[k]:d;} },
-  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){mem[k]=v;} }
+  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){mem[k]=v;} if(k.indexOf('nc.')===0 && k!=='nc._syncAt') schedulePush(); }
 };
 
 const THEMES=[
@@ -696,9 +743,12 @@ function App(){
   const [theme,setTheme]=useState(store.get('nc.theme','felt'));
   const [settings,setSettings]=useState(false);
   const [reset,setReset]=useState(false);
+  const [cuser,setCuser]=useState(getCloudUser());
+  const [cstatus,setCstatus]=useState(getCloudStatus());
   const tabRef=useRef(null);
   useEffect(()=>{applyTheme(theme);},[theme]);
   useEffect(()=>{ const el=tabRef.current&&tabRef.current.querySelector('.tab.on'); if(el&&el.scrollIntoView) el.scrollIntoView({inline:'center',block:'nearest'}); },[tab,order]);
+  useEffect(()=>{ const off=onCloud(()=>{ setCuser(getCloudUser()); setCstatus(getCloudStatus()); }); cloudInit(); return off; },[]);
   const saveOrder=(o)=>{ setOrder(o); store.set('nc.taborder',o); };
 
   return (
@@ -720,7 +770,7 @@ function App(){
         {order.map(id=>{ const d=TAB_DEFS.find(t=>t.id===id); return d&&<TabBtn key={id} id={id} cur={tab} set={setTab} ico={d.ico} lab={d.lab}/>; })}
       </div>
 
-      {settings && <Settings theme={theme} setTheme={setTheme} order={order} setOrder={saveOrder} close={()=>setSettings(false)}/>}
+      {settings && <Settings theme={theme} setTheme={setTheme} order={order} setOrder={saveOrder} cuser={cuser} cstatus={cstatus} close={()=>setSettings(false)}/>}
       {reset && <ResetOverlay close={()=>setReset(false)}/>}
     </div>
   );
@@ -950,9 +1000,21 @@ function Cue(){
 }
 
 /* ================= Settings ================= */
-function Settings({theme,setTheme,order,setOrder,close}){
+function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
   const fileRef=useRef(null);
-  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.training','nc.ghost'];
+  const [email,setEmail]=useState(''); const [pass,setPass]=useState(''); const [amsg,setAmsg]=useState(''); const [busy,setBusy]=useState(false);
+  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost'];
+  const doAuth=async()=>{ const e=email.trim(); if(!e||!pass){ setAmsg('Nhập email và mật khẩu.'); return; } if(pass.length<6){ setAmsg('Mật khẩu tối thiểu 6 ký tự.'); return; }
+    setBusy(true); setAmsg('');
+    try{ await cloudSignIn(e,pass); setAmsg(''); cloudFreshLogin(); }
+    catch(err){
+      if(/invalid login credentials/i.test(err.message||'')){
+        try{ const d=await cloudSignUp(e,pass); if(d.session){ setAmsg('Đã tạo tài khoản.'); cloudFreshLogin(); } else { setAmsg('Đã gửi email xác nhận. Mở email bấm xác nhận rồi đăng nhập lại.'); } }
+        catch(e2){ setAmsg('Lỗi: '+(e2.message||'không đăng ký được')); }
+      } else setAmsg('Lỗi: '+(err.message||'không đăng nhập được'));
+    }
+    setBusy(false); };
+  const statusTxt={off:'', syncing:'⟳ đang đồng bộ…', synced:'✓ đã đồng bộ', error:'⚠️ lỗi đồng bộ'}[cstatus]||'';
   const moveTab=(i,dir)=>{ const j=i+dir; if(j<0||j>=order.length) return; const o=order.slice(); const x=o[i]; o[i]=o[j]; o[j]=x; setOrder(o); };
   const exportData=()=>{
     const data={}; KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) data[k]=v; });
@@ -973,7 +1035,8 @@ function Settings({theme,setTheme,order,setOrder,close}){
         if(!keys.length) throw 0;
         if(!window.confirm('Nhập sẽ GHI ĐÈ dữ liệu hiện tại trên máy này. Tiếp tục?')) return;
         keys.forEach(k=>localStorage.setItem(k, typeof data[k]==='string'?data[k]:JSON.stringify(data[k])));
-        window.alert('Đã nhập xong. Tải lại app...'); location.reload();
+        if(cuser){ localStorage.removeItem('nc._syncAt'); cloudPush().finally(()=>location.reload()); }
+        else location.reload();
       }catch(err){ window.alert('File sao lưu không hợp lệ.'); }
     };
     r.readAsText(f);
@@ -982,6 +1045,27 @@ function Settings({theme,setTheme,order,setOrder,close}){
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
         <h3>Cài đặt</h3>
+        <div className="field">
+          <label>☁️ Đồng bộ đám mây</label>
+          {!SB_OK
+            ? <div className="muted small">Không kết nối được máy chủ đồng bộ (cần Internet).</div>
+            : cuser
+              ? <>
+                  <div className="muted small">Đã đăng nhập: <b style={{color:'var(--soft)'}}>{cuser.email}</b> {statusTxt&&<span> · {statusTxt}</span>}</div>
+                  <div style={{display:'flex',gap:8,marginTop:8}}>
+                    <button className="btn ghost" style={{flex:1}} onClick={cloudPullManual}>⟳ Tải dữ liệu mây về</button>
+                    <button className="btn ghost" onClick={cloudSignOut}>Đăng xuất</button>
+                  </div>
+                  <div className="muted" style={{fontSize:11.5,marginTop:6,lineHeight:1.5}}>Dữ liệu tự lưu lên mây khi bạn thay đổi. Đăng nhập cùng email trên máy khác để dùng chung.</div>
+                </>
+              : <>
+                  <div className="muted small" style={{marginBottom:8}}>Đăng nhập để đồng bộ nhật ký & dữ liệu giữa máy tính và điện thoại.</div>
+                  <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" style={{marginBottom:6}}/>
+                  <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Mật khẩu (≥6 ký tự)"/>
+                  <button className="btn acc wide" style={{marginTop:8}} disabled={busy} onClick={doAuth}>{busy?'…':'Đăng nhập / Tạo tài khoản'}</button>
+                  {amsg && <div className="muted small" style={{marginTop:6}}>{amsg}</div>}
+                </>}
+        </div>
         <div className="field">
           <label>🎨 Giao diện</label>
           <div className="swatches">
