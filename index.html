@@ -344,10 +344,10 @@ const onCloud=(f)=>{ cloudSubs.push(f); return ()=>{ const i=cloudSubs.indexOf(f
 const cloudNotify=()=>cloudSubs.forEach(f=>{ try{f();}catch(e){} });
 const setStatus=(s)=>{ cloudStatus=s; cloudNotify(); };
 const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
-const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine',
+const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
-  'nc.ghostTypes','nc.training','nc.ghost'];
+  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally'];
 const cloudSnap=()=>{ const d={}; SYNC_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) d[k]=v; }); return d; };
 const cloudApply=(data)=>{ if(!data) return; Object.keys(data).forEach(k=>{ if(k.indexOf('nc.')===0 && k!=='nc._syncAt'){ const v=data[k]; try{ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }catch(e){} } }); };
 const cloudHasLocal=()=>['nc.matches','nc.training','nc.ghost','nc.positions','nc.mistakes','nc.plans','nc.customDrills','nc.customProblems','nc.tips'].some(k=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v && (Array.isArray(v)? v.length : Object.keys(v).length); }catch(e){ return false; } });
@@ -498,6 +498,48 @@ const MISTAKE_KW={
 };
 const scanNote=(note)=>{ const n=normVN(note); if(!n) return []; const out=[]; Object.keys(MISTAKE_KW).forEach(m=>{ if(MISTAKE_KW[m].some(kw=>n.includes(kw))) out.push(m); }); return out; };
 const entryMistakes=(arr,key)=>{ const s=new Set(arr[key]||[]); scanNote(arr.note).forEach(x=>s.add(x)); return [...s]; };
+// Số lần mắc lỗi x trong 1 trận: dùng bảng đánh dấu (mistakeCounts) nếu có, mặc định 1.
+const misCount=(m,x)=> (m&&m.mistakeCounts&&m.mistakeCounts[x])||1;
+// Gợi ý cách sửa ngắn gọn cho từng lỗi — dùng để dựng "Kỹ thuật cần tập" trong Tổng hợp.
+const FIX_TIPS={
+  'Đẩy cơ lệch':'Đưa cơ thẳng trục, khuỷu tay thả dọc; quay video kiểm tra đường cơ.',
+  'Đưa cơ không thẳng':'Tập đưa cơ men theo đường kẻ/mép chai, không chạm mép; cổ tay lỏng.',
+  'Giật tay khi bắn':'Đưa cơ theo nhịp máy (~55 BPM), thả trọn cú, không tăng tốc phút cuối.',
+  'Nhổm người sớm':'Giữ đầu & thân bất động tới khi bi cái chạm băng — "ở yên trong cú".',
+  'Cầm cơ quá chặt':'Nắm cán lỏng; chỉ siết nhẹ đúng lúc cơ chạm bi.',
+  'Thế đứng chưa vững':'Chân vững, trọng tâm thấp, cằm trên cơ, tì tay cái chắc.',
+  'Mắt rời điểm chạm':'Cú cuối mắt nhìn BI MỤC TIÊU, không nhìn theo bi cái.',
+  'Ngắm sai điểm chạm':'Xác định điểm chạm "ma" rồi ngắm tâm bi cái vào đó; đứng sau đường ngắm.',
+  'Sai góc cắt':'Ôn hệ ngắm (ghost ball / phân số); tập thang cú cắt tăng dần độ mỏng.',
+  'Bù văng sai':'Cắt mỏng + lực mạnh thì bù điểm chạm dày hơn chút để trừ throw.',
+  'Cú thẳng dài hỏng':'Tập cú thẳng dài: nền tảng đưa cơ; giữ yên người sau cú.',
+  'Cắt mỏng hỏng':'Ngắm mép ngoài bi mục tiêu, lực vừa đủ; tập thang cú cắt.',
+  'Căn băng kém':'Học hệ băng theo mốc kim cương; nhớ lực làm đổi góc phản.',
+  'Cú phá kém':'Ôn đề/phé: điểm đánh & lực tạo xoáy; bắt đầu lực vừa cho ổn định.',
+  'Cú rút (draw) kém':'Đánh thấp dưới tâm, cơ ngang, đưa cơ trọn — "xuyên qua" bi cái.',
+  'Cú lê kém':'Đánh cao trên tâm, đưa cơ nhẹ theo; đừng thúc mạnh.',
+  'Bắn lỗ xa kém':'Cú xa cần đường cơ chậm-mượt, giữ yên; tin vào ngắm.',
+  'Cú combo/chùm kém':'Ngắm bi trung gian trước; combo cần chuẩn gấp đôi — chọn lỗ dễ.',
+  'Lực quá mạnh':'Tập cảm giác lực (lag); hình dung điểm dừng trước khi bắn.',
+  'Lực quá nhẹ':'Đủ lực đưa bi cái tới đúng vị trí, không rón rén; tập lag.',
+  'Mất vị trí bi cái':'Tập cú dừng + theo/rút; luôn nghĩ trước 1 bi.',
+  'Chết cái':'Kiểm soát bằng cú dừng/rút; tránh đường bi cái đâm về lỗ.',
+  'Bi cái đi quá đường':'Giảm lực, chọn đường ngắn; dùng băng để hãm bi cái.',
+  'Không tính đường ra bi':'Trước mỗi cú, chỉ ra điểm bi cái sẽ dừng cho viên kế.',
+  'Bỏ lỡ cú dễ':'Đừng vội cú dễ — vẫn làm đủ routine; tập bánh xe nhiều góc.',
+  'Tính sai đường bi':'Đi bàn bằng mắt trước; xác nhận đường ra bi rồi mới cúi xuống.',
+  'Đọc bàn sai':'Lập kế hoạch 2–3 bi kế; chọn thứ tự mở cụm & giữ đường.',
+  'Phá cụm sai thời điểm':'Phá cụm khi có bi cái thuận & bi bảo hiểm; đừng phá lúc bí.',
+  'Thiếu phòng thủ':'Không ăn được thì safety — giấu bi cái sau bi khác.',
+  'Safety hớ':'Safety phải để đối thủ khó; tính cả đường bi cái sau khi khoá.',
+  'Phá bi kém':'Chạm dày bi đầu, lực có kiểm soát, giữ bi cái giữa bàn.',
+  'Không khoá bi':'Khi dẫn, cân nhắc khoá bi số của đối thủ để ép lỗi.',
+  'Nóng vội':'Chậm lại, làm đủ routine; hít 1 nhịp trước khi cúi xuống.',
+  'Mất tập trung':'Về "điểm mỏ neo": nhìn cơ, 1 hơi thở, rồi mới vào cú.',
+  'Thiếu kiên nhẫn':'Chờ cú chắc; không có thì safety, đừng ép cú mạo hiểm.',
+  'Run tay khi căng':'Thở 4-7-8 một nhịp; siết nhẹ rồi thả vai trước khi bắn.',
+  'Mất bình tĩnh sau lỗi':'Lỗi rồi thì bỏ qua; reset 2 hơi thở, cú kế là cú mới.',
+};
 const FEELS=[{v:1,e:'😞'},{v:2,e:'😐'},{v:3,e:'🙂'},{v:4,e:'😄'},{v:5,e:'🔥'}];
 
 const BREATH=[
@@ -635,6 +677,7 @@ const PROBLEMS=[
 ];
 
 const todayStr=()=> new Date().toISOString().slice(0,10);
+const nowHM=()=> new Date().toTimeString().slice(0,5);
 const fmtDate=(s)=>{ if(!s) return ''; const p=s.split('-'); return p.length===3? p[2]+'/'+p[1] : s; };
 const uid=(p)=> p+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
 
@@ -674,7 +717,7 @@ const SEG_DEFS={
   mind: {lab:'Tâm trí',   items:[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm'],['music','🎧 Nhạc']]},
   table:{lab:'Tại bàn',   items:[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
   train:{lab:'Tập luyện', items:[['drills','🎯 Luyện tập'],['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['routine','✓ Routine']]},
-  log:  {lab:'Nhật ký',   items:[['log','Lịch sử'],['opps','Đối thủ']]},
+  log:  {lab:'Nhật ký',   items:[['live','🔴 Đang đấu'],['log','Lịch sử'],['opps','Đối thủ']]},
 };
 function segKeys(group){
   const def=SEG_DEFS[group].items.map(i=>i[0]);
@@ -1028,7 +1071,7 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
     try{ await cloudChangePassword(npass); setNpMsg('✓ Đã đổi mật khẩu. Dùng mật khẩu mới này để đăng nhập trên điện thoại.'); setNpass(''); setNpass2(''); }
     catch(err){ setNpMsg('Lỗi: '+(err.message||'không đổi được mật khẩu')); }
     setNpBusy(false); };
-  const KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost'];
+  const KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost','nc.liveTally'];
   const [sego,setSego]=useState(()=>store.get('nc.segorder',{})||{});
   const segOrderOf=(g)=>{ const def=SEG_DEFS[g].items.map(i=>i[0]); const saved=Array.isArray(sego[g])?sego[g].filter(k=>def.includes(k)):[]; def.forEach(k=>{ if(!saved.includes(k)) saved.push(k); }); return saved; };
   const moveSeg=(g,i,dir)=>{ const arr=segOrderOf(g).slice(); const j=i+dir; if(j<0||j>=arr.length) return; const x=arr[i]; arr[i]=arr[j]; arr[j]=x; const next={...sego,[g]:arr}; setSego(next); store.set('nc.segorder',next); };
@@ -1196,6 +1239,51 @@ function Empty({ico,t,s}){
 }
 
 /* ================= Nhật ký trận đấu ================= */
+// Bảng đánh dấu lỗi khi thi đấu: chạm để +1 mỗi lần mắc lỗi; cuối trận "Hết trận" → Ghi trận.
+function LiveTally({onEnd}){
+  const [tally,setTally]=useState(()=>store.get('nc.liveTally',{}));
+  const saveT=(t)=>{ setTally(t); store.set('nc.liveTally',t); };
+  // Dùng updater theo trạng thái mới nhất để không mất lượt khi chạm nhanh liên tiếp.
+  const bump=(x,d)=>{ setTally(prev=>{ const t={...prev}; const v=(t[x]||0)+d; if(v<=0) delete t[x]; else t[x]=v; store.set('nc.liveTally',t); return t; }); };
+  const clearAll=()=>{ if(Object.keys(tally).length===0) return; if(confirm('Xoá hết đánh dấu lỗi của trận này?')) saveT({}); };
+  const total=Object.values(tally).reduce((s,n)=>s+n,0);
+  const ticked=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">🔴 Bảng lỗi trận đang đấu</div>
+      <div className="tsub">Mỗi lần mắc lỗi, chạm để +1. Cuối trận bấm “Hết trận” để sang Ghi trận (đã điền sẵn lỗi).</div>
+      <div className="statstrip" style={{marginTop:8}}>
+        <div className="stat"><b style={{color:'var(--warn)'}}>{total}</b><small>lượt lỗi</small></div>
+        <div className="stat"><b style={{color:'var(--gold)'}}>{ticked.length}</b><small>loại lỗi</small></div>
+        <div className="stat" style={{justifyContent:'center',display:'flex',alignItems:'center'}}><button className="chip" onClick={clearAll}>🗑 Xoá bảng</button></div>
+      </div>
+      <button className="btn acc wide" style={{margin:'10px 0 4px'}} onClick={()=>onEnd(Object.keys(tally),{...tally})}>🏁 Hết trận → Ghi trận</button>
+      {ticked.length>0 &&
+        <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+          <div className="drow" style={{marginBottom:6}}><b style={{fontSize:14}}>Đã đánh dấu trận này</b><span className="muted small">chạm − / ＋ để chỉnh</span></div>
+          {ticked.map(([x,n])=>(
+            <div key={x} className="drow" style={{padding:'6px 0',borderTop:'1px solid var(--line)'}}>
+              <span style={{fontSize:13,fontWeight:700,flex:1,minWidth:0}}>{x}</span>
+              <div style={{display:'flex',gap:6,alignItems:'center',flex:'none'}}>
+                <button className="chip" style={{minWidth:34,fontSize:16,padding:'5px 0'}} onClick={()=>bump(x,-1)} aria-label={'Bớt '+x}>−</button>
+                <b style={{minWidth:22,textAlign:'center',color:'var(--gold)'}}>{n}</b>
+                <button className="chip" style={{minWidth:34,fontSize:16,padding:'5px 0'}} onClick={()=>bump(x,1)} aria-label={'Thêm '+x}>＋</button>
+              </div>
+            </div>))}
+        </div>}
+      <div className="h2">Chạm để đánh dấu lỗi</div>
+      {MISTAKE_CATS.map(c=>(
+        <div key={c.t} style={{marginTop:8}}>
+          <div className="muted small" style={{fontWeight:800,margin:'2px 0 5px'}}>{c.t}</div>
+          <div className="presets" style={{justifyContent:'flex-start'}}>
+            {c.items.map(x=>{ const n=tally[x]||0; return (
+              <button key={x} className={'chip'+(n>0?' on':'')} onClick={()=>bump(x,1)}>{x}{n>0?' · '+n:''}</button>); })}
+          </div>
+        </div>))}
+      <div style={{height:8}}/>
+    </div>
+  );
+}
 function MatchLog(){
   const [list,setList]=useState(()=>store.get('nc.matches',[]));
   const [form,setForm]=useState(null);
@@ -1203,18 +1291,22 @@ function MatchLog(){
   const [view2,setView2]=useState(orderedOpts('log')[0][0]);
   const save=(l)=>{ setList(l); store.set('nc.matches',l); };
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
+    const fromLive=form&&form._live;
     const isNew=recs.some(m=>!m.id);
     let next=list.slice();
     recs.forEach(m=>{ if(m.id){ next=next.map(x=>x.id===m.id?m:x); } else { next=[{...m,id:uid('m')},...next]; } });
     save(next); setForm(null);
+    if(fromLive) store.set('nc.liveTally',{});   // đã ghi trận từ bảng đánh dấu → xoá bảng
     if(isNew){ const a=analyze(recs); if(a.fresh.length||a.heavy.length||a.detected.length){ setAnalysis(a); setView2('log'); } }
   };
+  // Kết thúc trận từ bảng đánh dấu lỗi → mở Ghi trận với lỗi đã tick sẵn.
+  const startFromLive=(keys,counts)=>{ setForm({date:todayStr(),result:'W',game:'10-bi',feel:3,mistakes:keys,mistakeCounts:counts,_live:true}); };
   // Tự phân tích trận vừa ghi: lỗi mới + lỗi lặp nhiều + lỗi tự dò từ ghi chú
   const analyze=(recs)=>{
     const extra=store.get('nc.mistakes',[]);
-    const prior={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>prior[x]=(prior[x]||0)+1)); extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>prior[x]=(prior[x]||0)+1));
+    const prior={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>prior[x]=(prior[x]||0)+misCount(m,x))); extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>prior[x]=(prior[x]||0)+1));
     const added={}, detSet=new Set();
-    recs.forEach(m=>{ const chips=new Set(m.mistakes||[]); scanNote(m.note).forEach(d=>{ if(!chips.has(d)) detSet.add(d); }); entryMistakes(m,'mistakes').forEach(x=>added[x]=(added[x]||0)+1); });
+    recs.forEach(m=>{ const chips=new Set(m.mistakes||[]); scanNote(m.note).forEach(d=>{ if(!chips.has(d)) detSet.add(d); }); entryMistakes(m,'mistakes').forEach(x=>added[x]=(added[x]||0)+misCount(m,x)); });
     const fresh=[], heavy=[];
     Object.keys(added).forEach(x=>{ if(!prior[x]) fresh.push(x); const total=(prior[x]||0)+added[x]; if(total>=3) heavy.push(x+' ('+total+'×)'); });
     return {fresh,heavy,detected:[...detSet]};
@@ -1222,7 +1314,7 @@ function MatchLog(){
   const del=(id)=>{ save(list.filter(x=>x.id!==id)); setForm(null); };
   const w=list.filter(m=>m.result==='W').length, l=list.filter(m=>m.result==='L').length;
   const rate=(w+l)? Math.round(w/(w+l)*100):0;
-  const mc={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>mc[x]=(mc[x]||0)+1));
+  const mc={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>mc[x]=(mc[x]||0)+misCount(m,x)));
   const top=Object.entries(mc).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
   // Danh sách đối thủ đã từng ghi — gần nhất lên trước, để lần sau chọn lại
@@ -1236,7 +1328,7 @@ function MatchLog(){
     o.n++; if(m.result==='W')o.w++; else if(m.result==='L')o.l++; else o.d++;
     if(m.game)o.games[m.game]=(o.games[m.game]||0)+1;
     if(hc&&!o.hc)o.hc=hc;
-    (m.mistakes||[]).forEach(x=>o.mis[x]=(o.mis[x]||0)+1);
+    (m.mistakes||[]).forEach(x=>o.mis[x]=(o.mis[x]||0)+misCount(m,x));
     if((m.date||'')>o.last)o.last=m.date;
   });
   const opps=Object.values(omap).sort((a,b)=>b.n-a.n||(b.last>a.last?1:-1));
@@ -1249,6 +1341,8 @@ function MatchLog(){
       </div>
 
       <Seg val={view2} set={setView2} opts={orderedOpts('log')}/>
+
+      {view2==='live' && <LiveTally onEnd={startFromLive}/>}
 
       {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0||(analysis.detected&&analysis.detected.length>0)) &&
         <div className="card" style={{padding:'12px 14px',marginTop:8,borderColor:'var(--gold)'}}>
@@ -1422,7 +1516,7 @@ function MistakesView(){
   const addExtra=(rec)=>{ saveExtra([{...rec,id:uid('x'),date:todayStr()},...extra]); setMform(false); };
   const delExtra=(id)=>saveExtra(extra.filter(x=>x.id!==id));
   const allMis={};
-  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+misCount(m,x)));
   extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
   const misTotal=Object.values(allMis).reduce((s,c)=>s+c,0);
   const misMax=Math.max(1,...Object.values(allMis));
@@ -1534,27 +1628,45 @@ function PositionsView(){
   );
 }
 function SummaryView(){
+  const [nonce,setNonce]=useState(0);
+  const [stamp,setStamp]=useState(()=>nowHM());
+  const reAnalyze=()=>{ setNonce(n=>n+1); setStamp(nowHM()); };
   const matches=store.get('nc.matches',[]);
   const extra=store.get('nc.mistakes',[]);
   const positions=store.get('nc.positions',[]);
+  const customDrills=store.get('nc.customDrills',[]);
+  const hiddenD=store.get('nc.hiddenDrills',[]);
+  const allDrills=[...customDrills,...DRILLS].filter(d=>!hiddenD.includes(d.key));
+  const drillsFor=(m)=>allDrills.filter(d=>(d.fixes||[]).includes(m)).map(d=>d.name);
   const allMis={};
-  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+misCount(m,x)));
   extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
   const tech=[], psy=[];
   Object.entries(allMis).forEach(([m,c])=>{ (mistakeCat(m)==='Tâm lý'?psy:tech).push([m,c]); });
   tech.sort((a,b)=>b[1]-a[1]); psy.sort((a,b)=>b[1]-a[1]);
   const techMax=Math.max(1,...tech.map(r=>r[1])), psyMax=Math.max(1,...psy.map(r=>r[1]));
   const todo=positions.filter(p=>!p.done);
-  const bar=(rows,mx)=> rows.map(([m,n])=>(
-    <div key={m} style={{margin:'7px 0'}}>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>{m}</span><span className="muted">{n}×</span></div>
-      <div className="mbar"><div style={{width:Math.round(n/mx*100)+'%'}}/></div>
-    </div>));
+  const tipAgg={}; todo.forEach(p=>{ const l=tipLabel(p.tip); tipAgg[l]=(tipAgg[l]||0)+1; });
+  const tipRows=Object.entries(tipAgg).sort((a,b)=>b[1]-a[1]); const tMax=Math.max(1,...tipRows.map(r=>r[1]));
+  const drillRow=([m,n],mx)=>{ const dr=drillsFor(m); return (
+    <div key={m} className="card" style={{padding:'11px 13px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:8,marginBottom:4}}><b style={{fontSize:14}}>{m}</b><span className="muted small">{n}×</span></div>
+      <div className="mbar" style={{marginBottom:6}}><div style={{width:Math.round(n/mx*100)+'%'}}/></div>
+      {FIX_TIPS[m] && <div className="muted" style={{fontSize:12.5,lineHeight:1.5}}>💡 {FIX_TIPS[m]}</div>}
+      {dr.length>0 && <div style={{marginTop:7,display:'flex',flexWrap:'wrap',gap:6,alignItems:'center'}}>
+        <span className="muted small">🎯 Nên tập:</span>
+        {dr.map(name=><span key={name} className="tag2">{name}</span>)}
+      </div>}
+    </div>); };
   const empty=!tech.length && !psy.length && !todo.length;
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Tổng hợp từ Nhật ký</div>
-      <div className="tsub">Toàn cảnh cần luyện: lỗi kỹ thuật, lỗi tâm lý và thế bi còn phải tập.</div>
+      <div className="tsub">Toàn cảnh cần luyện: kỹ thuật, tâm lý và thế bi — rút từ nhật ký của bạn.</div>
+      <div className="drow" style={{margin:'8px 0 2px'}}>
+        <span className="muted small">🧾 Phân tích {matches.length} trận · lúc {stamp}</span>
+        <button className="chip" onClick={reAnalyze}>🔄 Phân tích lại</button>
+      </div>
       {empty
         ? <Empty ico="📊" t="Chưa có dữ liệu" s="Ghi vài trận (kèm lỗi & ghi chú) và dựng thế bi ở mục Điều bi — mọi thứ tự tổng hợp về đây."/>
         : <>
@@ -1564,24 +1676,35 @@ function SummaryView(){
             <div className="stat"><b style={{color:'var(--gold)'}}>{todo.length}</b><small>thế bi cần tập</small></div>
           </div>
           {tech.length>0 && <>
-            <div className="h2">🔧 Lỗi kỹ thuật</div>
-            <div className="card" style={{padding:'12px 14px',marginTop:8}}>{bar(tech,techMax)}</div>
+            <div className="h2">🔧 Kỹ thuật cần tập</div>
+            <div className="tsub" style={{marginBottom:2}}>Lỗi kỹ thuật hay mắc — kèm cách sửa &amp; bài nên tập.</div>
+            <div className="list">{tech.slice(0,8).map(r=>drillRow(r,techMax))}</div>
           </>}
           {psy.length>0 && <>
-            <div className="h2">🧠 Lỗi tâm lý</div>
-            <div className="card" style={{padding:'12px 14px',marginTop:8}}>{bar(psy,psyMax)}</div>
+            <div className="h2">🧠 Tâm lý cần ổn định</div>
+            <div className="list">{psy.map(r=>drillRow(r,psyMax))}</div>
           </>}
           {todo.length>0 && <>
             <div className="h2">🎱 Thế bi cần tập ({todo.length})</div>
+            {tipRows.length>0 &&
+              <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+                <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ còn kém</b><span className="muted small">{todo.length} thế</span></div>
+                {tipRows.map(([l,n])=>(
+                  <div key={l} style={{margin:'7px 0'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>Đầu cơ: {l}</span><span className="muted">{n} thế</span></div>
+                    <div className="mbar"><div style={{width:Math.round(n/tMax*100)+'%'}}/></div>
+                  </div>))}
+              </div>}
             <div className="list">
-              {todo.slice(0,20).map(p=>(
+              {todo.slice(0,20).map(p=>{ const sug=suggestTip(p.cue,p.obj,p.nxt); return (
                 <div key={p.id} className="card" style={{padding:10,display:'flex',gap:10,alignItems:'center'}}>
-                  <div style={{width:96,flex:'none'}}><MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}]}}/></div>
+                  <div style={{width:96,flex:'none'}}><MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}],path:cuePath(p.cue,p.obj,p.tip||{x:0,y:0},p.power!=null?p.power:0.5).pts}}/></div>
                   <div style={{flex:1,minWidth:0}}>
                     {p.note && <div className="preline" style={{fontSize:13,lineHeight:1.4}}>{p.note}</div>}
-                    <div className="muted small" style={{marginTop:3}}>đầu cơ: {p.tip?tipLabel(p.tip):'—'} · {fmtDate(p.date)}</div>
+                    <div className="muted small" style={{marginTop:3}}>bạn đánh: {p.tip?tipLabel(p.tip):'—'} · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
+                    <div className="muted small" style={{marginTop:2}}>{fmtDate(p.date)}</div>
                   </div>
-                </div>))}
+                </div>); })}
             </div>
           </>}
         </>}
@@ -1717,7 +1840,8 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
   const submit=()=>{
     const opp=(m.opp||'').trim(), handicap=(m.handicap||'').trim(), note=(m.note||'').trim();
     if(init.id){ onSave([{...m,opp,handicap,note,score:(m.score||'').trim()}]); return; }
-    const base={date:m.date,opp,handicap,game:m.game,feel:m.feel,mistakes:m.mistakes||[],note};
+    const mc={}; (m.mistakes||[]).forEach(x=>{ const c=m.mistakeCounts&&m.mistakeCounts[x]; if(c&&c>1) mc[x]=c; });
+    const base={date:m.date,opp,handicap,game:m.game,feel:m.feel,mistakes:m.mistakes||[],note,...(Object.keys(mc).length?{mistakeCounts:mc}:{})};
     const out=[{...base,result:m.result,score:(m.score||'').trim()}];
     if(two && m.result2) out.push({...base,result:m.result2,score:(m.score2||'').trim()});
     onSave(out);
@@ -1770,7 +1894,7 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
           </div></div>
         <div className="field"><label>Lỗi mắc phải (chọn nhiều){!init.id&&two?' — chung cả 2 trận':''}</label>
           <div className="presets" style={{justifyContent:'flex-start'}}>
-            {MISTAKES.map(x=><button key={x} className={'chip'+((m.mistakes||[]).includes(x)?' on':'')} onClick={()=>toggle(x)}>{x}</button>)}
+            {MISTAKES.map(x=>{ const on=(m.mistakes||[]).includes(x); const c=m.mistakeCounts&&m.mistakeCounts[x]; return <button key={x} className={'chip'+(on?' on':'')} onClick={()=>toggle(x)}>{x}{on&&c>1?' · '+c:''}</button>; })}
           </div></div>
         <div className="field"><label>Ghi chú / bài học</label>
           <textarea rows="4" value={m.note} onChange={e=>set('note',e.target.value)}
@@ -2390,40 +2514,56 @@ function AtTable(){
     </div>
   );
 }
-function shotPhases(total){
-  const think=Math.max(8,total-10);
-  return [
-    {name:'Suy nghĩ', sub:'đọc bàn · chọn đầu cơ & lực', dur:think, c:'var(--accent)'},
-    {name:'Nhìn điểm chạm & vào bộ', sub:'ngắm đường cơ · tì tay vững', dur:5, c:'var(--gold)'},
-    {name:'Nhấp & bắn', sub:'đưa cơ thử · bắn dứt khoát', dur:5, c:'var(--danger)'},
-  ];
+const PHASE_META=[
+  {name:'Suy nghĩ', sub:'đọc bàn · chọn đầu cơ & lực', c:'var(--accent)'},
+  {name:'Nhìn điểm chạm & vào bộ', sub:'ngắm đường cơ · tì tay vững', c:'var(--gold)'},
+  {name:'Nhấp & bắn', sub:'đưa cơ thử · bắn dứt khoát', c:'var(--danger)'},
+];
+// Mặc định 30s; đọc số giây từng công đoạn từ nc.shotPhases (di sản: suy ra từ nc.shotTotal).
+function loadShotDurs(){
+  const d=store.get('nc.shotPhases',null);
+  if(Array.isArray(d)&&d.length===3) return d.map(x=>Math.max(2,Math.round(x)));
+  const t=store.get('nc.shotTotal',30);
+  return [Math.max(8,t-10),5,5];
+}
+function shotPhases(durs){
+  return PHASE_META.map((m,i)=>({...m, dur:Math.max(1,Math.round(durs[i]||0))}));
 }
 function ShotClock(){
-  const [total,setTotal]=useState(()=>store.get('nc.shotTotal',30));
+  const [durs,setDurs]=useState(loadShotDurs);
   const [run,setRun]=useState(false);
-  const ph=shotPhases(total);
+  const ph=shotPhases(durs);
+  const total=durs.reduce((s,x)=>s+x,0);
+  const saveDurs=(d)=>{ setDurs(d); store.set('nc.shotPhases',d); store.set('nc.shotTotal',d.reduce((s,x)=>s+x,0)); };
+  const step=(i,delta)=>{ const d=durs.slice(); d[i]=Math.max(2,Math.min(120,d[i]+delta)); saveDurs(d); };
+  const preset=(t)=>saveDurs([Math.max(8,t-10),5,5]);
   return (
     <div style={{display:'flex',flexDirection:'column',gap:14,padding:'2px 0'}}>
       <div className="tsub" style={{textAlign:'center'}}>Luyện nhịp thi đấu: đếm ngược toàn màn hình, chia quy trình theo giây, rung + bíp khi chuyển bước.</div>
       <div className="presets" style={{justifyContent:'center'}}>
-        {[30,45,60].map(t=><button key={t} className={'chip'+(total===t?' on':'')} onClick={()=>{setTotal(t);store.set('nc.shotTotal',t);}}>{t}s</button>)}
+        {[30,45,60].map(t=><button key={t} className={'chip'+(total===t?' on':'')} onClick={()=>preset(t)}>{t}s</button>)}
       </div>
       <div className="card" style={{padding:'10px 14px 12px'}}>
-        <div className="h" style={{margin:'4px 0 6px'}}>Phân bổ {total}s</div>
+        <div className="drow" style={{margin:'4px 0 8px'}}><b className="h" style={{margin:0}}>Phân bổ {total}s</b><span className="muted small">chỉnh từng bước bằng −/＋</span></div>
         {ph.map((p,i)=>(
-          <div key={i} className="planrow">
+          <div key={i} className="planrow" style={{alignItems:'center'}}>
             <div className="pi" style={{background:p.c,color:'#04231a',borderColor:p.c,width:'auto',minWidth:40,padding:'0 7px',fontSize:13}}>{p.dur}s</div>
-            <div className="pt"><b>{p.name}</b><small>{p.sub}</small></div>
+            <div className="pt" style={{flex:1}}><b>{p.name}</b><small>{p.sub}</small></div>
+            <div style={{display:'flex',gap:6,flex:'none'}}>
+              <button className="chip" style={{minWidth:34,fontSize:16,padding:'6px 0'}} onClick={()=>step(i,-1)} aria-label={'Giảm '+p.name}>−</button>
+              <button className="chip" style={{minWidth:34,fontSize:16,padding:'6px 0'}} onClick={()=>step(i,1)} aria-label={'Tăng '+p.name}>＋</button>
+            </div>
           </div>
         ))}
       </div>
       <button className="btn acc wide" onClick={()=>setRun(true)}>▶ Vào chế độ thi đấu (toàn màn hình)</button>
-      {run && <ShotClockRun total={total} close={()=>setRun(false)}/>}
+      {run && <ShotClockRun durs={durs} close={()=>setRun(false)}/>}
     </div>
   );
 }
-function ShotClockRun({total,close}){
-  const ph=shotPhases(total);
+function ShotClockRun({durs,close}){
+  const ph=shotPhases(durs);
+  const total=ph.reduce((s,p)=>s+p.dur,0);
   const bounds=[]; let acc=0; ph.forEach(p=>{ bounds.push(acc+p.dur); acc+=p.dur; });
   const [elapsed,setElapsed]=useState(0);
   const [paused,setPaused]=useState(false);
@@ -2575,12 +2715,11 @@ function PreMatch(){
         <div className="h">🤸 Khởi động &amp; giãn cơ</div>
         <div className="tsub" style={{marginTop:2}}>Làm nóng cổ tay – vai – cổ ~2 phút để tay mượt và tránh chấn thương.</div>
         {!g ? <>
-          <div className="steps" style={{marginTop:8}}>
+          <div style={{marginTop:8,display:'flex',flexWrap:'wrap',gap:6}}>
             {STRETCHES.map((s,i)=>(
-              <div key={i} className="step" style={{cursor:'default'}}>
-                <div className="n" style={{fontSize:12}}>{s.s}s</div>
-                <div className="tx">{s.n}<small>{s.h}</small></div>
-              </div>))}
+              <span key={i} style={{fontSize:12.5,fontWeight:700,padding:'6px 10px',background:'var(--card2)',border:'1px solid var(--line)',borderRadius:9,whiteSpace:'nowrap'}}>
+                {s.n} <span className="muted" style={{fontWeight:600}}>{s.s}s</span>
+              </span>))}
           </div>
           <button className="btn acc wide" style={{marginTop:12}} onClick={()=>setG(true)}>▶ Khởi động theo nhịp</button>
         </> : <GuidedStretch onDone={()=>setG(false)}/>}
