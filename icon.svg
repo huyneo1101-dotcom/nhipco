@@ -1,12 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#15543f"/>
+      <stop offset="0" stop-color="#17553f"/>
       <stop offset="1" stop-color="#0a241c"/>
     </linearGradient>
+    <clipPath id="ball"><circle cx="256" cy="256" r="150"/></clipPath>
   </defs>
   <rect width="512" height="512" rx="116" fill="url(#bg)"/>
-  <circle cx="256" cy="256" r="156" fill="none" stroke="#f4c95d" stroke-width="13" stroke-linecap="round" stroke-dasharray="5 22"/>
-  <circle cx="256" cy="256" r="124" fill="#f5f2e9"/>
-  <circle cx="256" cy="256" r="30" fill="#e0556b"/>
+  <circle cx="256" cy="256" r="150" fill="#f5f2e9"/>
+  <rect x="86" y="188" width="340" height="136" fill="#f4c95d" clip-path="url(#ball)"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#d9d3c1" stroke-width="4"/>
+  <text x="256" y="256" dy="0.35em" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="122" fill="#123a2c">9</text>
 </svg>
