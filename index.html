@@ -443,12 +443,12 @@ const CUES=[
 const GAMES=['9-bi','10-bi'];
 // Lỗi gom sẵn theo nhóm; MISTAKES suy ra từ đây (một nguồn duy nhất)
 const MISTAKE_CATS=[
-  {t:'Kỹ thuật & tư thế', items:['Đẩy cơ lệch','Đưa cơ không thẳng','Giật tay khi bắn','Nhổm đầu sớm','Cầm cơ quá chặt','Thế đứng chưa vững','Mắt rời điểm chạm']},
-  {t:'Ngắm & nhắm',       items:['Ngắm sai điểm chạm','Sai góc cắt','Bù xoáy/throw sai']},
-  {t:'Cú bắn còn kém',    items:['Cú thẳng dài hỏng','Cú cắt mỏng hỏng','Cú băng (bank) kém','Cú đề/phé kém','Cú rút (draw) kém','Cú theo (follow) kém','Cú lỗ xa kém','Cú combo/chùm kém']},
+  {t:'Kỹ thuật & tư thế', items:['Đẩy cơ lệch','Đưa cơ không thẳng','Giật tay khi bắn','Nhổm người sớm','Cầm cơ quá chặt','Thế đứng chưa vững','Mắt rời điểm chạm']},
+  {t:'Ngắm & nhắm',       items:['Ngắm sai điểm chạm','Sai góc cắt','Bù văng sai']},
+  {t:'Cú bắn còn kém',    items:['Cú thẳng dài hỏng','Cắt mỏng hỏng','Căn băng kém','Cú phá kém','Cú rút (draw) kém','Cú lê kém','Bắn lỗ xa kém','Cú combo/chùm kém']},
   {t:'Lực & vị trí bi cái',items:['Lực quá mạnh','Lực quá nhẹ','Mất vị trí bi cái','Chết cái','Bi cái đi quá đường','Không tính đường ra bi']},
-  {t:'Tư duy & chọn cú',  items:['Chọn sai bi/lỗ','Bỏ lỡ cú dễ','Tính sai đường bi','Đọc bàn sai','Sai thứ tự bi','Phá cụm sai thời điểm']},
-  {t:'Chiến thuật',       items:['Thiếu phòng thủ','Safety hớ','Cú phá kém','Không khoá bi']},
+  {t:'Tư duy & chọn cú',  items:['Bỏ lỡ cú dễ','Tính sai đường bi','Đọc bàn sai','Phá cụm sai thời điểm']},
+  {t:'Chiến thuật',       items:['Thiếu phòng thủ','Safety hớ','Phá bi kém','Không khoá bi']},
   {t:'Tâm lý',            items:['Nóng vội','Mất tập trung','Thiếu kiên nhẫn','Run tay khi căng','Mất bình tĩnh sau lỗi']},
 ];
 const MISTAKES=MISTAKE_CATS.reduce((a,c)=>a.concat(c.items),[]);
@@ -460,20 +460,20 @@ const MISTAKE_KW={
   'Đẩy cơ lệch':['day co lech','lech co','co lech','danh lech','dam bi'],
   'Đưa cơ không thẳng':['dua co khong thang','co khong thang','co bi run','dua co run'],
   'Giật tay khi bắn':['giat tay','giat co','bi giat','giut tay'],
-  'Nhổm đầu sớm':['nhom dau','nhac dau','ngang dau','dung len som','ngoc dau'],
+  'Nhổm người sớm':['nhom nguoi','nhom dau','nhac dau','ngang dau','dung len som','ngoc dau'],
   'Cầm cơ quá chặt':['cam co chat','siet co','ghi co chat','bop co'],
   'Thế đứng chưa vững':['the dung','tu the','dung khong vung','chan khong vung','dung chua chuan'],
   'Mắt rời điểm chạm':['mat roi','nhin theo co','khong nhin diem cham','roi mat'],
   'Ngắm sai điểm chạm':['ngam sai','sai diem cham','ngam le','nham sai'],
   'Sai góc cắt':['sai goc cat','goc cat sai','cat sai goc'],
-  'Bù xoáy/throw sai':['throw','bu xoay','xoay sai','tinh xoay sai'],
+  'Bù văng sai':['bu vang','throw','bu xoay','xoay sai','tinh xoay sai','vang bi'],
   'Cú thẳng dài hỏng':['cu thang dai','thang dai','thang xa hong'],
-  'Cú cắt mỏng hỏng':['cat mong','cu cat mong','mong hong','cat le'],
-  'Cú băng (bank) kém':['cu bang','bank','danh bang','bi bang'],
-  'Cú đề/phé kém':['cu de','phe','dat bi'],
+  'Cắt mỏng hỏng':['cat mong','cu cat mong','mong hong','cat le'],
+  'Căn băng kém':['can bang','cu bang','bank','danh bang','bi bang'],
+  'Cú phá kém':['cu de','cu phe','phe bi','dat bi','cu pha kem'],
   'Cú rút (draw) kém':['rut bi','cu rut','draw','keo bi ve','danh thap'],
-  'Cú theo (follow) kém':['theo bi','follow','cu theo','danh cao'],
-  'Cú lỗ xa kém':['lo xa','cu xa','bi xa lo','vao lo xa'],
+  'Cú lê kém':['le bi','cu le','theo bi','follow','cu theo','danh cao'],
+  'Bắn lỗ xa kém':['lo xa','cu xa','bi xa lo','vao lo xa','ban lo xa'],
   'Cú combo/chùm kém':['combo','chum bi','cu chum','an doi'],
   'Lực quá mạnh':['qua manh','manh tay','luc manh','danh manh','manh qua'],
   'Lực quá nhẹ':['qua nhe','nhe tay','luc nhe','danh nhe','thieu luc','nhe qua'],
@@ -481,15 +481,13 @@ const MISTAKE_KW={
   'Chết cái':['chet cai','bi cai lui','lui lo','scratch','bi cai vao lo','loi bi cai'],
   'Bi cái đi quá đường':['di qua duong','bi cai qua','qua da','di qua tay','luot qua'],
   'Không tính đường ra bi':['khong tinh duong','duong ra bi','khong nghi ra bi','khong tinh ra bi'],
-  'Chọn sai bi/lỗ':['chon sai','sai bi','sai lo','chon lo sai','chon bi sai'],
   'Bỏ lỡ cú dễ':['bo lo','cu de','truot cu de','miss de','hong cu de'],
   'Tính sai đường bi':['tinh sai duong','sai duong bi','tinh duong sai'],
   'Đọc bàn sai':['doc ban sai','khong doc ban','ke hoach ban sai','khong co ke hoach'],
-  'Sai thứ tự bi':['thu tu bi','sai thu tu','danh sai thu tu'],
   'Phá cụm sai thời điểm':['pha cum','cum bi','tach cum','xu ly cum'],
   'Thiếu phòng thủ':['phong thu','safety','thieu safety','khong phong thu','khong danh safe'],
   'Safety hớ':['safety ho','phong thu ho','de mo','safe ho'],
-  'Cú phá kém':['pha bi','cu pha','pha phom','break','pha khong tot'],
+  'Phá bi kém':['pha bi','pha phom','break','pha khong tot'],
   'Không khoá bi':['khoa bi','khong khoa','che bi doi thu'],
   'Nóng vội':['nong voi','voi vang','hap tap','danh nhanh','voi'],
   'Mất tập trung':['mat tap trung','lo dang','khong tap trung','xao nhang','phan tam'],
@@ -512,7 +510,7 @@ const BREATH=[
    mỗi bài có cách đặt bàn, thang điểm đo được, mục tiêu chuẩn, lý do, và lỗi nó sửa. */
 const DRILL_CATS={
   fund:{t:'Nền tảng',  c:'#22b07f'},
-  pot :{t:'Vào lỗ',    c:'#d3a23e'},
+  pot :{t:'Bi đơn',    c:'#d3a23e'},
   pos :{t:'Vị trí',    c:'#3fb0e0'},
   saf :{t:'Phòng thủ', c:'#9b7bf0'},
   brk :{t:'Phá bi',    c:'#e2724a'},
@@ -560,13 +558,13 @@ const DRILLS=[
     setup:'Cùng bi mục tiêu, tăng dần độ mỏng cú cắt: 15°→30°→45°→60°→75°. Mỗi mức 3 cú, vào ≥2/3 thì lên mức.',
     scoring:'Mức cắt cao nhất bạn vượt qua (1–5)',
     why:'Cú cắt mỏng là điểm yếu kinh điển. Tập theo bậc giúp mở rộng dần vùng góc tự tin.',
-    fixes:['Chọn sai bi/lỗ','Bỏ lỡ cú dễ'],
+    fixes:['Bỏ lỡ cú dễ'],
     dia:{balls:[{x:24,y:38,c:W},{x:58,y:26,c:R}],line:[27,37,56,27],arrows:[[60,25,92,9]]}},
   {key:'lineup',cat:'pos',name:'Dàn hàng (line-up)',max:15,target:'≥7 liên tiếp',
     setup:'Xếp 10–15 bi dọc theo một đường, chạy lần lượt và ưu tiên ra bi cho viên kế tiếp. Miss thì dừng đếm.',
     scoring:'Số bi pot liên tiếp trước khi miss',
     why:'Mô phỏng run-out thật: vừa vào lỗ vừa quản vị trí và thứ tự bi — kỹ năng quyết định ván cờ.',
-    fixes:['Mất vị trí bi cái','Kế hoạch','Chọn sai bi/lỗ'],
+    fixes:['Mất vị trí bi cái'],
     dia:{balls:[{x:16,y:40,c:W},{x:30,y:34,c:R},{x:42,y:30,c:R},{x:54,y:26,c:R},{x:66,y:22,c:R},{x:78,y:18,c:R}],line:[30,34,78,18],arrows:[[19,39,29,35]]}},
   {key:'position3',cat:'pos',name:'Vị trí 3 bi',max:5,target:'≥3/5',
     setup:'Đặt 3 bi. Pot lần lượt, mỗi cú bi cái phải dừng trong vùng đánh được bi kế. Lặp 5 vòng.',
@@ -590,13 +588,13 @@ const DRILLS=[
     setup:'Bi mục tiêu giữa bàn, bank một băng vào lỗ. Đổi vị trí 10 lần, dùng một hệ điểm ngắm cố định để học cảm giác.',
     scoring:'Số bi vào, trên 10 cú',
     why:'Bank cho bạn lựa chọn khi không có cú trực tiếp và cứu được nhiều thế bí.',
-    fixes:['Chọn sai bi/lỗ'],
+    fixes:['Căn băng kém'],
     dia:{balls:[{x:28,y:40,c:W},{x:46,y:32,c:R}],line:[31,39,45,33],arrows:[[47,30,64,8],[64,8,89,45]]}},
   {key:'breakdrill',cat:'brk',name:'Phá bi có kiểm soát',max:10,target:'≥6/10',
     setup:'Phá phom đầy đủ. Mục tiêu mỗi cú: bi cái dừng quanh giữa bàn (không lủi lỗ) và phom tản đều/có bi vào. 10 lần.',
     scoring:'Số cú phá đạt (bi cái về giữa, không lủi), trên 10',
     why:'Phá quyết định cả ván trước khi đánh cú nào. Kiểm soát bi cái khi phá quan trọng hơn phá thật mạnh.',
-    fixes:['Cú phá kém'],
+    fixes:['Phá bi kém'],
     dia:{balls:[{x:16,y:26,c:W},{x:60,y:26,c:R},{x:66,y:22,c:Y},{x:66,y:30,c:Y},{x:72,y:18,c:Y},{x:72,y:26,c:Y},{x:72,y:34,c:Y}],arrows:[[19,26,57,26]]}},
   {key:'routine20',cat:'men',name:'20 cú kỷ luật',max:20,target:'≥17/20',
     setup:'20 cú bất kỳ. Mỗi cú PHẢI đủ routine + một hơi thở trước khi cúi. Tự trừ điểm nếu bắn khi chưa thật sẵn sàng.',
@@ -1125,37 +1123,10 @@ function Empty({ico,t,s}){
 /* ================= Nhật ký trận đấu ================= */
 function MatchLog(){
   const [list,setList]=useState(()=>store.get('nc.matches',[]));
-  const [extra,setExtra]=useState(()=>store.get('nc.mistakes',[]));  // lỗi tự ghi (không từ trận)
-  const [positions,setPositions]=useState(()=>store.get('nc.positions',[]));  // tình huống điều bi lỗi
   const [form,setForm]=useState(null);
-  const [mform,setMform]=useState(false);
-  const [pform,setPform]=useState(null);   // editor thế bi (null | {} | bản ghi)
   const [analysis,setAnalysis]=useState(null);
   const [view2,setView2]=useState('log');
   const save=(l)=>{ setList(l); store.set('nc.matches',l); };
-  const saveExtra=(l)=>{ setExtra(l); store.set('nc.mistakes',l); };
-  const savePos=(l)=>{ setPositions(l); store.set('nc.positions',l); };
-  const upsertPos=(p)=>{ savePos(p.id? positions.map(x=>x.id===p.id?p:x) : [{...p,id:uid('p'),date:todayStr()},...positions]); setPform(null); };
-  const delPos=(id)=>savePos(positions.filter(x=>x.id!==id));
-  const togglePosDone=(id)=>savePos(positions.map(x=>x.id===id?{...x,done:!x.done}:x));
-  const posCard=(p)=>{
-    const sug=suggestTip(p.cue,p.obj,p.nxt);
-    return (
-      <div key={p.id} className="card" style={{padding:12,opacity:p.done?0.72:1}}>
-        <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}],path:cuePath(p.cue,p.obj,p.tip||{x:0,y:0},p.power!=null?p.power:0.5).pts}}/>
-        {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
-        <div className="muted small" style={{marginTop:6}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{p.tip?tipLabel(p.tip):'—'}</b> · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
-          <span className="muted small">{fmtDate(p.date)}</span>
-          <div style={{display:'flex',gap:8}}>
-            <button className={'chip'+(p.done?' on':'')} onClick={()=>togglePosDone(p.id)}>{p.done?'↩ Tập lại':'✓ Đã tập'}</button>
-            <button className="chip" onClick={()=>setPform(p)}>✎</button>
-            <button className="xbtn" onClick={()=>delPos(p.id)}>✕</button>
-          </div>
-        </div>
-      </div>
-    );
-  };
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
     const isNew=recs.some(m=>!m.id);
     let next=list.slice();
@@ -1165,6 +1136,7 @@ function MatchLog(){
   };
   // Tự phân tích trận vừa ghi: lỗi mới + lỗi lặp nhiều + lỗi tự dò từ ghi chú
   const analyze=(recs)=>{
+    const extra=store.get('nc.mistakes',[]);
     const prior={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>prior[x]=(prior[x]||0)+1)); extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>prior[x]=(prior[x]||0)+1));
     const added={}, detSet=new Set();
     recs.forEach(m=>{ const chips=new Set(m.mistakes||[]); scanNote(m.note).forEach(d=>{ if(!chips.has(d)) detSet.add(d); }); entryMistakes(m,'mistakes').forEach(x=>added[x]=(added[x]||0)+1); });
@@ -1172,8 +1144,6 @@ function MatchLog(){
     Object.keys(added).forEach(x=>{ if(!prior[x]) fresh.push(x); const total=(prior[x]||0)+added[x]; if(total>=3) heavy.push(x+' ('+total+'×)'); });
     return {fresh,heavy,detected:[...detSet]};
   };
-  const addExtra=(rec)=>{ saveExtra([{...rec,id:uid('x'),date:todayStr()},...extra]); setMform(false); };
-  const delExtra=(id)=>saveExtra(extra.filter(x=>x.id!==id));
   const del=(id)=>{ save(list.filter(x=>x.id!==id)); setForm(null); };
   const w=list.filter(m=>m.result==='W').length, l=list.filter(m=>m.result==='L').length;
   const rate=(w+l)? Math.round(w/(w+l)*100):0;
@@ -1196,17 +1166,6 @@ function MatchLog(){
   });
   const opps=Object.values(omap).sort((a,b)=>b.n-a.n||(b.last>a.last?1:-1));
 
-  // Tổng hợp tất cả lỗi (từ trận + lỗi tự ghi) → gom theo nhóm
-  const allMis={};
-  list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+1));
-  extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
-  const misTotal=Object.values(allMis).reduce((s,c)=>s+c,0);
-  const misMax=Math.max(1,...Object.values(allMis));
-  const catOrder=MISTAKE_CATS.map(c=>c.t).concat('Khác');
-  const catAgg={};
-  Object.entries(allMis).forEach(([mis,c])=>{ const k=mistakeCat(mis); (catAgg[k]=catAgg[k]||{total:0,items:[]}); catAgg[k].total+=c; catAgg[k].items.push([mis,c]); });
-  const catList=catOrder.filter(k=>catAgg[k]).map(k=>({cat:k,total:catAgg[k].total,items:catAgg[k].items.sort((a,b)=>b[1]-a[1])})).sort((a,b)=>b.total-a.total);
-
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -1214,11 +1173,9 @@ function MatchLog(){
         <button className="chip on" onClick={()=>setForm({date:todayStr(),result:'W',game:'10-bi',mistakes:[],feel:3})}>＋ Ghi trận</button>
       </div>
 
-      <div className="modeseg" style={{alignSelf:'stretch',margin:'10px 0 2px',overflowX:'auto'}}>
+      <div className="modeseg" style={{alignSelf:'flex-start',margin:'10px 0 2px'}}>
         <button className={view2==='log'?'on':''} onClick={()=>setView2('log')}>Lịch sử</button>
         <button className={view2==='opps'?'on':''} onClick={()=>setView2('opps')}>Đối thủ</button>
-        <button className={view2==='mis'?'on':''} onClick={()=>setView2('mis')}>Lỗi</button>
-        <button className={view2==='pos'?'on':''} onClick={()=>setView2('pos')}>Điều bi</button>
       </div>
 
       {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0||(analysis.detected&&analysis.detected.length>0)) &&
@@ -1230,8 +1187,7 @@ function MatchLog(){
           {analysis.fresh.length>0 && <div className="small" style={{marginTop:6}}>🆕 <b>Lỗi mới:</b> {analysis.fresh.join(', ')}</div>}
           {analysis.heavy.length>0 && <div className="small" style={{marginTop:6}}>⚠️ <b>Lặp nhiều — nên tập:</b> {analysis.heavy.join(', ')}</div>}
           {analysis.detected&&analysis.detected.length>0 && <div className="small" style={{marginTop:6}}>🔎 <b>Tự nhận ra từ ghi chú:</b> {analysis.detected.join(', ')}</div>}
-          <div className="muted small" style={{marginTop:6}}>Mở tab <b>Tập luyện</b> để xem bài tập gợi ý, hoặc dựng thế bi khó ở mục <b>Điều bi</b>.</div>
-          <button className="chip" style={{marginTop:8}} onClick={()=>{setView2('mis');setAnalysis(null);}}>→ Xem tổng hợp lỗi</button>
+          <div className="muted small" style={{marginTop:6}}>Mở tab <b>Tập luyện → Tổng hợp / Lỗi / Điều bi</b> để xem bài tập gợi ý và dựng thế bi khó.</div>
         </div>}
 
       {view2==='log' && list.length===0 &&
@@ -1383,8 +1339,180 @@ function MatchLog(){
       })()}
 
       {form && <MatchForm init={form} names={oppNames} lastHc={lastHc} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
+    </div>
+  );
+}
+function MistakesView(){
+  const matches=store.get('nc.matches',[]);
+  const [extra,setExtra]=useState(()=>store.get('nc.mistakes',[]));
+  const [mform,setMform]=useState(false);
+  const saveExtra=(l)=>{ setExtra(l); store.set('nc.mistakes',l); };
+  const addExtra=(rec)=>{ saveExtra([{...rec,id:uid('x'),date:todayStr()},...extra]); setMform(false); };
+  const delExtra=(id)=>saveExtra(extra.filter(x=>x.id!==id));
+  const allMis={};
+  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  const misTotal=Object.values(allMis).reduce((s,c)=>s+c,0);
+  const misMax=Math.max(1,...Object.values(allMis));
+  const catOrder=MISTAKE_CATS.map(c=>c.t).concat('Khác');
+  const catAgg={};
+  Object.entries(allMis).forEach(([mis,c])=>{ const k=mistakeCat(mis); (catAgg[k]=catAgg[k]||{total:0,items:[]}); catAgg[k].total+=c; catAgg[k].items.push([mis,c]); });
+  const catList=catOrder.filter(k=>catAgg[k]).map(k=>({cat:k,total:catAgg[k].total,items:catAgg[k].items.sort((a,b)=>b[1]-a[1])})).sort((a,b)=>b.total-a.total);
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Tổng hợp lỗi</div>
+      <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setMform(true)}>＋ Ghi lỗi nhớ ra (không cần trận)</button>
+      <div className="tsub">Gom mọi lỗi (từ trận đấu + ghi chú + lỗi bạn tự ghi) thành nhóm.</div>
+      {misTotal===0
+        ? <Empty ico="🧠" t="Chưa có lỗi nào" s="Ghi lỗi trong trận đấu, hoặc bấm nút trên để ghi nhanh lỗi bạn nhớ ra."/>
+        : <>
+          <div className="statstrip">
+            <div className="stat"><b>{misTotal}</b><small>lượt lỗi</small></div>
+            <div className="stat"><b style={{color:'var(--gold)'}}>{catList.length}</b><small>nhóm lỗi</small></div>
+            <div className="stat"><b style={{fontSize:14,marginTop:5,display:'block'}}>{catList[0]?catList[0].cat:'—'}</b><small>cần sửa nhất</small></div>
+          </div>
+          <div className="list">
+            {catList.map(c=>(
+              <div key={c.cat} className="card" style={{padding:'12px 14px'}}>
+                <div className="drow" style={{marginBottom:8}}><b style={{fontSize:15}}>{c.cat}</b><span className="muted small">{c.total} lượt</span></div>
+                {c.items.map(([mis,n])=>(
+                  <div key={mis} style={{margin:'7px 0'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>{mis}</span><span className="muted">{n}×</span></div>
+                    <div className="mbar"><div style={{width:Math.round(n/misMax*100)+'%'}}/></div>
+                  </div>))}
+              </div>))}
+          </div>
+          {extra.length>0 && <>
+            <div className="h2">📝 Lỗi tự ghi gần đây</div>
+            <div className="list">
+              {extra.slice(0,12).map(e=>(
+                <div key={e.id} className="card" style={{padding:'11px 13px'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+                    <div style={{flex:1}}>
+                      <div className="tags">{(e.tags||[]).map(x=><span key={x} className="tag2">{x}</span>)}</div>
+                      {e.note&&<div className="muted preline" style={{fontSize:13,marginTop:5}}>“{e.note}”</div>}
+                      <div className="muted small" style={{marginTop:4}}>{fmtDate(e.date)}</div>
+                    </div>
+                    <button className="xbtn" onClick={()=>delExtra(e.id)}>✕</button>
+                  </div>
+                </div>))}
+            </div>
+          </>}
+        </>}
       {mform && <MistakeForm onSave={addExtra} close={()=>setMform(false)}/>}
+    </div>
+  );
+}
+function PositionsView(){
+  const [positions,setPositions]=useState(()=>store.get('nc.positions',[]));
+  const [pform,setPform]=useState(null);
+  const savePos=(l)=>{ setPositions(l); store.set('nc.positions',l); };
+  const upsertPos=(p)=>{ savePos(p.id? positions.map(x=>x.id===p.id?p:x) : [{...p,id:uid('p'),date:todayStr()},...positions]); setPform(null); };
+  const delPos=(id)=>savePos(positions.filter(x=>x.id!==id));
+  const togglePosDone=(id)=>savePos(positions.map(x=>x.id===id?{...x,done:!x.done}:x));
+  const posCard=(p)=>{
+    const sug=suggestTip(p.cue,p.obj,p.nxt);
+    return (
+      <div key={p.id} className="card" style={{padding:12,opacity:p.done?0.72:1}}>
+        <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}],path:cuePath(p.cue,p.obj,p.tip||{x:0,y:0},p.power!=null?p.power:0.5).pts}}/>
+        {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
+        <div className="muted small" style={{marginTop:6}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{p.tip?tipLabel(p.tip):'—'}</b> · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+          <span className="muted small">{fmtDate(p.date)}</span>
+          <div style={{display:'flex',gap:8}}>
+            <button className={'chip'+(p.done?' on':'')} onClick={()=>togglePosDone(p.id)}>{p.done?'↩ Tập lại':'✓ Đã tập'}</button>
+            <button className="chip" onClick={()=>setPform(p)}>✎</button>
+            <button className="xbtn" onClick={()=>delPos(p.id)}>✕</button>
+          </div>
+        </div>
+      </div>);
+  };
+  const todo=positions.filter(p=>!p.done);
+  const tipAgg={}; todo.forEach(p=>{ const l=tipLabel(p.tip); tipAgg[l]=(tipAgg[l]||0)+1; });
+  const tipRows=Object.entries(tipAgg).sort((a,b)=>b[1]-a[1]);
+  const tMax=Math.max(1,...tipRows.map(r=>r[1]));
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Điều bi</div>
+      <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setPform({})}>＋ Thêm tình huống điều bi</button>
+      <div className="tsub">Dựng lại thế bi bạn điều lỗi. Tập lại được rồi thì tick "Đã tập".</div>
+      <div className="poslegend">
+        <span><i className="posdot" style={{background:'#f4f1e6'}}/>Bi cái</span>
+        <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9</span>
+        <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10</span>
+      </div>
+      {todo.length>0 &&
+        <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+          <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ &amp; thế bi còn kém</b><span className="muted small">{todo.length} thế cần tập</span></div>
+          {tipRows.map(([l,n])=>(
+            <div key={l} style={{margin:'7px 0'}}>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>Đầu cơ: {l}</span><span className="muted">{n} thế</span></div>
+              <div className="mbar"><div style={{width:Math.round(n/tMax*100)+'%'}}/></div>
+            </div>))}
+        </div>}
+      {positions.length===0 &&
+        <Empty ico="🎱" t="Chưa có tình huống nào" s="Bấm nút trên để dựng lại thế bi bạn điều lỗi và rút kinh nghiệm."/>}
+      {todo.length>0 && <div className="list">{todo.map(posCard)}</div>}
+      {positions.filter(p=>p.done).length>0 && <>
+        <div className="h2">✅ Đã tập ({positions.filter(p=>p.done).length})</div>
+        <div className="list">{positions.filter(p=>p.done).map(posCard)}</div>
+      </>}
       {pform && <PositionEditor init={pform.id?pform:null} onSave={upsertPos} onDel={pform.id?()=>{delPos(pform.id);setPform(null);}:null} close={()=>setPform(null)}/>}
+    </div>
+  );
+}
+function SummaryView(){
+  const matches=store.get('nc.matches',[]);
+  const extra=store.get('nc.mistakes',[]);
+  const positions=store.get('nc.positions',[]);
+  const allMis={};
+  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  const tech=[], psy=[];
+  Object.entries(allMis).forEach(([m,c])=>{ (mistakeCat(m)==='Tâm lý'?psy:tech).push([m,c]); });
+  tech.sort((a,b)=>b[1]-a[1]); psy.sort((a,b)=>b[1]-a[1]);
+  const techMax=Math.max(1,...tech.map(r=>r[1])), psyMax=Math.max(1,...psy.map(r=>r[1]));
+  const todo=positions.filter(p=>!p.done);
+  const bar=(rows,mx)=> rows.map(([m,n])=>(
+    <div key={m} style={{margin:'7px 0'}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>{m}</span><span className="muted">{n}×</span></div>
+      <div className="mbar"><div style={{width:Math.round(n/mx*100)+'%'}}/></div>
+    </div>));
+  const empty=!tech.length && !psy.length && !todo.length;
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Tổng hợp từ Nhật ký</div>
+      <div className="tsub">Toàn cảnh cần luyện: lỗi kỹ thuật, lỗi tâm lý và thế bi còn phải tập.</div>
+      {empty
+        ? <Empty ico="📊" t="Chưa có dữ liệu" s="Ghi vài trận (kèm lỗi & ghi chú) và dựng thế bi ở mục Điều bi — mọi thứ tự tổng hợp về đây."/>
+        : <>
+          <div className="statstrip">
+            <div className="stat"><b>{tech.reduce((s,r)=>s+r[1],0)}</b><small>lỗi kỹ thuật</small></div>
+            <div className="stat"><b>{psy.reduce((s,r)=>s+r[1],0)}</b><small>lỗi tâm lý</small></div>
+            <div className="stat"><b style={{color:'var(--gold)'}}>{todo.length}</b><small>thế bi cần tập</small></div>
+          </div>
+          {tech.length>0 && <>
+            <div className="h2">🔧 Lỗi kỹ thuật</div>
+            <div className="card" style={{padding:'12px 14px',marginTop:8}}>{bar(tech,techMax)}</div>
+          </>}
+          {psy.length>0 && <>
+            <div className="h2">🧠 Lỗi tâm lý</div>
+            <div className="card" style={{padding:'12px 14px',marginTop:8}}>{bar(psy,psyMax)}</div>
+          </>}
+          {todo.length>0 && <>
+            <div className="h2">🎱 Thế bi cần tập ({todo.length})</div>
+            <div className="list">
+              {todo.slice(0,20).map(p=>(
+                <div key={p.id} className="card" style={{padding:10,display:'flex',gap:10,alignItems:'center'}}>
+                  <div style={{width:96,flex:'none'}}><MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}]}}/></div>
+                  <div style={{flex:1,minWidth:0}}>
+                    {p.note && <div className="preline" style={{fontSize:13,lineHeight:1.4}}>{p.note}</div>}
+                    <div className="muted small" style={{marginTop:3}}>đầu cơ: {p.tip?tipLabel(p.tip):'—'} · {fmtDate(p.date)}</div>
+                  </div>
+                </div>))}
+            </div>
+          </>}
+        </>}
     </div>
   );
 }
@@ -1935,6 +2063,9 @@ function Training(){
   const [hiddenP,setHiddenP]=useState(()=>store.get('nc.hiddenProblems',[]));
   const [weakHide,setWeakHide]=useState(()=>store.get('nc.weakHidden',[]));
   const [planHide,setPlanHide]=useState(()=>{ const ph=store.get('nc.planHidden',null); return (ph&&ph.date===todayStr())?ph.keys:[]; });
+  const [planAdd,setPlanAdd]=useState(()=>{ const pa=store.get('nc.planAdd',null); return (pa&&pa.date===todayStr())?pa.keys:[]; });
+  const [addPlanOpen,setAddPlanOpen]=useState(false);
+  const togglePlanAdd=(k)=>{ const l=planAdd.includes(k)?planAdd.filter(x=>x!==k):[...planAdd,k]; setPlanAdd(l); store.set('nc.planAdd',{date:todayStr(),keys:l}); };
   const [customProblems,setCustomProblems]=useState(()=>store.get('nc.customProblems',[]));
   const [drillBuilder,setDrillBuilder]=useState(null);  // null | {} (mới) | bài (sửa)
   const [pbuilder,setPbuilder]=useState(null);
@@ -2001,8 +2132,12 @@ function Training(){
 
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={tseg} set={setTseg} opts={[['drills','🎯 Luyện tập'],['routine','✓ Routine']]}/>
-      {tseg==='routine' ? <Routine/> : <>
+      <Seg val={tseg} set={setTseg} opts={[['drills','🎯 Luyện tập'],['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['routine','✓ Routine']]}/>
+      {tseg==='routine' && <Routine/>}
+      {tseg==='summary' && <SummaryView/>}
+      {tseg==='mistakes' && <MistakesView/>}
+      {tseg==='positions' && <PositionsView/>}
+      {tseg==='drills' && <>
       <div className="h">Tập luyện</div>
       <div className="tsub">Luyện có mục tiêu, chấm điểm và theo dõi tiến bộ — không chỉ "đánh cho vui".</div>
 
@@ -2040,6 +2175,13 @@ function Training(){
             <button className="xbtn" onClick={()=>hidePlanItem(d.key)} style={{marginLeft:2}}>✕</button>
           </div>
         ))}
+        {planAdd.filter(k=>!plan.some(p=>p.d.key===k)).map(k=>{ const d=drillOf(k); if(!d) return null; return (
+          <div key={k} className="planrow">
+            <div className="pi">{doneToday(k)?'✅':'＋'}</div>
+            <div className="pt"><b>{d.name}</b><small>bạn thêm · mục tiêu {d.target}</small></div>
+            <button className="btn acc sm" onClick={()=>setScoring(d)}>{doneToday(k)?'Ghi lại':'Ghi điểm'}</button>
+            <button className="xbtn" onClick={()=>togglePlanAdd(k)} style={{marginLeft:2}}>✕</button>
+          </div>); })}
         <div className="planrow">
           <div className="pi">👻</div>
           <div className="pt"><b>Đấu với Ghost</b><small>Kết thúc bằng 1 ván benchmark với chính mình</small></div>
@@ -2049,6 +2191,7 @@ function Training(){
           </div>
         </div>
       </div>
+      <button className="btn ghost wide" style={{marginTop:8}} onClick={()=>setAddPlanOpen(true)}>＋ Thêm bài vào hôm nay</button>
 
       <div className="h2">📋 Buổi tập của tôi</div>
       <div className="tsub" style={{marginTop:2}}>Tự lên lịch & thiết kế buổi tập riêng (cho hôm nay hoặc cho từng điểm yếu).</div>
@@ -2146,6 +2289,20 @@ function Training(){
         onSave={upsertPlan} onDel={builder.id?()=>delPlan(builder.id):null} close={()=>setBuilder(null)}/>}
       {drillBuilder && <DrillBuilder init={drillBuilder.key?drillBuilder:null} onSave={addCustomDrill} close={()=>setDrillBuilder(null)}/>}
       {pbuilder && <ProblemBuilder init={pbuilder.key?pbuilder:null} onSave={addCustomProblem} close={()=>setPbuilder(null)}/>}
+      {addPlanOpen && <div className="scrim" onClick={()=>setAddPlanOpen(false)}>
+        <div className="sheet" onClick={e=>e.stopPropagation()}>
+          <h3>Thêm bài vào hôm nay</h3>
+          <div className="muted small" style={{margin:'-8px 0 8px'}}>Chạm bài để thêm/bỏ khỏi buổi tập hôm nay.</div>
+          {Object.entries(DRILL_CATS).map(([ck,cv])=>{ const ds=allDrills.filter(d=>d.cat===ck); if(!ds.length) return null; return (
+            <div key={ck} style={{marginBottom:6}}>
+              <div className="small" style={{margin:'4px 0',color:cv.c,fontWeight:800}}>{cv.t}</div>
+              <div className="presets" style={{justifyContent:'flex-start'}}>
+                {ds.map(d=><button key={d.key} type="button" className={'chip'+(planAdd.includes(d.key)?' on':'')} onClick={()=>togglePlanAdd(d.key)}>{d.name}</button>)}
+              </div>
+            </div>); })}
+          <button className="btn wide" style={{marginTop:8}} onClick={()=>setAddPlanOpen(false)}>Xong</button>
+        </div>
+      </div>}
     </div>
   );
 }
