@@ -398,6 +398,13 @@ body{
 </script>
 <script type="text/babel" data-presets="react">
 const {useState,useEffect,useRef,useCallback} = React;
+// State gắn với localStorage: trả về [giá trị, lưu]. `lưu` nhận giá trị hoặc hàm cập nhật,
+// ghi vào store ngay trong updater nên chạm nhanh liên tiếp không mất dữ liệu.
+function usePersist(key, def){
+  const [val,setVal]=useState(()=>store.get(key,def));
+  const save=(v)=>{ setVal(prev=>{ const nv=(typeof v==='function')?v(prev):v; store.set(key,nv); return nv; }); };
+  return [val, save];
+}
 
 /* ---------- Đồng bộ đám mây (Supabase) ---------- */
 const SB_URL='https://ltmlueqkajqmduoqghdf.supabase.co';
@@ -414,6 +421,10 @@ const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
   'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes'];
+// Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
+// DATA = dữ liệu người dùng (trận, thế bi, lỗi, tập luyện...) + vài key ngày-cục-bộ không đồng bộ.
+const PREF_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
+const DATA_KEYS=SYNC_KEYS.filter(k=>!PREF_KEYS.includes(k)).concat(['nc.planAdd','nc.planHidden']);
 const cloudSnap=()=>{ const d={}; SYNC_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) d[k]=v; }); return d; };
 const cloudApply=(data)=>{ if(!data) return; Object.keys(data).forEach(k=>{ if(k.indexOf('nc.')===0 && k!=='nc._syncAt'){ const v=data[k]; try{ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }catch(e){} } }); };
 const cloudHasLocal=()=>['nc.matches','nc.training','nc.ghost','nc.positions','nc.mistakes','nc.plans','nc.customDrills','nc.customProblems','nc.tips'].some(k=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v && (Array.isArray(v)? v.length : Object.keys(v).length); }catch(e){ return false; } });
@@ -581,6 +592,13 @@ function saveCustomMistake(name){ name=(name||'').trim(); if(!name) return false
 function getCustomMistakes(){ return (store.get('nc.customMistakes',[])||[]).filter(x=>!MISTAKES.includes(x)); }
 // Số lần mắc lỗi x trong 1 trận: dùng bảng đánh dấu (mistakeCounts) nếu có, mặc định 1.
 const misCount=(m,x)=> (m&&m.mistakeCounts&&m.mistakeCounts[x])||1;
+// Gom lỗi thành { tên: số lần } từ danh sách trận (+ danh sách lỗi tự ghi tuỳ chọn).
+function aggMistakes(matches, extra){
+  const agg={};
+  (matches||[]).forEach(m=>entryMistakes(m,'mistakes').forEach(x=>agg[x]=(agg[x]||0)+misCount(m,x)));
+  (extra||[]).forEach(e=>entryMistakes(e,'tags').forEach(x=>agg[x]=(agg[x]||0)+1));
+  return agg;
+}
 // Gợi ý cách sửa ngắn gọn cho từng lỗi — dùng để dựng "Kỹ thuật cần tập" trong Tổng hợp.
 const FIX_TIPS={
   'Đẩy cơ lệch':'Đưa cơ thẳng trục, khuỷu tay thả dọc; quay video kiểm tra đường cơ.',
@@ -1269,7 +1287,7 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
     try{ await cloudChangePassword(npass); setNpMsg('✓ Đã đổi mật khẩu. Dùng mật khẩu mới này để đăng nhập trên điện thoại.'); setNpass(''); setNpass2(''); }
     catch(err){ setNpMsg('Lỗi: '+(err.message||'không đổi được mật khẩu')); }
     setNpBusy(false); };
-  const KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes'];
+  const KEYS=SYNC_KEYS;   // sao lưu dùng chung danh sách với đồng bộ đám mây (một nguồn duy nhất)
   const [sego,setSego]=useState(()=>store.get('nc.segorder',{})||{});
   const segOrderOf=(g)=>{ const def=SEG_DEFS[g].items.map(i=>i[0]); const saved=Array.isArray(sego[g])?sego[g].filter(k=>def.includes(k)):[]; def.forEach(k=>{ if(!saved.includes(k)) saved.push(k); }); return saved; };
   const moveSeg=(g,i,dir)=>{ const arr=segOrderOf(g).slice(); const j=i+dir; if(j<0||j>=arr.length) return; const x=arr[i]; arr[i]=arr[j]; arr[j]=x; const next={...sego,[g]:arr}; setSego(next); store.set('nc.segorder',next); };
@@ -1347,7 +1365,7 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
   };
   const clearAll=()=>{
     if(!window.confirm('Xoá TOÀN BỘ dữ liệu (trận, thế bi, lỗi, tập luyện...) trên máy này? Cài đặt & giao diện được giữ lại. Không hoàn tác được.')) return;
-    ['nc.matches','nc.positions','nc.mistakes','nc.customMistakes','nc.training','nc.ghost','nc.ghostTypes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.tips','nc.liveTally','nc.warvotes','nc.planAdd'].forEach(k=>localStorage.removeItem(k));
+    DATA_KEYS.forEach(k=>localStorage.removeItem(k));
     if(cuser){ localStorage.removeItem('nc._syncAt'); cloudPush().finally(()=>location.reload()); } else location.reload();
   };
   return (
@@ -1473,15 +1491,28 @@ function Empty({ico,t,s,cta,onCta}){
     </div>
   );
 }
+// Một dòng thanh tiến độ có nhãn trái + số phải (dùng chung cho các bảng lỗi/đầu cơ).
+function Bar({label, right, val, max}){
+  return (
+    <div style={{margin:'7px 0'}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>{label}</span><span className="muted">{right}</span></div>
+      <div className="mbar"><div style={{width:Math.round(val/(max||1)*100)+'%'}}/></div>
+    </div>
+  );
+}
+// Dữ liệu sơ đồ một thế điều bi: bi cái + bi 9 + bi 10 + đường bi cái dự đoán.
+function posDia(p){
+  return {balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}],
+    path:cuePath(p.cue,p.obj,p.tip||{x:0,y:0},p.power!=null?p.power:0.5).pts};
+}
 
 /* ================= Nhật ký trận đấu ================= */
 // Bảng đánh dấu lỗi khi thi đấu: chạm để +1 mỗi lần mắc lỗi; cuối trận "Hết trận" → Ghi trận.
 function LiveTally({onEnd}){
-  const [tally,setTally]=useState(()=>store.get('nc.liveTally',{}));
+  const [tally,saveT]=usePersist('nc.liveTally',{});
   const [customMis,setCustomMis]=useState(getCustomMistakes);
-  const saveT=(t)=>{ setTally(t); store.set('nc.liveTally',t); };
-  // Dùng updater theo trạng thái mới nhất để không mất lượt khi chạm nhanh liên tiếp.
-  const bump=(x,d)=>{ setTally(prev=>{ const t={...prev}; const v=(t[x]||0)+d; if(v<=0) delete t[x]; else t[x]=v; store.set('nc.liveTally',t); return t; }); };
+  // saveT (usePersist) ghi ngay trong updater nên chạm nhanh liên tiếp không mất lượt.
+  const bump=(x,d)=>{ saveT(prev=>{ const t={...prev}; const v=(t[x]||0)+d; if(v<=0) delete t[x]; else t[x]=v; return t; }); };
   const onAddCustom=(name)=>{ setCustomMis(getCustomMistakes()); bump(name,1); };
   const clearAll=()=>{ if(Object.keys(tally).length===0) return; if(confirm('Xoá hết đánh dấu lỗi của trận này?')) saveT({}); };
   const total=Object.values(tally).reduce((s,n)=>s+n,0);
@@ -1532,12 +1563,11 @@ function LiveTally({onEnd}){
   );
 }
 function MatchLog(){
-  const [list,setList]=useState(()=>store.get('nc.matches',[]));
+  const [list,save]=usePersist('nc.matches',[]);
   const [form,setForm]=useState(null);
   const [analysis,setAnalysis]=useState(null);
   const [view2,setView2]=useState(orderedOpts('log')[0][0]);
   const [fRes,setFRes]=useState('all'); const [fOpp,setFOpp]=useState('all');
-  const save=(l)=>{ setList(l); store.set('nc.matches',l); };
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
     const fromLive=form&&form._live;
     const isNew=recs.some(m=>!m.id);
@@ -1552,7 +1582,7 @@ function MatchLog(){
   // Tự phân tích trận vừa ghi: lỗi mới + lỗi lặp nhiều + lỗi tự dò từ ghi chú
   const analyze=(recs)=>{
     const extra=store.get('nc.mistakes',[]);
-    const prior={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>prior[x]=(prior[x]||0)+misCount(m,x))); extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>prior[x]=(prior[x]||0)+1));
+    const prior=aggMistakes(list, extra);
     const added={}, detSet=new Set();
     recs.forEach(m=>{ const chips=new Set(m.mistakes||[]); scanNote(m.note).forEach(d=>{ if(!chips.has(d)) detSet.add(d); }); entryMistakes(m,'mistakes').forEach(x=>added[x]=(added[x]||0)+misCount(m,x)); });
     const fresh=[], heavy=[];
@@ -1562,7 +1592,7 @@ function MatchLog(){
   const del=(id)=>{ save(list.filter(x=>x.id!==id)); setForm(null); };
   const w=list.filter(m=>m.result==='W').length, l=list.filter(m=>m.result==='L').length;
   const rate=(w+l)? Math.round(w/(w+l)*100):0;
-  const mc={}; list.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>mc[x]=(mc[x]||0)+misCount(m,x)));
+  const mc=aggMistakes(list);
   const top=Object.entries(mc).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
   // Danh sách đối thủ đã từng ghi — gần nhất lên trước, để lần sau chọn lại
@@ -1699,14 +1729,11 @@ function MatchLog(){
 }
 function MistakesView(){
   const matches=store.get('nc.matches',[]);
-  const [extra,setExtra]=useState(()=>store.get('nc.mistakes',[]));
+  const [extra,saveExtra]=usePersist('nc.mistakes',[]);
   const [mform,setMform]=useState(false);
-  const saveExtra=(l)=>{ setExtra(l); store.set('nc.mistakes',l); };
   const addExtra=(rec)=>{ saveExtra([{...rec,id:uid('x'),date:todayStr()},...extra]); setMform(false); };
   const delExtra=(id)=>saveExtra(extra.filter(x=>x.id!==id));
-  const allMis={};
-  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+misCount(m,x)));
-  extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  const allMis=aggMistakes(matches, extra);
   const misTotal=Object.values(allMis).reduce((s,c)=>s+c,0);
   const misMax=Math.max(1,...Object.values(allMis));
   const catOrder=MISTAKE_CATS.map(c=>c.t).concat('Khác');
@@ -1731,10 +1758,7 @@ function MistakesView(){
               <div key={c.cat} className="card" style={{padding:'12px 14px'}}>
                 <div className="drow" style={{marginBottom:8}}><b style={{fontSize:15}}>{c.cat}</b><span className="muted small">{c.total} lượt</span></div>
                 {c.items.map(([mis,n])=>(
-                  <div key={mis} style={{margin:'7px 0'}}>
-                    <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>{mis}</span><span className="muted">{n}×</span></div>
-                    <div className="mbar"><div style={{width:Math.round(n/misMax*100)+'%'}}/></div>
-                  </div>))}
+                  <Bar key={mis} label={mis} right={n+'×'} val={n} max={misMax}/>))}
               </div>))}
           </div>
           {extra.length>0 && <>
@@ -1759,9 +1783,8 @@ function MistakesView(){
   );
 }
 function PositionsView(){
-  const [positions,setPositions]=useState(()=>store.get('nc.positions',[]));
+  const [positions,savePos]=usePersist('nc.positions',[]);
   const [pform,setPform]=useState(null);
-  const savePos=(l)=>{ setPositions(l); store.set('nc.positions',l); };
   const upsertPos=(p)=>{ savePos(p.id? positions.map(x=>x.id===p.id?p:x) : [{...p,id:uid('p'),date:todayStr()},...positions]); setPform(null); };
   const delPos=(id)=>savePos(positions.filter(x=>x.id!==id));
   const togglePosDone=(id)=>savePos(positions.map(x=>x.id===id?{...x,done:!x.done}:x));
@@ -1769,7 +1792,7 @@ function PositionsView(){
     const sug=suggestTip(p.cue,p.obj,p.nxt);
     return (
       <div key={p.id} className="card" style={{padding:12,opacity:p.done?0.72:1}}>
-        <MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}],path:cuePath(p.cue,p.obj,p.tip||{x:0,y:0},p.power!=null?p.power:0.5).pts}}/>
+        <MiniTable dia={posDia(p)}/>
         {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
         <div className="muted small" style={{marginTop:6}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{p.tip?tipLabel(p.tip):'—'}</b> · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
@@ -1800,10 +1823,7 @@ function PositionsView(){
         <div className="card" style={{padding:'12px 14px',marginTop:8}}>
           <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ &amp; thế bi còn kém</b><span className="muted small">{todo.length} thế cần tập</span></div>
           {tipRows.map(([l,n])=>(
-            <div key={l} style={{margin:'7px 0'}}>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>Đầu cơ: {l}</span><span className="muted">{n} thế</span></div>
-              <div className="mbar"><div style={{width:Math.round(n/tMax*100)+'%'}}/></div>
-            </div>))}
+            <Bar key={l} label={'Đầu cơ: '+l} right={n+' thế'} val={n} max={tMax}/>))}
         </div>}
       {positions.length===0 &&
         <Empty ico="🎱" t="Chưa có tình huống nào" s="Bấm nút trên để dựng lại thế bi bạn điều lỗi và rút kinh nghiệm."/>}
@@ -1827,9 +1847,7 @@ function SummaryView(){
   const hiddenD=store.get('nc.hiddenDrills',[]);
   const allDrills=[...customDrills,...DRILLS].filter(d=>!hiddenD.includes(d.key));
   const drillsFor=(m)=>allDrills.filter(d=>(d.fixes||[]).includes(m)).map(d=>d.name);
-  const allMis={};
-  matches.forEach(m=>entryMistakes(m,'mistakes').forEach(x=>allMis[x]=(allMis[x]||0)+misCount(m,x)));
-  extra.forEach(e=>entryMistakes(e,'tags').forEach(x=>allMis[x]=(allMis[x]||0)+1));
+  const allMis=aggMistakes(matches, extra);
   const tech=[], psy=[];
   Object.entries(allMis).forEach(([m,c])=>{ (mistakeCat(m)==='Tâm lý'?psy:tech).push([m,c]); });
   tech.sort((a,b)=>b[1]-a[1]); psy.sort((a,b)=>b[1]-a[1]);
@@ -1879,15 +1897,12 @@ function SummaryView(){
               <div className="card" style={{padding:'12px 14px',marginTop:8}}>
                 <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ còn kém</b><span className="muted small">{todo.length} thế</span></div>
                 {tipRows.map(([l,n])=>(
-                  <div key={l} style={{margin:'7px 0'}}>
-                    <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>Đầu cơ: {l}</span><span className="muted">{n} thế</span></div>
-                    <div className="mbar"><div style={{width:Math.round(n/tMax*100)+'%'}}/></div>
-                  </div>))}
+                  <Bar key={l} label={'Đầu cơ: '+l} right={n+' thế'} val={n} max={tMax}/>))}
               </div>}
             <div className="list">
               {todo.slice(0,20).map(p=>{ const sug=suggestTip(p.cue,p.obj,p.nxt); return (
                 <div key={p.id} className="card" style={{padding:10,display:'flex',gap:10,alignItems:'center'}}>
-                  <div style={{width:96,flex:'none'}}><MiniTable dia={{balls:[{x:p.cue.x,y:p.cue.y,cue:true},{x:p.obj.x,y:p.obj.y,num:9,stripe:'#e8c020'},{x:p.nxt.x,y:p.nxt.y,num:10,stripe:'#2f6fd6'}],path:cuePath(p.cue,p.obj,p.tip||{x:0,y:0},p.power!=null?p.power:0.5).pts}}/></div>
+                  <div style={{width:96,flex:'none'}}><MiniTable dia={posDia(p)}/></div>
                   <div style={{flex:1,minWidth:0}}>
                     {p.note && <div className="preline" style={{fontSize:13,lineHeight:1.4}}>{p.note}</div>}
                     <div className="muted small" style={{marginTop:3}}>bạn đánh: {p.tip?tipLabel(p.tip):'—'} · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
@@ -3004,9 +3019,8 @@ function platformIco(u){ if(/spotify/i.test(u)) return '🟢'; if(/youtu/i.test(
 function platformName(u){ if(/spotify/i.test(u)) return 'Spotify'; if(/youtu/i.test(u)) return 'YouTube'; return 'Link nhạc'; }
 function MusicLinks({kkey}){
   const KK=kkey||'nc.music';
-  const [list,setList]=useState(()=>store.get(KK,[]));
+  const [list,save]=usePersist(KK,[]);
   const [url,setUrl]=useState(''); const [label,setLabel]=useState('');
-  const save=(l)=>{ setList(l); store.set(KK,l); };
   const add=()=>{ let u=url.trim(); if(!u) return; if(!/^https?:\/\//i.test(u)) u='https://'+u;
     save([{id:uid('mu'),url:u,label:label.trim()||platformName(u)},...list]); setUrl(''); setLabel(''); };
   const del=(id)=>save(list.filter(x=>x.id!==id));
@@ -3029,10 +3043,9 @@ function MusicLinks({kkey}){
   );
 }
 function MyTips(){
-  const [list,setList]=useState(()=>store.get('nc.tips',[]));
+  const [list,save]=usePersist('nc.tips',[]);
   const [txt,setTxt]=useState('');
   const [editId,setEditId]=useState(null);
-  const save=(l)=>{ setList(l); store.set('nc.tips',l); };
   const submit=()=>{ const t=txt.trim(); if(!t) return;
     if(editId){ save(list.map(x=>x.id===editId?{...x,t}:x)); setEditId(null); }
     else save([{id:uid('tip'),t},...list]);
