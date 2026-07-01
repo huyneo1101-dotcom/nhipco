@@ -308,6 +308,72 @@ body{
 .editrow .x{background:transparent;border:none;color:var(--danger);font-size:20px;cursor:pointer;padding:4px 6px}
 .diag{position:fixed;inset:0;background:#0a241c;color:#eafff5;padding:30px;font-family:monospace;
   font-size:13px;z-index:99;display:none}
+
+/* ===== Nâng cấp giao diện — đợt 6: nền tảng chuyển động ===== */
+:root{ --r-sm:12px; --dur:.16s; --ease:cubic-bezier(.4,0,.2,1); }
+.btn,.chip,.tab,.card,.step,.musicCard,.iconbtn,.rbtn,.stat,.mcard{
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease),border-color var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.chip:active{transform:scale(.95)}
+@media(hover:hover){
+  .chip:hover{border-color:var(--gold);color:var(--text)}
+  .btn:hover{filter:brightness(1.06)}
+  .card:hover{border-color:color-mix(in srgb,var(--gold) 38%,var(--line))}
+  .mcard:hover,.musicCard:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(0,0,0,.28)}
+  .iconbtn:hover,.rbtn:hover:not(:disabled){border-color:var(--gold)}
+}
+
+/* ===== đợt 7: empty states ===== */
+.empty{text-align:center;padding:44px 20px 30px;color:var(--muted);animation:emp .3s var(--ease)}
+@keyframes emp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.empty-ic{width:76px;height:76px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;
+  font-size:38px;background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);box-shadow:var(--shadow)}
+.empty-t{font-weight:800;font-size:16.5px;color:var(--soft);margin-bottom:6px}
+.empty-s{font-size:13px;line-height:1.55;max-width:300px;margin:0 auto}
+
+/* ===== đợt 8: chỉ số & thanh tiến độ ===== */
+.stat{background:linear-gradient(160deg,var(--card),var(--card2))}
+.stat b{font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.statstrip{gap:9px}
+.mbar{background:color-mix(in srgb,var(--line) 65%,transparent)}
+.mbar>div{transition:width .55s var(--ease)}
+.tag2{transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
+
+/* ===== đợt 9: chip + nút đồng nhất ===== */
+.modeseg button{transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
+.modeseg button.on{box-shadow:0 2px 8px color-mix(in srgb,var(--gold) 42%,transparent)}
+.btn{letter-spacing:.2px}
+.btn.ghost:active{transform:scale(.97)}
+.chip.on{box-shadow:0 2px 8px color-mix(in srgb,var(--gold) 32%,transparent)}
+@media(hover:hover){ .modeseg button:hover:not(.on){color:var(--text)} }
+
+/* ===== đợt 10: thanh tab dưới ===== */
+.tabs{gap:6px}
+.tab .ico{transition:transform var(--dur) var(--ease)}
+.tab.on{transform:translateY(-2px)}
+.tab.on .ico{transform:scale(1.1)}
+@media(hover:hover){ .tab:hover:not(.on){border-color:color-mix(in srgb,var(--gold) 40%,var(--line));color:var(--text)} }
+
+/* ===== đợt 11: header + tiêu đề mục ===== */
+.logo{box-shadow:0 4px 16px -2px color-mix(in srgb,var(--gold) 52%,transparent)}
+.brand b{letter-spacing:.4px;font-size:19px}
+.h2{font-size:13.5px;margin-top:20px}
+.h{letter-spacing:.9px}
+.tsub{max-width:520px}
+
+/* ===== đợt 13: chuyển tab ===== */
+.tabfade{flex:1;display:flex;flex-direction:column;min-height:0;animation:tabf .22s var(--ease)}
+@keyframes tabf{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ===== đợt 15: hoàn thiện ===== */
+.sheet{animation:sheetup .26s var(--ease)}
+@keyframes sheetup{from{transform:translateY(26px);opacity:.5}to{transform:none;opacity:1}}
+.scrim{animation:scrimin .2s var(--ease)}
+@keyframes scrimin{from{opacity:0}to{opacity:1}}
+.catbar{gap:8px}
+.empty-ic{transition:transform var(--dur) var(--ease)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
@@ -439,6 +505,16 @@ const CUES=[
   {tag:'Phòng thủ', t:'Một cú safety hay đáng giá bằng một cú ăn đẹp.'},
   {tag:'Tôn trọng', t:'Coi nhẹ cú dễ là lúc dễ trượt nhất. Cú nào cũng nghiêm túc.'},
   {tag:'Nhịp tay',  t:'Đưa cơ đều như con lắc — không nhanh dần, không giật.'},
+  {tag:'Cam kết',   t:'Đã cúi xuống là bắn. Còn nghi ngờ thì đứng dậy, tính lại.'},
+  {tag:'Đơn giản',  t:'Trong các cú cùng ăn được, chọn cú đơn giản nhất.'},
+  {tag:'Lực nhẹ',   t:'Phân vân về lực? Chọn nhẹ hơn — dễ kiểm soát vị trí hơn.'},
+  {tag:'Trung tâm', t:'Không cần xoáy thì đánh tâm bi. Xoáy thừa là rủi ro thừa.'},
+  {tag:'Chấp nhận', t:'Bàn xấu là một phần cuộc chơi. Chơi tốt ván bài mình được chia.'},
+  {tag:'Một cú',    t:'Cả trận chỉ là chuỗi từng-cú-một. Thắng cú này trước đã.'},
+  {tag:'Không sợ',  t:'Sợ trượt làm tay cứng. Đánh để ăn, không phải để khỏi hỏng.'},
+  {tag:'Khôn ngoan',t:'Thấy cú liều hấp dẫn? Hỏi: an toàn có khôn hơn không?'},
+  {tag:'Làm lại',   t:'Sau lỗi: hai hơi thở, đứng thẳng, coi như cú đầu tiên.'},
+  {tag:'Kết thúc',  t:'Có cơ hội dọn bàn thì đừng nương tay. Kết liễu gọn.'},
 ];
 
 const GAMES=['9-bi','10-bi'];
@@ -552,6 +628,12 @@ const BREATH=[
     phases:[['Hít vào',4,1.35],['Giữ',4,1.35],['Thở ra',4,1],['Giữ',4,1]]},
   {key:'478', name:'Thư giãn 4-7-8', note:'Hạ nhịp tim sâu, thư giãn — hợp lúc ngồi chờ đối thủ.',
     phases:[['Hít vào',4,1.35],['Giữ',7,1.35],['Thở ra',8,1]]},
+  {key:'coherent', name:'Cân bằng 5-5', note:'Thở đều 5-5, đưa tim và não về cân bằng — hợp giữa các ván.',
+    phases:[['Hít vào',5,1.35],['Thở ra',5,1]]},
+  {key:'triangle', name:'Tam giác 4-4-6', note:'Thở ra dài hơn hít vào — làm dịu nhanh khi căng thẳng.',
+    phases:[['Hít vào',4,1.35],['Giữ',4,1.35],['Thở ra',6,1]]},
+  {key:'calm', name:'Xoa dịu 4-6', note:'Không nín thở, thở ra dài — dễ làm ngay tại bàn.',
+    phases:[['Hít vào',4,1.35],['Thở ra',6,1]]},
 ];
 
 /* Thư viện bài tập — dựa trên phương pháp luyện bi-a có hệ thống (deliberate practice):
@@ -650,6 +732,66 @@ const DRILLS=[
     why:'Kỹ thuật chỉ ổn định khi routine ổn định. Đây là bài "tâm" nền tảng nhất, nối thẳng với tab Routine.',
     fixes:['Nóng vội','Giật tay khi bắn','Thế đứng chưa vững'],
     dia:{balls:[{x:38,y:26,c:W},{x:68,y:26,c:R}],line:[41,26,66,26],zone:[68,26,7]}},
+  {key:'center',cat:'fund',name:'Trúng tâm bi',max:10,target:'≥8/10',
+    setup:'Bi cái sát băng đầu, đánh thẳng chạm băng cuối rồi bật về đúng đường cũ, chạm lại đầu cơ. Bi phải về thẳng, không lệch trái/phải. 10 lần.',
+    scoring:'Số lần bi cái về đúng trục thẳng, trên 10',
+    why:'Trúng tâm bi và đưa cơ thẳng là gốc của mọi cú. Lệch tâm sinh xoáy ngoài ý muốn, hỏng cả ngắm lẫn ra bi.',
+    fixes:['Đưa cơ không thẳng','Đẩy cơ lệch','Mắt rời điểm chạm'],
+    dia:{balls:[{x:14,y:26,c:W}],line:[16,26,92,26],arrows:[[92,23,18,23]]}},
+  {key:'draw_ladder',cat:'fund',name:'Thang rút bi',max:5,target:'≥3/5',
+    setup:'Cú thẳng ngắn, đánh thấp để rút bi cái về. Tăng dần khoảng rút: 1→2→3→4→5 viên gạch. Mỗi mức 3 cú, đạt thì lên mức.',
+    scoring:'Mức rút xa nhất kiểm soát được (1–5)',
+    why:'Rút bi là kỹ năng ra bi khó nhất. Tập theo bậc giúp lực rút và cổ tay ổn định, mở rộng dần.',
+    fixes:['Cú rút (draw) kém','Mất vị trí bi cái'],
+    dia:{balls:[{x:52,y:26,c:W},{x:74,y:26,c:R}],line:[55,26,71,26],arrows:[[49,26,20,26]]}},
+  {key:'follow_lane',cat:'pos',name:'Lê bi giữ làn',max:10,target:'≥6/10',
+    setup:'Pot bi rồi để bi cái LÊ tới một vùng đã định ở nửa bàn kia, giữ đường bi cái trong một "làn" hẹp. 10 cú.',
+    scoring:'Số cú bi cái dừng đúng làn, trên 10',
+    why:'Cú lê (follow) là công cụ ra bi tiến. Kiểm soát làn giúp không bị quá đường bi cái.',
+    fixes:['Cú lê kém','Bi cái đi quá đường'],
+    dia:{balls:[{x:22,y:30,c:W},{x:46,y:26,c:R}],line:[25,30,45,27],arrows:[[48,25,84,16]],zone:[82,16,8]}},
+  {key:'thincut',cat:'pot',name:'Cắt cực mỏng',max:10,target:'≥5/10',
+    setup:'Bi mục tiêu gần lỗ, đặt bi cái sao cho góc cắt ~70–80°. Ngắm mép ngoài bi, lực vừa đủ. 10 cú.',
+    scoring:'Số bi vào, trên 10 cú',
+    why:'Cú cắt mỏng cứu nhiều thế khó. Yếu cắt mỏng khiến bạn bỏ lỡ cơ hội và phải phòng thủ.',
+    fixes:['Cắt mỏng hỏng','Sai góc cắt'],
+    dia:{balls:[{x:24,y:36,c:W},{x:70,y:22,c:R}],line:[27,35,68,23],arrows:[[72,21,92,10]]}},
+  {key:'longrail',cat:'pot',name:'Bắn lỗ xa dọc băng',max:10,target:'≥5/10',
+    setup:'Bi mục tiêu sát băng dài, bi cái ở đầu kia bàn — cú xa men băng. 10 cú, đường cơ chậm và mượt.',
+    scoring:'Số bi vào, trên 10 cú',
+    why:'Cú xa men băng phơi bày lỗi ngắm và tăng tốc cú cuối. Vào đều là bằng chứng nền tảng vững.',
+    fixes:['Bắn lỗ xa kém','Cú thẳng dài hỏng'],
+    dia:{balls:[{x:14,y:12,c:W},{x:86,y:10,c:R}],line:[16,12,92,9]}},
+  {key:'combo',cat:'pot',name:'Combo 2 bi',max:8,target:'≥4/8',
+    setup:'2 bi gần thẳng hàng về lỗ; đánh bi 1 để bi 1 đẩy bi 2 vào. Thử 8 thế khác nhau.',
+    scoring:'Số combo vào, trên 8',
+    why:'Combo cần chính xác gấp đôi. Đọc được combo giúp giải thế bí và ăn nhanh.',
+    fixes:['Cú combo/chùm kém','Sai góc cắt'],
+    dia:{balls:[{x:22,y:26,c:W},{x:50,y:26,c:R},{x:64,y:26,c:R}],line:[24,26,48,26],arrows:[[66,26,92,26]]}},
+  {key:'banksys',cat:'pot',name:'Hệ băng kim cương',max:10,target:'≥4/10',
+    setup:'Dùng hệ mốc kim cương để bank 1 băng. Ghi lại điểm ngắm cho từng vị trí rồi lặp cho nhớ. 10 cú.',
+    scoring:'Số bi vào, trên 10 cú',
+    why:'Có hệ thống bank ổn định hơn đánh theo cảm giác, cứu nhiều thế không có cú trực tiếp.',
+    fixes:['Căn băng kém'],
+    dia:{balls:[{x:30,y:38,c:W},{x:50,y:30,c:R}],line:[33,37,49,31],arrows:[[51,29,70,8],[70,8,90,40]]}},
+  {key:'break9',cat:'brk',name:'Phá 9-bi chuẩn',max:10,target:'≥6/10',
+    setup:'Phá phom 9-bi từ vị trí quen. Mục tiêu: bi 1 chạm dày, có bi vào HOẶC bi cái về giữa bàn còn cú kế. 10 lần.',
+    scoring:'Số cú phá đạt (vào bi hoặc giữ được thế), trên 10',
+    why:'Phá tốt cho bạn lượt và thế. Chạm dày bi 1 + kiểm soát bi cái quan trọng hơn phá thật mạnh.',
+    fixes:['Phá bi kém','Cú phá kém'],
+    dia:{balls:[{x:14,y:26,c:W},{x:58,y:26,c:R},{x:64,y:22,c:Y},{x:64,y:30,c:Y},{x:70,y:18,c:Y},{x:70,y:26,c:Y},{x:70,y:34,c:Y}],arrows:[[17,26,55,26]]}},
+  {key:'snooker_esc',cat:'saf',name:'Thoát snooker',max:8,target:'≥5/8',
+    setup:'Đặt bi cái bị che sau một bi chắn. Dùng 1 băng để chạm được bi mục tiêu hợp lệ. 8 thế khác nhau.',
+    scoring:'Số lần chạm hợp lệ (không phạm lỗi), trên 8',
+    why:'Bị snooker mà thoát sạch giúp tránh mất lượt và không tặng bi cầm tay cho đối thủ.',
+    fixes:['Safety hớ','Căn băng kém'],
+    dia:{balls:[{x:26,y:30,c:W},{x:40,y:30,c:G},{x:78,y:20,c:R}],arrows:[[26,33,50,46],[50,46,80,22]]}},
+  {key:'pressure',cat:'men',name:'Cú áp lực (1 cú ăn cả)',max:10,target:'≥7/10',
+    setup:'Mỗi cú tự đặt "trượt là thua". Làm đủ routine, thở 1 nhịp, bắn dứt khoát. 10 cú vừa khó vừa quan trọng.',
+    scoring:'Số cú vào dưới áp lực tự tạo, trên 10',
+    why:'Tập bắn khi tim đập nhanh — mô phỏng cú quyết định. Bình tĩnh dưới áp lực luyện được.',
+    fixes:['Run tay khi căng','Mất bình tĩnh sau lỗi','Nóng vội'],
+    dia:{balls:[{x:24,y:34,c:W},{x:66,y:20,c:R}],line:[27,33,64,21],zone:[66,20,7]}},
 ];
 const drillByKey=(k)=>DRILLS.find(d=>d.key===k);
 
@@ -679,6 +821,38 @@ const PROBLEMS=[
     sit:'Ăn được bi trước mặt nhưng bi cái sẽ kẹt, không có cú kế.',
     fix:'Đừng chỉ nghĩ "vào lỗ". Tìm đường ra bi 2 băng: cho bi cái chạm băng rồi quay về vùng trống có cú kế. Chọn lực và xoáy để điều bi cái — nếu không có đường ra tốt, cân nhắc đổi thứ tự bi hoặc đánh chắc + để bi cái an toàn.',
     dia:{balls:[{x:40,y:30,c:W},{x:62,y:20,c:R},{x:24,y:40,c:Y}],arrows:[[42,30,88,44],[88,44,40,46]]}},
+  {key:'doublekiss',name:'Nguy cơ "hôn" bi (double kiss)',tag:'Tránh chạm lại',
+    sit:'Cắt mỏng bi sát băng — bi cái dễ chạm LẠI bi mục tiêu lần hai, làm hỏng cú.',
+    fix:'Đưa bi cái RỜI khỏi đường bi mục tiêu ngay sau chạm: thêm chút xoáy phù hợp hoặc đổi góc để bi cái né ra. Nếu không tránh được, chọn cú khác — double kiss vừa trượt vừa để lại thế xấu.',
+    dia:{balls:[{x:26,y:12,c:W},{x:60,y:9,c:R}],line:[29,12,58,10],arrows:[[60,9,84,20]]}},
+  {key:'scratchrisk',name:'Dễ chết cái vào lỗ',tag:'Tránh chết cái',
+    sit:'Cú thẳng vào lỗ góc, bi cái có xu hướng lăn theo vào luôn lỗ đó.',
+    fix:'Dùng cú DỪNG hoặc RÚT nhẹ để bi cái không theo. Hoặc lệch một chút cho bi cái đi ngang. Đừng đánh tâm bi lực mạnh — bi cái sẽ theo chân bi mục tiêu xuống lỗ.',
+    dia:{balls:[{x:24,y:26,c:W},{x:70,y:16,c:R}],line:[27,25,69,17]}},
+  {key:'twoway',name:'Cú hai đường (ăn hoặc an toàn)',tag:'Cú 2 mục đích',
+    sit:'Cú khó ~50/50, nếu trượt sẽ tặng thế đẹp cho đối thủ.',
+    fix:'Chọn đường sao cho: nếu vào thì tốt, nếu trượt thì bi cái vẫn về chỗ an toàn. Điều chỉnh lực để "trượt cũng an toàn" — đây là cú khôn nhất khi thế 50/50.',
+    dia:{balls:[{x:22,y:34,c:W},{x:58,y:22,c:R}],line:[25,33,56,23],arrows:[[60,21,88,10],[60,23,86,40]]}},
+  {key:'railcue',name:'Bi cái dính băng',tag:'Cái sát băng',
+    sit:'Bi cái sát/dính mặt băng — không đánh thấp hay xoáy mạnh được.',
+    fix:'Chỉ đánh được nửa trên hoặc tâm bi. Đưa cơ SONG SONG mặt băng, tránh chọc xuống làm nhảy bi. Giảm kỳ vọng ra bi, ưu tiên cú chắc và giữ thế.',
+    dia:{balls:[{x:20,y:9,c:W},{x:60,y:24,c:R}],line:[23,10,58,23]}},
+  {key:'lastpos',name:'Ra bi cho bi kết (8/9)',tag:'Ra bi kết',
+    sit:'Còn bi áp chót; ăn xong phải để bi cái vào đúng chỗ đánh bi 8/9.',
+    fix:'Lên kế hoạch NGƯỢC: bi kết cần bi cái ở đâu → chọn đường ra bi cho cú áp chót theo đó. Ưu tiên vùng ra bi RỘNG thay vì điểm hẹp. Ăn chắc + ra bi khá hơn là cố hoàn hảo rồi hỏng.',
+    dia:{balls:[{x:30,y:36,c:W},{x:52,y:26,c:R},{x:80,y:16,c:Y}],line:[33,35,51,27],arrows:[[53,25,78,17]]}},
+  {key:'clustersafe',name:'Phá cụm mà vẫn an toàn',tag:'Phá + safe',
+    sit:'Cần tách cụm bi nhưng nếu tách hớ, đối thủ ăn hết.',
+    fix:'Đánh một cú đang ăn sao cho bi cái chạm NHẸ rìa cụm (tách 1 bi) rồi về chỗ khó cho đối thủ. Không có cú ăn đi kèm thì safety đẩy nhẹ vào cụm và giấu bi cái, chờ thế tốt hơn.',
+    dia:{balls:[{x:22,y:30,c:W},{x:58,y:24,c:R},{x:61,y:27,c:R},{x:59,y:30,c:R},{x:40,y:40,c:Y}],arrows:[[25,30,55,26]]}},
+  {key:'longsafe',name:'Safety đường dài',tag:'Safety dài',
+    sit:'Không có cú ăn; cần khóa bi cái xa để đối thủ khó.',
+    fix:'Đẩy bi mục tiêu về một đầu bàn và bi cái về đầu KIA — càng xa nhau càng khó. Kiểm soát lực để cả hai bi dừng đúng ý. Ẩn được bi cái sau bi khác (snooker) là điểm cộng lớn.',
+    dia:{balls:[{x:18,y:26,c:W},{x:80,y:26,c:R}],arrows:[[21,26,40,26],[80,26,90,30]]}},
+  {key:'combovsbank',name:'Chọn combo hay bank?',tag:'Ra quyết định',
+    sit:'Bi khó ăn trực tiếp; vừa có đường combo vừa có đường bank.',
+    fix:'Chọn đường ÍT biến số hơn: combo cần 2 điểm chạm chuẩn, bank cần đọc góc + lực. Combo gần & thẳng hàng thì ưu tiên combo; khoảng bank quen thì bank. Không rõ đường nào chắc thì safety.',
+    dia:{balls:[{x:24,y:34,c:W},{x:48,y:30,c:R},{x:60,y:30,c:R}],arrows:[[50,29,80,12]]}},
 ];
 
 const todayStr=()=> new Date().toISOString().slice(0,10);
@@ -760,6 +934,10 @@ const STRETCHES=[
   {n:'Nghiêng & xoay cổ',  h:'Nghiêng đầu sang hai bên rồi xoay nhẹ, không giật.', s:20},
   {n:'Vặn nhẹ thân/hông',  h:'Hai tay chống hông, xoay eo mở khớp hông.', s:20},
   {n:'Bung & nắm ngón tay',h:'Nắm chặt rồi xòe mạnh các ngón 10 lần, làm nóng bàn tay.', s:20},
+  {n:'Xoay cánh tay',      h:'Vẽ vòng tròn lớn bằng cả cánh tay, đổi hai chiều.', s:20},
+  {n:'Ép ngón & cổ tay',   h:'Duỗi thẳng tay, dùng tay kia kéo nhẹ các ngón về sau.', s:20},
+  {n:'Nghiêng thân',       h:'Một tay giơ cao, nghiêng người sang bên; đổi bên.', s:20},
+  {n:'Hít thở sâu',        h:'Ba hơi thở sâu, thả lỏng vai và hàm trước khi vào trận.', s:15},
 ];
 const WAR_QUOTES=[
   'Vào bàn là để THẮNG — không phải để hy vọng.',
@@ -791,6 +969,21 @@ const WAR_QUOTES=[
   'Khi mệt mỏi, kỷ luật thay cho cảm hứng.',
   'Người vô địch là người đứng dậy thêm một lần.',
   'Làm chủ bi cái là làm chủ ván cờ.',
+  'Không kiểm soát được đối thủ. Kiểm soát được cú của mày.',
+  'Bàn không nói dối. Cứ đánh đúng, nó sẽ trả công.',
+  'Thắng nhờ trăm cú nhàm chán, không nhờ một cú xuất thần.',
+  'Bình tĩnh không phải bẩm sinh — là chọn lựa từng cú.',
+  'Đừng chứng minh cho ai. Chỉ đánh cú của mình.',
+  'Cú khó cũng chỉ là cú dễ mà mày chưa tập đủ.',
+  'Giữ nhịp của mày, đối thủ sẽ phải chơi theo.',
+  'Thua một ván, học một bài. Không ván nào phí.',
+  'Tay lạnh, đầu tỉnh, mắt trên bi mục tiêu.',
+  'Đừng sợ cơ hội. Mày sinh ra để đứng ở đây.',
+  'Khó khăn là bộ lọc — nó loại người vội vàng.',
+  'Một safety đúng lúc đáng giá bằng ba cú ăn.',
+  'Đánh chắc khi dẫn, đánh gan khi bị dồn.',
+  'Cơ trong tay, thế trong đầu, thắng trong tim.',
+  'Mỗi lần cúi xuống bàn là một lời hứa với chính mình.',
 ];
 const RESET_LINES=[
   'Một cú là một cú. Thở ra, làm lại.',
@@ -830,7 +1023,7 @@ function App(){
         </div>
       </div>
 
-      <div className="body">{tabView(tab)}</div>
+      <div className="body"><div key={tab} className="tabfade">{tabView(tab)}</div></div>
 
       <div className="tabs" ref={tabRef}>
         {order.map(id=>{ const d=TAB_DEFS.find(t=>t.id===id); return d&&<TabBtn key={id} id={id} cur={tab} set={setTab} ico={d.ico} lab={d.lab}/>; })}
@@ -1128,6 +1321,35 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
     };
     r.readAsText(f);
   };
+  const loadDemo=()=>{
+    const d=(n)=>{ const t=new Date(); t.setDate(t.getDate()-n); return t.toISOString().slice(0,10); };
+    const M=[
+      {id:'demoW1',date:d(1),opp:'Tuấn',result:'W',score:'7-5',game:'9-bi',feel:4,mistakes:['Cắt mỏng hỏng','Nóng vội'],mistakeCounts:{'Cắt mỏng hỏng':3},note:'Phá tốt nhưng cắt mỏng còn run. Giữ đầu yên hơn ở cú quyết định.'},
+      {id:'demoL1',date:d(3),opp:'Hùng',result:'L',score:'4-7',game:'10-bi',feel:2,mistakes:['Mất vị trí bi cái','Căn băng kém'],note:'Ra bi kém, hay bị kẹt; đọc bàn sai vài ván.'},
+      {id:'demoW2',date:d(6),opp:'Tuấn',result:'W',score:'7-6',game:'9-bi',feel:5,mistakes:['Lực quá mạnh'],note:'Trận hay, bình tĩnh lúc bị rượt.'},
+      {id:'demoL2',date:d(9),opp:'Minh',result:'L',score:'5-7',game:'10-bi',feel:3,mistakes:['Bỏ lỡ cú dễ','Run tay khi căng'],mistakeCounts:{'Bỏ lỡ cú dễ':2},note:'Trượt 2 cú dễ ở cuối vì căng tay.'},
+      {id:'demoW3',date:d(12),opp:'Hùng',result:'W',score:'7-4',game:'10-bi',feel:4,mistakes:['Nhổm người sớm'],note:'Khá ổn, giữ được nhịp đưa cơ.'},
+    ];
+    const P=[
+      {id:'demoP1',date:d(3),cue:{x:24,y:36},obj:{x:54,y:22},nxt:{x:80,y:38},tip:{x:-0.4,y:0.5},power:0.6,note:'Bi cụm sát băng, điều bi ra bị kẹt.',done:false},
+      {id:'demoP2',date:d(6),cue:{x:30,y:20},obj:{x:60,y:34},nxt:{x:40,y:44},tip:{x:0.3,y:-0.5},power:0.5,note:'Rút bi về nhưng quá đà, mất vị trí.',done:false},
+    ];
+    const T=[
+      {id:'demoT1',date:d(2),drill:'stop',score:7,max:10},
+      {id:'demoT2',date:d(2),drill:'cutladder',score:3,max:5},
+      {id:'demoT3',date:d(4),drill:'lineup',score:9,max:15},
+      {id:'demoT4',date:d(7),drill:'follow_draw',score:6,max:10},
+    ];
+    const merge=(key,demo)=>{ const cur=store.get(key,[])||[]; const ids=new Set(cur.map(x=>x.id)); const add=demo.filter(x=>!ids.has(x.id)); store.set(key,[...add,...cur]); };
+    if(!window.confirm('Nạp dữ liệu mẫu (5 trận, 2 thế bi, vài buổi tập) để xem thử? Sẽ THÊM vào dữ liệu hiện có; xoá lại được sau.')) return;
+    merge('nc.matches',M); merge('nc.positions',P); merge('nc.training',T);
+    if(cuser){ localStorage.removeItem('nc._syncAt'); cloudPush().finally(()=>location.reload()); } else location.reload();
+  };
+  const clearAll=()=>{
+    if(!window.confirm('Xoá TOÀN BỘ dữ liệu (trận, thế bi, lỗi, tập luyện...) trên máy này? Cài đặt & giao diện được giữ lại. Không hoàn tác được.')) return;
+    ['nc.matches','nc.positions','nc.mistakes','nc.customMistakes','nc.training','nc.ghost','nc.ghostTypes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.tips','nc.liveTally','nc.warvotes','nc.planAdd'].forEach(k=>localStorage.removeItem(k));
+    if(cuser){ localStorage.removeItem('nc._syncAt'); cloudPush().finally(()=>location.reload()); } else location.reload();
+  };
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
@@ -1219,6 +1441,14 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
           </div>
           <input ref={fileRef} type="file" accept="application/json,.json" style={{display:'none'}} onChange={importData}/>
         </div>
+        <div className="field">
+          <label>🎲 Dữ liệu mẫu</label>
+          <div className="muted" style={{fontSize:12,marginBottom:8,lineHeight:1.5}}>Nạp vài trận & thế bi mẫu để xem app hoạt động thế nào. Hoặc xoá sạch để bắt đầu lại.</div>
+          <div style={{display:'flex',gap:10}}>
+            <button className="btn ghost" style={{flex:1}} onClick={loadDemo}>🎲 Nạp mẫu</button>
+            <button className="btn ghost" style={{flex:1,color:'var(--danger)'}} onClick={clearAll}>🗑 Xoá toàn bộ</button>
+          </div>
+        </div>
         <div className="muted" style={{fontSize:12,lineHeight:1.6,marginTop:8}}>
           <b style={{color:'var(--soft)'}}>Mẹo dùng:</b><br/>
           • <b>Nhịp thở</b>: chọn Hộp hoặc 4-7-8, làm 3–4 vòng khi hồi hộp.<br/>
@@ -1233,12 +1463,13 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
 }
 
 /* ================= shared bits ================= */
-function Empty({ico,t,s}){
+function Empty({ico,t,s,cta,onCta}){
   return (
-    <div style={{textAlign:'center',padding:'46px 20px',color:'var(--muted)'}}>
-      <div style={{fontSize:46,marginBottom:10}}>{ico}</div>
-      <div style={{fontWeight:800,fontSize:16,color:'var(--soft)',marginBottom:6}}>{t}</div>
-      <div style={{fontSize:13,lineHeight:1.5,maxWidth:300,margin:'0 auto'}}>{s}</div>
+    <div className="empty">
+      <div className="empty-ic">{ico}</div>
+      <div className="empty-t">{t}</div>
+      <div className="empty-s">{s}</div>
+      {cta && onCta && <button className="btn acc" style={{marginTop:16,padding:'11px 20px'}} onClick={onCta}>{cta}</button>}
     </div>
   );
 }
@@ -1305,6 +1536,7 @@ function MatchLog(){
   const [form,setForm]=useState(null);
   const [analysis,setAnalysis]=useState(null);
   const [view2,setView2]=useState(orderedOpts('log')[0][0]);
+  const [fRes,setFRes]=useState('all'); const [fOpp,setFOpp]=useState('all');
   const save=(l)=>{ setList(l); store.set('nc.matches',l); };
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
     const fromLive=form&&form._live;
@@ -1335,6 +1567,8 @@ function MatchLog(){
   const view=[...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id>a.id?1:-1));
   // Danh sách đối thủ đã từng ghi — gần nhất lên trước, để lần sau chọn lại
   const oppNames=[]; view.forEach(m=>{ const n=(m.opp||'').trim(); if(n&&!oppNames.includes(n)) oppNames.push(n); });
+  // Lọc lịch sử theo kết quả + đối thủ
+  const shown=view.filter(m=>(fRes==='all'||m.result===fRes)&&(fOpp==='all'||(m.opp||'').trim()===fOpp));
   // Đối đầu theo từng đối thủ (view đã sắp mới→cũ nên kèo gặp đầu tiên là kèo gần nhất)
   const omap={}, lastHc={};
   view.forEach(m=>{ const n=(m.opp||'').trim(); if(!n) return;
@@ -1390,8 +1624,21 @@ function MatchLog(){
               {top.map(([m,c])=><span key={m} className="tag2" style={{color:'var(--warn)',borderColor:'var(--warn)'}}>{m} · {c}×</span>)}
             </div>
           </div>}
-        <div className="list">
-          {view.map(m=>{
+        {list.length>=4 && <>
+          <div className="catbar" style={{marginTop:10}}>
+            {[['all','Tất cả'],['W','Thắng'],['L','Thua'],['D','Hòa']].map(([k,t])=>
+              <button key={k} className={'chip'+(fRes===k?' on':'')} onClick={()=>setFRes(k)}>{t}</button>)}
+          </div>
+          {oppNames.length>1 &&
+            <div className="catbar" style={{marginTop:2}}>
+              <button className={'chip'+(fOpp==='all'?' on':'')} onClick={()=>setFOpp('all')}>Mọi đối thủ</button>
+              {oppNames.map(n=><button key={n} className={'chip'+(fOpp===n?' on':'')} onClick={()=>setFOpp(n)}>{n}</button>)}
+            </div>}
+        </>}
+        {shown.length===0
+          ? <div className="muted small" style={{textAlign:'center',padding:'22px 0'}}>Không có trận nào khớp bộ lọc.</div>
+          : <div className="list">
+          {shown.map(m=>{
             const feel=FEELS.find(f=>f.v===m.feel);
             return (
             <div key={m.id} className="card mcard" onClick={()=>setForm(m)}>
@@ -1408,7 +1655,7 @@ function MatchLog(){
               {m.note&&<div className="muted preline" style={{fontSize:13}}>“{m.note}”</div>}
             </div>);
           })}
-        </div>
+        </div>}
       </>}
 
       {view2==='opps' && <>
@@ -1444,81 +1691,7 @@ function MatchLog(){
             </div>}
       </>}
 
-      {view2==='mis' && <>
-        <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setMform(true)}>＋ Ghi lỗi nhớ ra (không cần trận)</button>
-        <div className="tsub">Tự tổng hợp mọi lỗi (từ trận đấu + lỗi bạn tự ghi), gom thành nhóm để biết cần sửa gì nhất.</div>
-        {misTotal===0
-          ? <Empty ico="🧠" t="Chưa có lỗi nào" s="Ghi lỗi trong trận đấu, hoặc bấm nút trên để ghi nhanh lỗi bạn nhớ ra."/>
-          : <>
-            <div className="statstrip">
-              <div className="stat"><b>{misTotal}</b><small>lượt lỗi</small></div>
-              <div className="stat"><b style={{color:'var(--gold)'}}>{catList.length}</b><small>nhóm lỗi</small></div>
-              <div className="stat"><b style={{fontSize:14,marginTop:5,display:'block'}}>{catList[0]?catList[0].cat:'—'}</b><small>cần sửa nhất</small></div>
-            </div>
-            <div className="list">
-              {catList.map(c=>(
-                <div key={c.cat} className="card" style={{padding:'12px 14px'}}>
-                  <div className="drow" style={{marginBottom:8}}><b style={{fontSize:15}}>{c.cat}</b><span className="muted small">{c.total} lượt</span></div>
-                  {c.items.map(([mis,n])=>(
-                    <div key={mis} style={{margin:'7px 0'}}>
-                      <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>{mis}</span><span className="muted">{n}×</span></div>
-                      <div className="mbar"><div style={{width:Math.round(n/misMax*100)+'%'}}/></div>
-                    </div>))}
-                </div>))}
-            </div>
-            {extra.length>0 && <>
-              <div className="h2">📝 Lỗi tự ghi gần đây</div>
-              <div className="list">
-                {extra.slice(0,12).map(e=>(
-                  <div key={e.id} className="card" style={{padding:'11px 13px'}}>
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
-                      <div style={{flex:1}}>
-                        <div className="tags">{(e.tags||[]).map(x=><span key={x} className="tag2">{x}</span>)}</div>
-                        {e.note&&<div className="muted preline" style={{fontSize:13,marginTop:5}}>“{e.note}”</div>}
-                        <div className="muted small" style={{marginTop:4}}>{fmtDate(e.date)}</div>
-                      </div>
-                      <button className="x" onClick={()=>delExtra(e.id)} style={{background:'transparent',border:'none',color:'var(--danger)',fontSize:18,cursor:'pointer'}}>✕</button>
-                    </div>
-                  </div>))}
-              </div>
-            </>}
-          </>}
-      </>}
-
-      {view2==='pos' && (()=>{
-        const todo=positions.filter(p=>!p.done);
-        const tipAgg={}; todo.forEach(p=>{ const l=tipLabel(p.tip); tipAgg[l]=(tipAgg[l]||0)+1; });
-        const tipRows=Object.entries(tipAgg).sort((a,b)=>b[1]-a[1]);
-        const tMax=Math.max(1,...tipRows.map(r=>r[1]));
-        return (
-        <>
-        <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setPform({})}>＋ Thêm tình huống điều bi</button>
-        <div className="tsub">Dựng lại thế bi bạn điều lỗi. Tập lại được rồi thì tick "Đã tập".</div>
-        <div className="poslegend">
-          <span><i className="posdot" style={{background:'#f4f1e6'}}/>Bi cái</span>
-          <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9</span>
-          <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10</span>
-        </div>
-        {todo.length>0 &&
-          <div className="card" style={{padding:'12px 14px',marginTop:8}}>
-            <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ &amp; thế bi còn kém</b><span className="muted small">{todo.length} thế cần tập</span></div>
-            {tipRows.map(([l,n])=>(
-              <div key={l} style={{margin:'7px 0'}}>
-                <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>Đầu cơ: {l}</span><span className="muted">{n} thế</span></div>
-                <div className="mbar"><div style={{width:Math.round(n/tMax*100)+'%'}}/></div>
-              </div>))}
-          </div>}
-        {positions.length===0 &&
-          <Empty ico="🎱" t="Chưa có tình huống nào" s="Bấm nút trên để dựng lại thế bi bạn điều lỗi và rút kinh nghiệm."/>}
-        {positions.filter(p=>!p.done).length>0 &&
-          <div className="list">{positions.filter(p=>!p.done).map(posCard)}</div>}
-        {positions.filter(p=>p.done).length>0 && <>
-          <div className="h2">✅ Đã tập ({positions.filter(p=>p.done).length})</div>
-          <div className="list">{positions.filter(p=>p.done).map(posCard)}</div>
-        </>}
-        </>
-        );
-      })()}
+      {/* Lỗi & Điều bi giờ nằm trong tab Tập luyện (MistakesView / PositionsView) */}
 
       {form && <MatchForm init={form} names={oppNames} lastHc={lastHc} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
     </div>
