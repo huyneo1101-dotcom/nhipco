@@ -344,7 +344,7 @@ const onCloud=(f)=>{ cloudSubs.push(f); return ()=>{ const i=cloudSubs.indexOf(f
 const cloudNotify=()=>cloudSubs.forEach(f=>{ try{f();}catch(e){} });
 const setStatus=(s)=>{ cloudStatus=s; cloudNotify(); };
 const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
-const SYNC_KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine',
+const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
   'nc.ghostTypes','nc.training','nc.ghost'];
@@ -668,11 +668,30 @@ function Seg({val,set,opts}){
     </div>
   );
 }
+/* Các nhóm mục con (segment) cho phép đổi thứ tự */
+const SEG_DEFS={
+  mind: {lab:'Tâm trí',   items:[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm'],['music','🎧 Nhạc']]},
+  table:{lab:'Tại bàn',   items:[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
+  train:{lab:'Tập luyện', items:[['drills','🎯 Luyện tập'],['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['routine','✓ Routine']]},
+  log:  {lab:'Nhật ký',   items:[['log','Lịch sử'],['opps','Đối thủ']]},
+};
+function segKeys(group){
+  const def=SEG_DEFS[group].items.map(i=>i[0]);
+  const saved=(store.get('nc.segorder',{})||{})[group];
+  const base=Array.isArray(saved)? saved.filter(k=>def.includes(k)) : [];
+  def.forEach(k=>{ if(!base.includes(k)) base.push(k); });
+  return base;
+}
+function orderedOpts(group){
+  const map={}; SEG_DEFS[group].items.forEach(i=>{ map[i[0]]=i; });
+  return segKeys(group).map(k=>map[k]);
+}
 function MindTab(){
-  const [seg,setSeg]=useState('breathe');
+  const opts=orderedOpts('mind');
+  const [seg,setSeg]=useState(opts[0][0]);
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={seg} set={setSeg} opts={[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm'],['music','🎧 Nhạc']]}/>
+      <Seg val={seg} set={setSeg} opts={opts}/>
       {seg==='breathe' && <Breathe/>}
       {seg==='cue' && <Cue/>}
       {seg==='music' && <div style={{padding:'2px 0'}}>
@@ -1001,14 +1020,28 @@ function Cue(){
 function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
   const fileRef=useRef(null);
   const [email,setEmail]=useState(''); const [pass,setPass]=useState(''); const [amsg,setAmsg]=useState(''); const [busy,setBusy]=useState(false);
-  const KEYS=['nc.theme','nc.taborder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost'];
+  const KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost'];
+  const [sego,setSego]=useState(()=>store.get('nc.segorder',{})||{});
+  const segOrderOf=(g)=>{ const def=SEG_DEFS[g].items.map(i=>i[0]); const saved=Array.isArray(sego[g])?sego[g].filter(k=>def.includes(k)):[]; def.forEach(k=>{ if(!saved.includes(k)) saved.push(k); }); return saved; };
+  const moveSeg=(g,i,dir)=>{ const arr=segOrderOf(g).slice(); const j=i+dir; if(j<0||j>=arr.length) return; const x=arr[i]; arr[i]=arr[j]; arr[j]=x; const next={...sego,[g]:arr}; setSego(next); store.set('nc.segorder',next); };
   const doAuth=async()=>{ const e=email.trim(); if(!e||!pass){ setAmsg('Nhập email và mật khẩu.'); return; } if(pass.length<6){ setAmsg('Mật khẩu tối thiểu 6 ký tự.'); return; }
     setBusy(true); setAmsg('');
     try{ await cloudSignIn(e,pass); setAmsg(''); cloudFreshLogin(); }
     catch(err){
       if(/invalid login credentials/i.test(err.message||'')){
-        try{ const d=await cloudSignUp(e,pass); if(d.session){ setAmsg('Đã tạo tài khoản.'); cloudFreshLogin(); } else { setAmsg('Đã gửi email xác nhận. Mở email bấm xác nhận rồi đăng nhập lại.'); } }
-        catch(e2){ setAmsg('Lỗi: '+(e2.message||'không đăng ký được')); }
+        try{
+          const d=await cloudSignUp(e,pass);
+          if(d.session){ setAmsg('Đã tạo tài khoản.'); cloudFreshLogin(); }
+          else {
+            // Không có session (nếu project bật xác nhận email) → backend đã tự xác nhận, thử đăng nhập lại luôn.
+            try{ await cloudSignIn(e,pass); setAmsg('Đã tạo tài khoản.'); cloudFreshLogin(); }
+            catch(e3){ setAmsg('Email này đã có tài khoản. Kiểm tra lại mật khẩu rồi thử lại.'); }
+          }
+        }
+        catch(e2){
+          if(/already|registered|exists/i.test(e2.message||'')) setAmsg('Email đã có tài khoản — nhập đúng mật khẩu để đăng nhập.');
+          else setAmsg('Lỗi: '+(e2.message||'không đăng ký được'));
+        }
       } else setAmsg('Lỗi: '+(err.message||'không đăng nhập được'));
     }
     setBusy(false); };
@@ -1088,6 +1121,22 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
           </div>
         </div>
         <div className="field">
+          <label>🔀 Thứ tự mục con (trong từng tab)</label>
+          <div className="muted" style={{fontSize:12,marginBottom:8}}>Đổi vị trí các mục bên trong mỗi tab. Mục đầu danh sách sẽ mở trước.</div>
+          {Object.keys(SEG_DEFS).map(g=>{ const list=segOrderOf(g); const map={}; SEG_DEFS[g].items.forEach(it=>{ map[it[0]]=it[1]; }); return (
+            <div key={g} style={{marginBottom:12}}>
+              <div style={{fontSize:12,fontWeight:800,color:'var(--soft)',margin:'0 0 6px'}}>{SEG_DEFS[g].lab}</div>
+              <div className="reorder">
+                {list.map((k,i)=>(
+                  <div key={k} className="rrow">
+                    <span className="rlab">{map[k]}</span>
+                    <button className="rbtn" disabled={i===0} onClick={()=>moveSeg(g,i,-1)} aria-label="Lên">↑</button>
+                    <button className="rbtn" disabled={i===list.length-1} onClick={()=>moveSeg(g,i,1)} aria-label="Xuống">↓</button>
+                  </div>))}
+              </div>
+            </div>); })}
+        </div>
+        <div className="field">
           <label>💾 Sao lưu dữ liệu</label>
           <div className="muted" style={{fontSize:12,marginBottom:8,lineHeight:1.5}}>Dữ liệu lưu trên máy này. Xuất file để giữ an toàn hoặc chuyển sang máy/điện thoại khác.</div>
           <div style={{display:'flex',gap:10}}>
@@ -1125,7 +1174,7 @@ function MatchLog(){
   const [list,setList]=useState(()=>store.get('nc.matches',[]));
   const [form,setForm]=useState(null);
   const [analysis,setAnalysis]=useState(null);
-  const [view2,setView2]=useState('log');
+  const [view2,setView2]=useState(orderedOpts('log')[0][0]);
   const save=(l)=>{ setList(l); store.set('nc.matches',l); };
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
     const isNew=recs.some(m=>!m.id);
@@ -1173,10 +1222,7 @@ function MatchLog(){
         <button className="chip on" onClick={()=>setForm({date:todayStr(),result:'W',game:'10-bi',mistakes:[],feel:3})}>＋ Ghi trận</button>
       </div>
 
-      <div className="modeseg" style={{alignSelf:'flex-start',margin:'10px 0 2px'}}>
-        <button className={view2==='log'?'on':''} onClick={()=>setView2('log')}>Lịch sử</button>
-        <button className={view2==='opps'?'on':''} onClick={()=>setView2('opps')}>Đối thủ</button>
-      </div>
+      <Seg val={view2} set={setView2} opts={orderedOpts('log')}/>
 
       {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0||(analysis.detected&&analysis.detected.length>0)) &&
         <div className="card" style={{padding:'12px 14px',marginTop:8,borderColor:'var(--gold)'}}>
@@ -2055,7 +2101,7 @@ function Training(){
   const [ghost,setGhost]=useState(()=>store.get('nc.ghost',[]));      // {id,date,game,won}
   const [scoring,setScoring]=useState(null);
   const [cat,setCat]=useState('all');
-  const [tseg,setTseg]=useState('drills');
+  const [tseg,setTseg]=useState(orderedOpts('train')[0][0]);
   const [plans,setPlans]=useState(()=>store.get('nc.plans',[]));   // buổi tập tự thiết kế
   const [builder,setBuilder]=useState(null);                       // null | {} | bản ghi
   const [customDrills,setCustomDrills]=useState(()=>store.get('nc.customDrills',[]));
@@ -2132,7 +2178,7 @@ function Training(){
 
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={tseg} set={setTseg} opts={[['drills','🎯 Luyện tập'],['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['routine','✓ Routine']]}/>
+      <Seg val={tseg} set={setTseg} opts={orderedOpts('train')}/>
       {tseg==='routine' && <Routine/>}
       {tseg==='summary' && <SummaryView/>}
       {tseg==='mistakes' && <MistakesView/>}
@@ -2309,10 +2355,10 @@ function Training(){
 
 /* ================= Tại bàn: shot clock + góc phản xạ ================= */
 function AtTable(){
-  const [seg,setSeg]=useState('clock');
+  const [seg,setSeg]=useState(orderedOpts('table')[0][0]);
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={seg} set={setSeg} opts={[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]}/>
+      <Seg val={seg} set={setSeg} opts={orderedOpts('table')}/>
       {seg==='clock' && <ShotClock/>}
       {seg==='metro' && <Metronome/>}
     </div>
