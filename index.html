@@ -374,6 +374,7 @@ async function cloudPullManual(){ setStatus('syncing'); const row=await cloudRow
   else { setStatus('synced'); window.alert('Trên mây chưa có dữ liệu.'); } }
 async function cloudSignIn(email,pass){ const {data,error}=await sbc.auth.signInWithPassword({email,password:pass}); if(error) throw error; return data; }
 async function cloudSignUp(email,pass){ const {data,error}=await sbc.auth.signUp({email,password:pass}); if(error) throw error; return data; }
+async function cloudChangePassword(newPass){ const {data,error}=await sbc.auth.updateUser({password:newPass}); if(error) throw error; return data; }
 async function cloudSignOut(){ try{ await sbc.auth.signOut(); }catch(e){} localStorage.removeItem('nc._syncAt'); }
 function cloudInit(){ if(!sbc) return;
   sbc.auth.getSession().then(({data})=>{ cloudUser=data.session?data.session.user:null; cloudNotify(); if(cloudUser){ cloudPullOnMount(); } });
@@ -1020,6 +1021,13 @@ function Cue(){
 function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
   const fileRef=useRef(null);
   const [email,setEmail]=useState(''); const [pass,setPass]=useState(''); const [amsg,setAmsg]=useState(''); const [busy,setBusy]=useState(false);
+  const [showPass,setShowPass]=useState(false);
+  const [chOpen,setChOpen]=useState(false); const [npass,setNpass]=useState(''); const [npass2,setNpass2]=useState(''); const [npMsg,setNpMsg]=useState(''); const [npBusy,setNpBusy]=useState(false);
+  const changePass=async()=>{ if(npass.length<6){ setNpMsg('Mật khẩu tối thiểu 6 ký tự.'); return; } if(npass!==npass2){ setNpMsg('Hai ô mật khẩu chưa khớp.'); return; }
+    setNpBusy(true); setNpMsg('');
+    try{ await cloudChangePassword(npass); setNpMsg('✓ Đã đổi mật khẩu. Dùng mật khẩu mới này để đăng nhập trên điện thoại.'); setNpass(''); setNpass2(''); }
+    catch(err){ setNpMsg('Lỗi: '+(err.message||'không đổi được mật khẩu')); }
+    setNpBusy(false); };
   const KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost'];
   const [sego,setSego]=useState(()=>store.get('nc.segorder',{})||{});
   const segOrderOf=(g)=>{ const def=SEG_DEFS[g].items.map(i=>i[0]); const saved=Array.isArray(sego[g])?sego[g].filter(k=>def.includes(k)):[]; def.forEach(k=>{ if(!saved.includes(k)) saved.push(k); }); return saved; };
@@ -1088,11 +1096,29 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
                     <button className="btn ghost" onClick={cloudSignOut}>Đăng xuất</button>
                   </div>
                   <div className="muted" style={{fontSize:11.5,marginTop:6,lineHeight:1.5}}>Dữ liệu tự lưu lên mây khi bạn thay đổi. Đăng nhập cùng email trên máy khác để dùng chung.</div>
+                  {!chOpen
+                    ? <button className="btn ghost" style={{marginTop:8,fontSize:13}} onClick={()=>{setChOpen(true);setNpMsg('');}}>🔑 Đổi mật khẩu</button>
+                    : <div style={{marginTop:8,padding:10,border:'1px solid var(--line)',borderRadius:11,background:'var(--card2)'}}>
+                        <div className="muted small" style={{marginBottom:8}}>Đặt mật khẩu mới cho <b style={{color:'var(--soft)'}}>{cuser.email}</b> (không cần mật khẩu cũ). Dùng mật khẩu mới này để đăng nhập trên điện thoại.</div>
+                        <div style={{display:'flex',gap:6,alignItems:'stretch',marginBottom:6}}>
+                          <input type={showPass?'text':'password'} value={npass} onChange={e=>setNpass(e.target.value)} placeholder="Mật khẩu mới (≥6 ký tự)" style={{flex:1,minWidth:0}}/>
+                          <button type="button" className="btn ghost" onClick={()=>setShowPass(s=>!s)} style={{padding:'0 12px',fontSize:16}} aria-label={showPass?'Ẩn mật khẩu':'Hiện mật khẩu'}>{showPass?'🙈':'👁'}</button>
+                        </div>
+                        <input type={showPass?'text':'password'} value={npass2} onChange={e=>setNpass2(e.target.value)} placeholder="Nhập lại mật khẩu mới" style={{width:'100%'}}/>
+                        <div style={{display:'flex',gap:8,marginTop:8}}>
+                          <button className="btn acc" style={{flex:1}} disabled={npBusy} onClick={changePass}>{npBusy?'…':'Lưu mật khẩu mới'}</button>
+                          <button className="btn ghost" onClick={()=>{setChOpen(false);setNpass('');setNpass2('');setNpMsg('');}}>Huỷ</button>
+                        </div>
+                        {npMsg && <div className="muted small" style={{marginTop:6,lineHeight:1.5}}>{npMsg}</div>}
+                      </div>}
                 </>
               : <>
                   <div className="muted small" style={{marginBottom:8}}>Đăng nhập để đồng bộ nhật ký & dữ liệu giữa máy tính và điện thoại.</div>
                   <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" style={{marginBottom:6}}/>
-                  <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Mật khẩu (≥6 ký tự)"/>
+                  <div style={{display:'flex',gap:6,alignItems:'stretch'}}>
+                    <input type={showPass?'text':'password'} value={pass} onChange={e=>setPass(e.target.value)} placeholder="Mật khẩu (≥6 ký tự)" style={{flex:1,minWidth:0}}/>
+                    <button type="button" className="btn ghost" onClick={()=>setShowPass(s=>!s)} style={{padding:'0 12px',fontSize:16}} aria-label={showPass?'Ẩn mật khẩu':'Hiện mật khẩu'}>{showPass?'🙈':'👁'}</button>
+                  </div>
                   <button className="btn acc wide" style={{marginTop:8}} disabled={busy} onClick={doAuth}>{busy?'…':'Đăng nhập / Tạo tài khoản'}</button>
                   {amsg && <div className="muted small" style={{marginTop:6}}>{amsg}</div>}
                 </>}
