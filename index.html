@@ -347,7 +347,7 @@ const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
-  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally'];
+  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes'];
 const cloudSnap=()=>{ const d={}; SYNC_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) d[k]=v; }); return d; };
 const cloudApply=(data)=>{ if(!data) return; Object.keys(data).forEach(k=>{ if(k.indexOf('nc.')===0 && k!=='nc._syncAt'){ const v=data[k]; try{ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }catch(e){} } }); };
 const cloudHasLocal=()=>['nc.matches','nc.training','nc.ghost','nc.positions','nc.mistakes','nc.plans','nc.customDrills','nc.customProblems','nc.tips'].some(k=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v && (Array.isArray(v)? v.length : Object.keys(v).length); }catch(e){ return false; } });
@@ -496,8 +496,13 @@ const MISTAKE_KW={
   'Run tay khi căng':['run tay','tay run','cang qua run'],
   'Mất bình tĩnh sau lỗi':['mat binh tinh','noi nong','tilt','cau','buc minh'],
 };
-const scanNote=(note)=>{ const n=normVN(note); if(!n) return []; const out=[]; Object.keys(MISTAKE_KW).forEach(m=>{ if(MISTAKE_KW[m].some(kw=>n.includes(kw))) out.push(m); }); return out; };
+const scanNote=(note)=>{ const n=normVN(note); if(!n) return []; const out=[]; Object.keys(MISTAKE_KW).forEach(m=>{ if(MISTAKE_KW[m].some(kw=>n.includes(kw))) out.push(m); });
+  (store.get('nc.customMistakes',[])||[]).forEach(m=>{ const nm=normVN(m); if(nm && n.includes(nm)) out.push(m); });
+  return out; };
 const entryMistakes=(arr,key)=>{ const s=new Set(arr[key]||[]); scanNote(arr.note).forEach(x=>s.add(x)); return [...s]; };
+// Lỗi tự thêm (ngoài danh mục có sẵn) — lưu để tái dùng & tự dò trong ghi chú các trận sau.
+function saveCustomMistake(name){ name=(name||'').trim(); if(!name) return false; const cur=store.get('nc.customMistakes',[])||[]; if(MISTAKES.includes(name)||cur.includes(name)) return false; store.set('nc.customMistakes',[...cur,name]); return true; }
+function getCustomMistakes(){ return (store.get('nc.customMistakes',[])||[]).filter(x=>!MISTAKES.includes(x)); }
 // Số lần mắc lỗi x trong 1 trận: dùng bảng đánh dấu (mistakeCounts) nếu có, mặc định 1.
 const misCount=(m,x)=> (m&&m.mistakeCounts&&m.mistakeCounts[x])||1;
 // Gợi ý cách sửa ngắn gọn cho từng lỗi — dùng để dựng "Kỹ thuật cần tập" trong Tổng hợp.
@@ -1071,7 +1076,7 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
     try{ await cloudChangePassword(npass); setNpMsg('✓ Đã đổi mật khẩu. Dùng mật khẩu mới này để đăng nhập trên điện thoại.'); setNpass(''); setNpass2(''); }
     catch(err){ setNpMsg('Lỗi: '+(err.message||'không đổi được mật khẩu')); }
     setNpBusy(false); };
-  const KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost','nc.liveTally'];
+  const KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden','nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes'];
   const [sego,setSego]=useState(()=>store.get('nc.segorder',{})||{});
   const segOrderOf=(g)=>{ const def=SEG_DEFS[g].items.map(i=>i[0]); const saved=Array.isArray(sego[g])?sego[g].filter(k=>def.includes(k)):[]; def.forEach(k=>{ if(!saved.includes(k)) saved.push(k); }); return saved; };
   const moveSeg=(g,i,dir)=>{ const arr=segOrderOf(g).slice(); const j=i+dir; if(j<0||j>=arr.length) return; const x=arr[i]; arr[i]=arr[j]; arr[j]=x; const next={...sego,[g]:arr}; setSego(next); store.set('nc.segorder',next); };
@@ -1242,9 +1247,11 @@ function Empty({ico,t,s}){
 // Bảng đánh dấu lỗi khi thi đấu: chạm để +1 mỗi lần mắc lỗi; cuối trận "Hết trận" → Ghi trận.
 function LiveTally({onEnd}){
   const [tally,setTally]=useState(()=>store.get('nc.liveTally',{}));
+  const [customMis,setCustomMis]=useState(getCustomMistakes);
   const saveT=(t)=>{ setTally(t); store.set('nc.liveTally',t); };
   // Dùng updater theo trạng thái mới nhất để không mất lượt khi chạm nhanh liên tiếp.
   const bump=(x,d)=>{ setTally(prev=>{ const t={...prev}; const v=(t[x]||0)+d; if(v<=0) delete t[x]; else t[x]=v; store.set('nc.liveTally',t); return t; }); };
+  const onAddCustom=(name)=>{ setCustomMis(getCustomMistakes()); bump(name,1); };
   const clearAll=()=>{ if(Object.keys(tally).length===0) return; if(confirm('Xoá hết đánh dấu lỗi của trận này?')) saveT({}); };
   const total=Object.values(tally).reduce((s,n)=>s+n,0);
   const ticked=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
@@ -1280,6 +1287,15 @@ function LiveTally({onEnd}){
               <button key={x} className={'chip'+(n>0?' on':'')} onClick={()=>bump(x,1)}>{x}{n>0?' · '+n:''}</button>); })}
           </div>
         </div>))}
+      <div style={{marginTop:8}}>
+        <div className="muted small" style={{fontWeight:800,margin:'2px 0 5px'}}>🆕 Tự thêm</div>
+        {customMis.length>0 &&
+          <div className="presets" style={{justifyContent:'flex-start'}}>
+            {customMis.map(x=>{ const n=tally[x]||0; return (
+              <button key={x} className={'chip'+(n>0?' on':'')} onClick={()=>bump(x,1)}>{x}{n>0?' · '+n:''}</button>); })}
+          </div>}
+        <CustomMisAdd onAdd={onAddCustom}/>
+      </div>
       <div style={{height:8}}/>
     </div>
   );
@@ -1711,10 +1727,24 @@ function SummaryView(){
     </div>
   );
 }
+// Ô nhập nhanh 1 lỗi ngoài danh mục: lưu vào nc.customMistakes rồi chọn luôn.
+function CustomMisAdd({onAdd}){
+  const [v,setV]=useState('');
+  const add=()=>{ const name=v.trim(); if(!name) return; saveCustomMistake(name); onAdd(name); setV(''); };
+  return (
+    <div style={{display:'flex',gap:6,marginTop:6}}>
+      <input value={v} onChange={e=>setV(e.target.value)} placeholder="Lỗi khác (tự ghi)…" style={{flex:1,minWidth:0}}
+        onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } }}/>
+      <button type="button" className="btn ghost" style={{padding:'0 14px',flex:'none'}} onClick={add}>＋ Thêm</button>
+    </div>
+  );
+}
 function MistakeForm({onSave,close}){
   const [tags,setTags]=useState([]);
   const [note,setNote]=useState('');
+  const [customMis,setCustomMis]=useState(getCustomMistakes);
   const toggle=(x)=>setTags(t=>t.includes(x)?t.filter(y=>y!==x):[...t,x]);
+  const onAddCustom=(name)=>{ setCustomMis(getCustomMistakes()); setTags(t=>t.includes(name)?t:[...t,name]); };
   return (
     <div className="scrim" onClick={close}>
       <div className="sheet" onClick={e=>e.stopPropagation()}>
@@ -1722,8 +1752,9 @@ function MistakeForm({onSave,close}){
         <div className="muted small" style={{margin:'-8px 0 10px'}}>Lỗi bạn nhận ra (dù không gắn với trận cụ thể) — sẽ được gom vào tổng hợp lỗi.</div>
         <div className="field"><label>Chọn lỗi</label>
           <div className="presets" style={{justifyContent:'flex-start'}}>
-            {MISTAKES.map(x=><button key={x} type="button" className={'chip'+(tags.includes(x)?' on':'')} onClick={()=>toggle(x)}>{x}</button>)}
-          </div></div>
+            {[...MISTAKES,...customMis].map(x=><button key={x} type="button" className={'chip'+(tags.includes(x)?' on':'')} onClick={()=>toggle(x)}>{x}</button>)}
+          </div>
+          <CustomMisAdd onAdd={onAddCustom}/></div>
         <div className="field"><label>Ghi chú (tuỳ chọn)</label>
           <textarea rows="3" value={note} onChange={e=>setNote(e.target.value)} placeholder="Bối cảnh, cách khắc phục bạn nghĩ ra..."/></div>
         <button className="btn wide" disabled={tags.length===0&&!note.trim()}
@@ -1832,9 +1863,11 @@ function PositionEditor({init,onSave,onDel,close}){
 function MatchForm({init,names,lastHc,onSave,onDel,close}){
   const [m,setM]=useState({opp:'',score:'',note:'',handicap:'',score2:'',...init});
   const [two,setTwo]=useState(false);
+  const [customMis,setCustomMis]=useState(getCustomMistakes);
   const set=(k,v)=>setM(p=>({...p,[k]:v}));
   const pickOpp=(n)=>setM(p=>({...p,opp:n,handicap:(p.handicap&&p.handicap.trim())?p.handicap:((lastHc&&lastHc[n])||'')}));
   const toggle=(x)=>setM(p=>({...p,mistakes:(p.mistakes||[]).includes(x)?p.mistakes.filter(y=>y!==x):[...(p.mistakes||[]),x]}));
+  const onAddCustom=(name)=>{ setCustomMis(getCustomMistakes()); setM(p=>({...p,mistakes:(p.mistakes||[]).includes(name)?p.mistakes:[...(p.mistakes||[]),name]})); };
   const enableTwo=()=>{ setTwo(true); setM(p=>({...p,result2:p.result2||'W'})); };
   const RES=[['W','Thắng'],['D','Hòa'],['L','Thua']];
   const submit=()=>{
@@ -1894,8 +1927,9 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
           </div></div>
         <div className="field"><label>Lỗi mắc phải (chọn nhiều){!init.id&&two?' — chung cả 2 trận':''}</label>
           <div className="presets" style={{justifyContent:'flex-start'}}>
-            {MISTAKES.map(x=>{ const on=(m.mistakes||[]).includes(x); const c=m.mistakeCounts&&m.mistakeCounts[x]; return <button key={x} className={'chip'+(on?' on':'')} onClick={()=>toggle(x)}>{x}{on&&c>1?' · '+c:''}</button>; })}
-          </div></div>
+            {[...MISTAKES,...customMis].map(x=>{ const on=(m.mistakes||[]).includes(x); const c=m.mistakeCounts&&m.mistakeCounts[x]; return <button key={x} className={'chip'+(on?' on':'')} onClick={()=>toggle(x)}>{x}{on&&c>1?' · '+c:''}</button>; })}
+          </div>
+          <CustomMisAdd onAdd={onAddCustom}/></div>
         <div className="field"><label>Ghi chú / bài học</label>
           <textarea rows="4" value={m.note} onChange={e=>set('note',e.target.value)}
             placeholder="Rút ra điều gì cho lần sau? Có thể xuống dòng, ghi nhiều ý."/></div>
