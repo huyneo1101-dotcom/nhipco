@@ -2131,16 +2131,25 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
 }
 
 /* ================= Tập luyện ================= */
-const POCKETS=[[7,8],[50,5.4],[93,8],[7,46],[50,48.6],[93,46]];
-const FELT=[10,90,10,44]; // giới hạn di chuyển bi: x0,x1,y0,y1
-const DIAMONDS=(()=>{ const d=[]; [18,31,44,56,69,82].forEach(x=>{d.push([x,2.4]);d.push([x,51.6]);}); [16,27,38].forEach(y=>{d.push([1.9,y]);d.push([98.1,y]);}); return d; })();
+// Lỗ: 4 góc + 2 lỗ giữa băng dài (trên/dưới). Tọa độ dùng cho cả hình vẽ lẫn tính "vào lỗ".
+const POCKETS=[[8,8],[50,6.6],[92,8],[8,46],[50,47.4],[92,46]];
+const FELT=[10,90,10,44]; // đường mũi băng = giới hạn di chuyển & phản bi: x0,x1,y0,y1
+// Mốc kim cương trên khung gỗ: băng dài (trên/dưới) 6 mốc chia đều (bỏ vị trí lỗ giữa),
+// băng ngắn (trái/phải) 3 mốc chia đều — canh theo vùng chơi 10..90 × 10..44.
+const DIAMONDS=(()=>{ const d=[]; [20,30,40,60,70,80].forEach(x=>{d.push([x,2.5]);d.push([x,51.5]);}); [18.5,27,35.5].forEach(y=>{d.push([2.5,y]);d.push([97.5,y]);}); return d; })();
 function TableFrame(){
+  // Băng (cushion) = dải cao su viền quanh vùng chơi, chừa khe ở các lỗ; mũi băng nằm ở FELT.
+  const cushions=[[12,5,33,5],[55,5,33,5],[12,44,33,5],[55,44,33,5],[5,12,5,30],[90,12,5,30]];
+  const noses=[[12,10,45,10],[55,10,88,10],[12,44,45,44],[55,44,88,44],[10,12,10,42],[90,12,90,42]];
   return (
     <g>
-      <rect x="0" y="0" width="100" height="54" rx="5" fill="#6b4a2a"/>
-      <rect x="3.5" y="4.5" width="93" height="45" rx="3" fill="#0c5e3c"/>
-      {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1.05} L ${p[0]+1.05} ${p[1]} L ${p[0]} ${p[1]+1.05} L ${p[0]-1.05} ${p[1]} Z`} fill="#efe4c8"/>)}
-      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="4.3" fill="#3a2a18"/><circle cx={p[0]} cy={p[1]} r="3" fill="#05140d"/></g>))}
+      <rect x="0" y="0" width="100" height="54" rx="6" fill="#5c3d22"/>
+      <rect x="1.4" y="1.4" width="97.2" height="51.2" rx="4.6" fill="none" stroke="#7a5230" strokeWidth=".5" opacity=".7"/>
+      <rect x="5" y="5" width="90" height="44" rx="2.4" fill="#0e5e3c"/>
+      {cushions.map((c,i)=><rect key={'c'+i} x={c[0]} y={c[1]} width={c[2]} height={c[3]} rx="1.5" fill="#0a4a30"/>)}
+      {noses.map((n,i)=><line key={'n'+i} x1={n[0]} y1={n[1]} x2={n[2]} y2={n[3]} stroke="#37ab77" strokeWidth=".9" strokeLinecap="round" opacity=".9"/>)}
+      {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1} L ${p[0]+1} ${p[1]} L ${p[0]} ${p[1]+1} L ${p[0]-1} ${p[1]} Z`} fill="#efe4c8"/>)}
+      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="4.4" fill="#1a120b"/><circle cx={p[0]} cy={p[1]} r="3.1" fill="#04120b"/></g>))}
     </g>
   );
 }
