@@ -2149,7 +2149,8 @@ function TableFrame(){
       {cushions.map((c,i)=><rect key={'c'+i} x={c[0]} y={c[1]} width={c[2]} height={c[3]} rx="1.2" fill="#8c9298"/>)}
       {noses.map((n,i)=><line key={'n'+i} x1={n[0]} y1={n[1]} x2={n[2]} y2={n[3]} stroke="#4f565c" strokeWidth=".7" strokeLinecap="round" opacity=".9"/>)}
       {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1} L ${p[0]+1} ${p[1]} L ${p[0]} ${p[1]+1} L ${p[0]-1} ${p[1]} Z`} fill="#e9e3d2"/>)}
-      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="4.2" fill="#0c0d0f" stroke="#3d4146" strokeWidth=".4"/><circle cx={p[0]} cy={p[1]} r="3" fill="#000"/></g>))}
+      {/* Lỗ: miệng (khe băng) ≈ 2× đường kính bi theo chuẩn WPA; hố vẽ nhỏ = ~1.3× bi (bi vừa lọt). */}
+      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="3.3" fill="#0c0d0f" stroke="#3d4146" strokeWidth=".35"/><circle cx={p[0]} cy={p[1]} r="2.7" fill="#000"/></g>))}
     </g>
   );
 }
