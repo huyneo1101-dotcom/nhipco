@@ -420,7 +420,7 @@ const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
-  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes'];
+  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
 // DATA = dữ liệu người dùng (trận, thế bi, lỗi, tập luyện...) + vài key ngày-cục-bộ không đồng bộ.
 const PREF_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
@@ -910,7 +910,7 @@ function tabView(id){
     case 'table': return <AtTable/>;
     case 'log': return <MatchLog/>;
     case 'train': return <Training/>;
-    case 'know': return <KnowledgeView/>;
+    case 'know': return <KnowTab/>;
     default: return null;
   }
 }
@@ -926,6 +926,7 @@ const SEG_DEFS={
   table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['cue','🔔 Nhắc nhở'],['clock','⏱ Đồng hồ'],['routine','✓ Routine'],['metro','🎵 Nhịp']]},
   train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['drills','🎯 Bài tập']]},
   log:  {lab:'Nhật ký',   items:[['live','🔴 Đang đấu'],['log','Lịch sử'],['opps','Đối thủ']]},
+  know: {lab:'Kiến thức', items:[['read','📖 Đọc'],['review','🎴 Ôn luyện']]},
 };
 function segKeys(group){
   const def=SEG_DEFS[group].items.map(i=>i[0]);
@@ -3071,6 +3072,71 @@ function KnowledgeView(){
             </div>
           </div>);
       })}
+    </div>
+  );
+}
+// Thẻ ôn luyện: mỗi mục (h) trong mọi bài Kiến thức = 1 thẻ (mặt trước = tên mục, mặt sau = nội dung).
+const KNOW_CARDS=KNOWLEDGE.flatMap(a=>a.body.map((s,i)=>({id:a.key+'#'+i, cat:a.tag, article:a.title, front:s.h, back:s.p})));
+function KnowReview(){
+  const [rev,setRev]=usePersist('nc.knowrev',{});
+  const [cat,setCat]=useState('all');
+  const [queue,setQueue]=useState([]);
+  const [pos,setPos]=useState(0);
+  const [flip,setFlip]=useState(false);
+  const boxOf=(id)=>rev[id]||1;   // hộp Leitner 1–5: 1 = chưa thuộc, ≥4 = đã thuộc
+  const build=(c)=> KNOW_CARDS.filter(k=>c==='all'||k.cat===c)
+    .map((k,i)=>({k,i})).sort((a,b)=>(boxOf(a.k.id)-boxOf(b.k.id))||(a.i-b.i)).map(x=>x.k);
+  useEffect(()=>{ setQueue(build(cat)); setPos(0); setFlip(false); },[cat]);
+  const restart=()=>{ setQueue(build(cat)); setPos(0); setFlip(false); };
+  const answer=(known)=>{ const c=queue[pos]; if(c){ const nb=known?Math.min(5,boxOf(c.id)+1):1; setRev(prev=>({...prev,[c.id]:nb})); } setFlip(false); setPos(p=>p+1); };
+  const card=queue[pos];
+  const catCards=KNOW_CARDS.filter(k=>cat==='all'||k.cat===cat);
+  const learned=catCards.filter(k=>boxOf(k.id)>=4).length;
+  const cats=[['all','Tất cả'],...KNOW_CATS.map(c=>[c.tag,c.tag])];
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">🎴 Ôn luyện kiến thức</div>
+      <div className="tsub">Nhớ lại trong đầu rồi lật thẻ kiểm tra. "Chưa nhớ" sẽ được ưu tiên ôn lại nhiều hơn.</div>
+      <div className="catbar" style={{marginTop:8}}>
+        {cats.map(([k,l])=><button key={k} className={'chip'+(cat===k?' on':'')} onClick={()=>setCat(k)}>{l}</button>)}
+      </div>
+      <div className="statstrip">
+        <div className="stat"><b style={{color:'var(--gold)'}}>{learned}/{catCards.length}</b><small>đã thuộc</small></div>
+        <div className="stat"><b>{queue.length?(card?pos+1:queue.length):0}/{queue.length}</b><small>thẻ</small></div>
+      </div>
+      {!card
+        ? <div className="card" style={{padding:'28px 18px',textAlign:'center',marginTop:10}}>
+            <div style={{fontSize:40,marginBottom:8}}>🎉</div>
+            <div style={{fontWeight:800,color:'var(--soft)',marginBottom:6}}>Xong lượt ôn!</div>
+            <div className="muted small" style={{marginBottom:14}}>Ôn lại nhiều lần giúp nhớ sâu và lâu hơn.</div>
+            <button className="btn acc" onClick={restart}>🔁 Ôn lại</button>
+          </div>
+        : <>
+          <div className="card" onClick={()=>setFlip(f=>!f)} style={{padding:18,marginTop:10,minHeight:190,display:'flex',flexDirection:'column',cursor:'pointer'}}>
+            <div className="muted small" style={{fontWeight:800}}>{card.cat} · {card.article}</div>
+            <div style={{fontWeight:800,fontSize:18,color:'var(--soft)',margin:'10px 0 6px',lineHeight:1.35}}>{card.front}</div>
+            {!flip
+              ? <div className="muted" style={{marginTop:'auto',fontSize:13,fontStyle:'italic'}}>Nhớ lại trong đầu… rồi chạm để xem đáp án 👇</div>
+              : <div className="preline" style={{fontSize:13.5,lineHeight:1.6,marginTop:4}}>{card.back}</div>}
+          </div>
+          {flip
+            ? <div className="rowbtns" style={{marginTop:12}}>
+                <button className="btn ghost" style={{flex:1,color:'var(--danger)'}} onClick={()=>answer(false)}>❌ Chưa nhớ</button>
+                <button className="btn acc" style={{flex:1}} onClick={()=>answer(true)}>✅ Nhớ rồi</button>
+              </div>
+            : <button className="btn wide" style={{marginTop:12}} onClick={()=>setFlip(true)}>👁 Xem đáp án</button>}
+        </>}
+    </div>
+  );
+}
+function KnowTab(){
+  const opts=orderedOpts('know');
+  const [seg,setSeg]=useState(opts[0][0]);
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <Seg val={seg} set={setSeg} opts={opts}/>
+      {seg==='read' && <KnowledgeView/>}
+      {seg==='review' && <KnowReview/>}
     </div>
   );
 }
