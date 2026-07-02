@@ -685,7 +685,7 @@ const DRILLS=[
     fixes:['Lực quá mạnh','Lực quá nhẹ'],
     dia:{balls:[{x:16,y:26,c:W}],zone:[16,26,8],arrows:[[21,24,90,24]]}},
   {key:'tempo',cat:'men',name:'Nhịp đưa cơ (máy nhịp)',max:20,target:'≥16/20',
-    setup:'Mở tab Đếm nhịp ~55 BPM. Mỗi cú: kéo cơ về vào một nhịp, đẩy ra ở nhịp kế. 20 cú thẳng, cổ tay thả lỏng.',
+    setup:'Mở tab Thi đấu → Nhịp ~55 BPM. Mỗi cú: kéo cơ về vào một nhịp, đẩy ra ở nhịp kế. 20 cú thẳng, cổ tay thả lỏng.',
     scoring:'Số cú đưa cơ mượt đúng nhịp, không giật/tăng tốc, trên 20',
     why:'Phần lớn cú trượt do giật hoặc tăng tốc ở cú cuối. Nhịp đều giúp đường cơ ổn định và lặp lại được.',
     fixes:['Giật tay khi bắn','Nóng vội'],
@@ -892,11 +892,11 @@ const uid=(p)=> p+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString
 
 /* ---- Tab (gộp gọn còn 5; cho phép đổi vị trí) ---- */
 const TAB_DEFS=[
-  {id:'pre',   ico:'🔥', lab:'Trước trận'},
-  {id:'mind',  ico:'🧘', lab:'Tâm trí'},
-  {id:'table', ico:'🎱', lab:'Tại bàn'},
+  {id:'pre',   ico:'🧘', lab:'Tâm & Thân'},
+  {id:'table', ico:'🎱', lab:'Thi đấu'},
   {id:'log',   ico:'📓', lab:'Nhật ký'},
-  {id:'train', ico:'🎯', lab:'Tập luyện'},
+  {id:'train', ico:'📈', lab:'Rèn luyện'},
+  {id:'know',  ico:'📚', lab:'Kiến thức'},
 ];
 const TAB_IDS=TAB_DEFS.map(t=>t.id);
 function mergeOrder(saved){
@@ -907,10 +907,10 @@ function mergeOrder(saved){
 function tabView(id){
   switch(id){
     case 'pre': return <PreMatch/>;
-    case 'mind': return <MindTab/>;
     case 'table': return <AtTable/>;
     case 'log': return <MatchLog/>;
     case 'train': return <Training/>;
+    case 'know': return <KnowledgeView/>;
     default: return null;
   }
 }
@@ -923,9 +923,8 @@ function Seg({val,set,opts}){
 }
 /* Các nhóm mục con (segment) cho phép đổi thứ tự */
 const SEG_DEFS={
-  mind: {lab:'Tâm trí',   items:[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm'],['music','🎧 Nhạc']]},
-  table:{lab:'Tại bàn',   items:[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
-  train:{lab:'Tập luyện', items:[['drills','🎯 Luyện tập'],['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['routine','✓ Routine'],['knowledge','📚 Kiến thức']]},
+  table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['cue','🔔 Nhắc nhở'],['clock','⏱ Đồng hồ'],['routine','✓ Routine'],['metro','🎵 Nhịp']]},
+  train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['drills','🎯 Bài tập']]},
   log:  {lab:'Nhật ký',   items:[['live','🔴 Đang đấu'],['log','Lịch sử'],['opps','Đối thủ']]},
 };
 function segKeys(group){
@@ -939,23 +938,9 @@ function orderedOpts(group){
   const map={}; SEG_DEFS[group].items.forEach(i=>{ map[i[0]]=i; });
   return segKeys(group).map(k=>map[k]);
 }
-function MindTab(){
-  const opts=orderedOpts('mind');
-  const [seg,setSeg]=useState(opts[0][0]);
-  return (
-    <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <Seg val={seg} set={setSeg} opts={opts}/>
-      {seg==='breathe' && <Breathe/>}
-      {seg==='cue' && <Cue/>}
-      {seg==='music' && <div style={{padding:'2px 0'}}>
-        <div className="tsub" style={{textAlign:'center',marginBottom:6}}>Nhạc nghe trong lúc chơi — dán link Spotify/YouTube.</div>
-        <MusicLinks kkey="nc.musicMatch"/>
-      </div>}
-    </div>
-  );
-}
+/* MindTab đã gộp: Nhịp thở + Nhắc nhở chuyển sang tab Thi đấu (AtTable), Nhạc về Tâm & Thân (PreMatch). */
 
-/* ---- Trước trận: giãn cơ + nhạc + mindset ---- */
+/* ---- Tâm & Thân: mindset + khởi động + nhạc ---- */
 const STRETCHES=[
   {n:'Xoay cổ tay',        h:'Đan hai tay, xoay cổ tay theo cả hai chiều.', s:25},
   {n:'Duỗi–gập cổ tay',    h:'Duỗi thẳng tay, kéo nhẹ bàn tay lên rồi xuống.', s:25},
@@ -1484,7 +1469,7 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
           • <b>Nhịp thở</b>: chọn Hộp hoặc 4-7-8, làm 3–4 vòng khi hồi hộp.<br/>
           • <b>Đếm nhịp</b>: bật tiếng tách, đưa cơ theo nhịp cho đều tay (Gõ nhịp để tự dò BPM).<br/>
           • <b>Routine</b>: chạm tích từng bước, sửa theo thói quen riêng.<br/>
-          • <b>Nhật ký → Tập luyện</b>: ghi lỗi sau mỗi trận, app gợi ý bài tập đúng điểm yếu.
+          • <b>Nhật ký → Rèn luyện</b>: ghi lỗi sau mỗi trận, app gợi ý bài tập đúng điểm yếu.
         </div>
         <button className="btn wide" onClick={close} style={{marginTop:14}}>Đóng</button>
       </div>
@@ -1645,7 +1630,7 @@ function MatchLog(){
           {analysis.fresh.length>0 && <div className="small" style={{marginTop:6}}>🆕 <b>Lỗi mới:</b> {analysis.fresh.join(', ')}</div>}
           {analysis.heavy.length>0 && <div className="small" style={{marginTop:6}}>⚠️ <b>Lặp nhiều — nên tập:</b> {analysis.heavy.join(', ')}</div>}
           {analysis.detected&&analysis.detected.length>0 && <div className="small" style={{marginTop:6}}>🔎 <b>Tự nhận ra từ ghi chú:</b> {analysis.detected.join(', ')}</div>}
-          <div className="muted small" style={{marginTop:6}}>Mở tab <b>Tập luyện → Tổng hợp / Lỗi / Điều bi</b> để xem bài tập gợi ý và dựng thế bi khó.</div>
+          <div className="muted small" style={{marginTop:6}}>Mở tab <b>Rèn luyện → Tổng hợp / Lỗi / Điều bi</b> để xem bài tập gợi ý và dựng thế bi khó.</div>
         </div>}
 
       {view2==='log' && list.length===0 &&
@@ -2577,13 +2562,11 @@ function Training(){
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <Seg val={tseg} set={setTseg} opts={orderedOpts('train')}/>
-      {tseg==='routine' && <Routine/>}
       {tseg==='summary' && <SummaryView/>}
       {tseg==='mistakes' && <MistakesView/>}
       {tseg==='positions' && <PositionsView/>}
-      {tseg==='knowledge' && <KnowledgeView/>}
       {tseg==='drills' && <>
-      <div className="h">Tập luyện</div>
+      <div className="h">Bài tập</div>
       <div className="tsub">Luyện có mục tiêu, chấm điểm và theo dõi tiến bộ — không chỉ "đánh cho vui".</div>
 
       {scored.length>0 &&
@@ -2758,7 +2741,10 @@ function AtTable(){
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <Seg val={seg} set={setSeg} opts={orderedOpts('table')}/>
+      {seg==='breathe' && <Breathe/>}
+      {seg==='cue' && <Cue/>}
       {seg==='clock' && <ShotClock/>}
+      {seg==='routine' && <Routine/>}
       {seg==='metro' && <Metronome/>}
     </div>
   );
@@ -3100,12 +3086,6 @@ function PreMatch(){
       </div>
 
       <div>
-        <div className="h">🎧 Nhạc trước trận</div>
-        <div className="tsub" style={{marginTop:2}}>Dán link playlist Spotify hoặc YouTube của bạn để mở nhanh trước trận.</div>
-        <MusicLinks/>
-      </div>
-
-      <div>
         <div className="h">🤸 Khởi động &amp; giãn cơ</div>
         <div className="tsub" style={{marginTop:2}}>Làm nóng cổ tay – vai – cổ ~2 phút để tay mượt và tránh chấn thương.</div>
         {!g ? <>
@@ -3117,6 +3097,12 @@ function PreMatch(){
           </div>
           <button className="btn acc wide" style={{marginTop:12}} onClick={()=>setG(true)}>▶ Khởi động theo nhịp</button>
         </> : <GuidedStretch onDone={()=>setG(false)}/>}
+      </div>
+
+      <div>
+        <div className="h">🎧 Nhạc</div>
+        <div className="tsub" style={{marginTop:2}}>Dán link playlist Spotify hoặc YouTube để mở nhanh trước hoặc giữa trận.</div>
+        <MusicLinks/>
       </div>
       <div style={{height:6}}/>
     </div>
