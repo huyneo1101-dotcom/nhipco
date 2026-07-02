@@ -925,7 +925,7 @@ function Seg({val,set,opts}){
 const SEG_DEFS={
   mind: {lab:'Tâm trí',   items:[['breathe','🫁 Thở'],['cue','🧘 Tịnh tâm'],['music','🎧 Nhạc']]},
   table:{lab:'Tại bàn',   items:[['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
-  train:{lab:'Tập luyện', items:[['drills','🎯 Luyện tập'],['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['routine','✓ Routine']]},
+  train:{lab:'Tập luyện', items:[['drills','🎯 Luyện tập'],['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['routine','✓ Routine'],['knowledge','📚 Kiến thức']]},
   log:  {lab:'Nhật ký',   items:[['live','🔴 Đang đấu'],['log','Lịch sử'],['opps','Đối thủ']]},
 };
 function segKeys(group){
@@ -2581,6 +2581,7 @@ function Training(){
       {tseg==='summary' && <SummaryView/>}
       {tseg==='mistakes' && <MistakesView/>}
       {tseg==='positions' && <PositionsView/>}
+      {tseg==='knowledge' && <KnowledgeView/>}
       {tseg==='drills' && <>
       <div className="h">Tập luyện</div>
       <div className="tsub">Luyện có mục tiêu, chấm điểm và theo dõi tiến bộ — không chỉ "đánh cho vui".</div>
@@ -2939,6 +2940,101 @@ function ProblemCard({p,onDelete,onEdit}){
           <div className="kv"><b>Tình huống:</b> {p.sit}</div>
           <div className="kv"><b>Cách xử lý:</b> {p.fix}</div>
         </div>}
+    </div>
+  );
+}
+
+/* ================= Kiến thức bi-a ================= */
+const KNOWLEDGE=[
+  {key:'tired', tag:'Thể trạng', title:'Chơi bi-a khi mệt',
+    intro:'Khi mệt, kỹ thuật và quyết định đều tụt. Mục tiêu không phải chơi hay nhất, mà là chơi ĐỦ TỐT và ÍT LỖI nhất có thể.',
+    body:[
+      {h:'Nhận biết mình đã mệt', p:'Dấu hiệu: mắt khó dán vào điểm chạm, tay hơi run hoặc lực thất thường, hay đánh vội, mất kiên nhẫn, dễ cáu, bắt đầu trượt cả những cú vốn dễ.'},
+      {h:'Đơn giản hoá lối chơi', p:'• Chọn cú CHẮC nhất, bỏ cú hoa mỹ.\n• Giảm ra bi cầu kỳ — chấp nhận vị trí "tạm được".\n• Phân vân thì đánh an toàn (safety), đừng tham cú khó.'},
+      {h:'Giữ nhịp thở, rút gọn routine', p:'Mệt là lúc dễ bỏ quy trình. Giữ tối thiểu: một hơi thở sâu + nhìn rõ điểm chạm trước mỗi cú. Thà chậm một nhịp còn hơn bắn khi chưa sẵn sàng.'},
+      {h:'Chủ động giảm lực', p:'Mệt thì tay hay giật và đánh mạnh quá. Chủ ý đánh NHẸ hơn thường ngày, ưu tiên cú dừng, tránh cú ra bi xa cần lực lớn.'},
+      {h:'Tư thế đỡ tốn sức', p:'Đứng vững, tì tay cái chắc, KHÔNG gồng vai. Giữa các cú đứng thẳng, thả lỏng vai và tay để hồi sức, đừng cúi lom khom chờ.'},
+      {h:'Tiếp năng lượng & nghỉ ngắn', p:'Uống nước, ăn nhẹ có đường (chuối, kẹo). Giữa hiệp: duỗi cổ tay – vai – cổ 20–30 giây, nhắm mắt vài chục giây cho mắt nghỉ.'},
+      {h:'Tâm lý', p:'Chấp nhận hôm nay không đỉnh cao. Đặt mục tiêu "đủ tốt, ít lỗi". Kiên nhẫn — mệt mà vội là hỏng kép.'},
+      {h:'Khi nào nên dừng', p:'Nếu mắt hoa, tay không kiểm soát, liên tục hỏng cú dễ → nghỉ dài hoặc dừng. Tập lúc quá mệt dễ ghim thói quen SAI vào cơ thể.'},
+    ]},
+  {key:'aim', tag:'Kỹ thuật', title:'Ngắm cơ bản',
+    intro:'Ngắm đúng là gốc của mọi cú vào.',
+    body:[
+      {h:'Điểm chạm (ghost ball)', p:'Hình dung một "bi ma" trắng nằm sát bi mục tiêu, thẳng hàng với lỗ. Tâm bi cái phải tới đúng vị trí bi ma đó — ngắm tâm bi cái vào tâm bi ma.'},
+      {h:'Đứng sau đường ngắm', p:'Xác định đường bi – lỗ khi còn đứng, rồi mới cúi xuống theo đúng đường đó. Cúi xuống mới ngắm thường bị lệch.'},
+      {h:'Cú cuối nhìn bi mục tiêu', p:'Nhịp đưa cơ cuối: mắt DÁN vào bi mục tiêu, không nhìn theo bi cái. Đây là lỗi ngắm phổ biến nhất.'},
+    ]},
+  {key:'cueball', tag:'Kỹ thuật', title:'Kiểm soát bi cái',
+    intro:'Vào lỗ mới được điểm, nhưng ĐIỀU BI mới thắng ván.',
+    body:[
+      {h:'Điểm đánh trên bi', p:'Đánh TÂM: bi cái đi/dừng tự nhiên. Đánh CAO: bi cái đi theo (follow). Đánh THẤP: bi cái rút về (draw). Trái/phải: tạo xoáy đổi góc phản băng.'},
+      {h:'Lực quyết định vị trí', p:'Lực là nguyên nhân hỏng vị trí số một. Hình dung bi cái sẽ DỪNG ở đâu trước khi bắn, rồi chọn lực cho vừa.'},
+      {h:'Ba cú nền tảng', p:'Cú dừng, cú theo, cú rút. Làm chủ ba cú này là làm chủ phần lớn tình huống ra bi.'},
+    ]},
+  {key:'plan', tag:'Chiến thuật', title:'Đọc bàn & lên kế hoạch',
+    intro:'Người giỏi thắng nhờ kế hoạch, không nhờ từng cú lẻ.',
+    body:[
+      {h:'Nghĩ trước 2–3 bi', p:'Trước khi bắn, biết bi cái sẽ ở đâu để đánh viên kế, và viên kế nữa. Đừng chỉ nhìn bi trước mặt.'},
+      {h:'Đường ra bi rộng', p:'Ưu tiên đường ra bi tới một VÙNG rộng thay vì một điểm hẹp. Xử lý bi khó (sát băng, bi cụm) khi còn dễ, đừng dồn về cuối ván.'},
+      {h:'Cú chìa khoá', p:'Xác định cú khó nhất của ván và sắp xếp để có vị trí tốt nhất cho cú đó.'},
+    ]},
+  {key:'safety', tag:'Chiến thuật', title:'Phòng thủ (safety)',
+    intro:'Một safety hay đáng giá bằng một cú ăn đẹp — và ít rủi ro hơn.',
+    body:[
+      {h:'Khi nào safety', p:'Không có cú ăn chắc, hoặc ăn được nhưng ra bi rất xấu → đánh safety. Đang dẫn điểm thì chắc chắn quan trọng hơn liều.'},
+      {h:'Safety tốt', p:'Giấu bi cái sau bi khác (snooker), hoặc đẩy bi mục tiêu và bi cái ra XA nhau. Luôn tính đường bi cái sau khi chạm để không tự hớ.'},
+    ]},
+  {key:'mind', tag:'Tâm lý', title:'Tâm lý thi đấu',
+    intro:'Ai bình tĩnh hơn thường thắng.',
+    body:[
+      {h:'Routine cố định', p:'Lặp đúng một quy trình mỗi cú (ngắm – thở – vào bộ – bắn). Ổn định nhờ thói quen, không nhờ xuất thần.'},
+      {h:'Buông lỗi', p:'Đánh hỏng thì quên ngay. Reset bằng 1–2 hơi thở, coi cú kế là cú đầu tiên. Tiếc nuối làm hỏng cú tiếp theo.'},
+      {h:'Ở hiện tại', p:'Chỉ nghĩ về cú trước mặt. Tỉ số và cúp để tính sau.'},
+    ]},
+  {key:'body', tag:'Thể lực', title:'Khởi động & thể lực',
+    intro:'Tay mượt và bền sức bắt đầu từ khởi động.',
+    body:[
+      {h:'Khởi động', p:'Làm nóng cổ tay – vai – cổ khoảng 2 phút trước khi chơi (xem tab Trước trận). Vài cú đầu đánh chắc để lấy cảm giác cơ.'},
+      {h:'Giữ sức trong trận', p:'Tư thế vững để đỡ tốn sức, không gồng. Uống đủ nước, ăn nhẹ khi trận dài. Giữa hiệp duỗi vai và cổ tay.'},
+    ]},
+  {key:'rules', tag:'Luật', title:'Luật cơ bản 9-bi & 10-bi',
+    intro:'Nắm luật để không mất lượt oan.',
+    body:[
+      {h:'9-bi', p:'Đánh theo THỨ TỰ số (chạm bi thấp nhất trước), nhưng bi nào vào cũng tính. Ai bỏ bi 9 hợp lệ thì thắng ván. Cú phá phải chạm bi 1 trước.'},
+      {h:'10-bi', p:'Giống 9-bi nhưng chơi tới bi 10 và phải GỌI LỖ cho bi 10 (call shot). Chặt chẽ hơn, may rủi ít hơn.'},
+      {h:'Lỗi thường gặp', p:'Không chạm bi đúng thứ tự, bi cái xuống lỗ (chết cái), hoặc sau cú đánh không bi nào chạm băng → phạm lỗi, đối thủ được cầm bi.'},
+    ]},
+];
+function KnowCard({a,defaultOpen}){
+  const [open,setOpen]=useState(!!defaultOpen);
+  return (
+    <div className="card drillC">
+      <div className="drillH" onClick={()=>setOpen(o=>!o)}>
+        <span className="catpill" style={{border:'1px solid var(--accent)',color:'var(--accent)'}}>{a.tag}</span>
+        <div className="dn"><b>{a.title}</b><small>{open?'thu gọn':'đọc'}</small></div>
+        <span className="muted" style={{fontSize:16}}>{open?'▾':'▸'}</span>
+      </div>
+      {open &&
+        <div className="drillB">
+          {a.intro && <div className="kv" style={{color:'var(--soft)',fontStyle:'italic'}}>{a.intro}</div>}
+          {a.body.map((s,i)=>(
+            <div key={i} className="kv">
+              <b>{s.h}</b>
+              <div className="preline" style={{marginTop:2}}>{s.p}</div>
+            </div>))}
+        </div>}
+    </div>
+  );
+}
+function KnowledgeView(){
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Kiến thức bi-a</div>
+      <div className="tsub">Gọn, thực dụng — đọc dần từng chủ đề. Chạm để mở/đóng.</div>
+      <div className="list">
+        {KNOWLEDGE.map((a,i)=><KnowCard key={a.key} a={a} defaultOpen={i===0}/>)}
+      </div>
     </div>
   );
 }
