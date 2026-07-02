@@ -2138,8 +2138,8 @@ const FELT=[10,90,10,44]; // đường mũi băng = giới hạn di chuyển & p
 // băng ngắn (trái/phải) 3 mốc chia đều — canh theo vùng chơi 10..90 × 10..44.
 const DIAMONDS=(()=>{ const d=[]; [20,30,40,60,70,80].forEach(x=>{d.push([x,2.5]);d.push([x,51.5]);}); [18.5,27,35.5].forEach(y=>{d.push([2.5,y]);d.push([97.5,y]);}); return d; })();
 function TableFrame(){
-  // Băng (cushion) rất mỏng (1.6) để không che lỗ góc; mũi băng vẫn nằm ở FELT.
-  const cushions=[[12,8.4,33,1.6],[55,8.4,33,1.6],[12,44,33,1.6],[55,44,33,1.6],[8.4,12,1.6,30],[90,12,1.6,30]];
+  // Băng (cushion) rất mỏng (1.0); mũi băng vẫn nằm ở FELT.
+  const cushions=[[12,9,33,1],[55,9,33,1],[12,44,33,1],[55,44,33,1],[9,12,1,30],[90,12,1,30]];
   const noses=[[12,10,45,10],[55,10,88,10],[12,44,45,44],[55,44,88,44],[10,12,10,42],[90,12,90,42]];
   return (
     <g>
@@ -2150,7 +2150,7 @@ function TableFrame(){
       {noses.map((n,i)=><line key={'n'+i} x1={n[0]} y1={n[1]} x2={n[2]} y2={n[3]} stroke="#4f565c" strokeWidth=".7" strokeLinecap="round" opacity=".9"/>)}
       {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1} L ${p[0]+1} ${p[1]} L ${p[0]} ${p[1]+1} L ${p[0]-1} ${p[1]} Z`} fill="#e9e3d2"/>)}
       {/* Lỗ: miệng (khe băng) ≈ 2× đường kính bi theo chuẩn WPA; hố vẽ nhỏ = ~1.3× bi (bi vừa lọt). */}
-      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="3.3" fill="#0c0d0f" stroke="#3d4146" strokeWidth=".35"/><circle cx={p[0]} cy={p[1]} r="2.7" fill="#000"/></g>))}
+      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="2.9" fill="#0c0d0f" stroke="#3d4146" strokeWidth=".35"/><circle cx={p[0]} cy={p[1]} r="2.4" fill="#000"/></g>))}
     </g>
   );
 }
@@ -2162,7 +2162,7 @@ function bandPath(cx,cy,r,b){
 const POOL=[null,'#e8c020','#2456c8','#d8412f','#6b3fa0','#e07b1a','#1f8a4c','#7a2230','#1a1a1a',
   '#e8c020','#2456c8','#d8412f','#6b3fa0','#e07b1a','#1f8a4c','#7a2230'];
 function Ball({x,y,r,b}){
-  r=r||2.5;
+  r=r||2.1;
   if(b.cue) return <circle cx={x} cy={y} r={r} fill="#f4f1e6" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>;
   if(b.num!=null) return (
     <g>
