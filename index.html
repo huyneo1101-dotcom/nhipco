@@ -872,6 +872,18 @@ const PROBLEMS=[
     fix:'Chọn đường ÍT biến số hơn: combo cần 2 điểm chạm chuẩn, bank cần đọc góc + lực. Combo gần & thẳng hàng thì ưu tiên combo; khoảng bank quen thì bank. Không rõ đường nào chắc thì safety.',
     dia:{balls:[{x:24,y:34,c:W},{x:48,y:30,c:R},{x:60,y:30,c:R}],arrows:[[50,29,80,12]]}},
 ];
+// Sơ đồ bài tập/thế khó vẽ cho bàn cũ (tâm y≈27); bàn mới 2:1 có tâm y=30 → dịch xuống 3 để căn giữa.
+function shiftDiaY(dia, dy){
+  if(!dia) return dia;
+  if(dia.balls) dia.balls.forEach(b=>{ b.y+=dy; });
+  if(dia.line){ dia.line[1]+=dy; dia.line[3]+=dy; }
+  if(dia.stick){ dia.stick[1]+=dy; dia.stick[3]+=dy; }
+  if(dia.zone) dia.zone[1]+=dy;
+  if(dia.arrows) dia.arrows.forEach(a=>{ a[1]+=dy; a[3]+=dy; });
+  return dia;
+}
+DRILLS.forEach(d=>shiftDiaY(d.dia,3));
+PROBLEMS.forEach(p=>shiftDiaY(p.dia,3));
 
 const todayStr=()=> new Date().toISOString().slice(0,10);
 const nowHM=()=> new Date().toTimeString().slice(0,5);
@@ -1964,7 +1976,7 @@ function PositionEditor({init,onSave,onDel,close}){
   const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
     return {x:Math.round(Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100))),
-            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54)))}; };
+            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*60)))}; };
   const setter={cue:setCue,obj:setObj,nxt:setNxt,dest:setDest};
   const pos={cue,obj,nxt,dest};
   const keys=mode==='path'?['cue','obj','nxt','dest']:['cue','obj','nxt'];
@@ -1995,7 +2007,7 @@ function PositionEditor({init,onSave,onDel,close}){
       <div className="sheet" onClick={e=>e.stopPropagation()}>
         <h3>{init?'Sửa tình huống':'Dựng thế bi'}</h3>
         <div className="muted small" style={{margin:'-8px 0 8px'}}>Kéo bi cái / bi 9 / bi 10 vào vị trí{mode==='path'?'; kéo điểm xanh = đích bi cái':''}.</div>
-        <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet"
           style={{width:'100%',maxWidth:'none',touchAction:'none'}}
           onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
           onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
@@ -2132,24 +2144,28 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
 
 /* ================= Tập luyện ================= */
 // Lỗ: 4 góc + 2 lỗ giữa băng dài (trên/dưới). Tọa độ dùng cho cả hình vẽ lẫn tính "vào lỗ".
-const POCKETS=[[9,9],[50,6.6],[91,9],[9,45],[50,47.4],[91,45]];
-const FELT=[10,90,10,44]; // đường mũi băng = giới hạn di chuyển & phản bi: x0,x1,y0,y1
-// Mốc kim cương trên khung gỗ: băng dài (trên/dưới) 6 mốc chia đều (bỏ vị trí lỗ giữa),
-// băng ngắn (trái/phải) 3 mốc chia đều — canh theo vùng chơi 10..90 × 10..44.
-const DIAMONDS=(()=>{ const d=[]; [20,30,40,60,70,80].forEach(x=>{d.push([x,2.5]);d.push([x,51.5]);}); [18.5,27,35.5].forEach(y=>{d.push([2.5,y]);d.push([97.5,y]);}); return d; })();
+// Bàn tỉ lệ 2:1: vùng chơi 80×40 trong khung 100×60 (viền đều 10).
+const POCKETS=[[9,9],[50,8],[91,9],[9,51],[50,52],[91,51]];
+const FELT=[10,90,10,50]; // mũi băng = giới hạn di chuyển & phản bi: x0,x1,y0,y1 (2:1)
+// Mốc kim cương: băng dài (trên/dưới) 6 mốc chia đều (bỏ vị trí lỗ giữa), băng ngắn (trái/phải) 3 mốc.
+const DIAMONDS=(()=>{ const d=[]; [20,30,40,60,70,80].forEach(x=>{d.push([x,4]);d.push([x,56]);}); [20,30,40].forEach(y=>{d.push([4,y]);d.push([96,y]);}); return d; })();
 function TableFrame(){
-  // Băng (cushion) rất mỏng (1.0); mũi băng vẫn nằm ở FELT.
-  const cushions=[[12,9,33,1],[55,9,33,1],[12,44,33,1],[55,44,33,1],[9,12,1,30],[90,12,1,30]];
-  const noses=[[12,10,45,10],[55,10,88,10],[12,44,45,44],[55,44,88,44],[10,12,10,42],[90,12,90,42]];
+  // Băng cắt HÀM vào lỗ: mỗi băng là polygon, đầu vát 45° chỉ về phía lỗ; mũi băng nằm ở FELT.
+  const cushions=[
+    "14.5,10 46.5,10 44.5,8 16.5,8", "53.5,10 85.5,10 83.5,8 55.5,8",
+    "14.5,50 46.5,50 44.5,52 16.5,52", "53.5,50 85.5,50 83.5,52 55.5,52",
+    "10,14.5 10,45.5 8,43.5 8,16.5", "90,14.5 90,45.5 92,43.5 92,16.5",
+  ];
+  const noses=[[14.5,10,46.5,10],[53.5,10,85.5,10],[14.5,50,46.5,50],[53.5,50,85.5,50],[10,14.5,10,45.5],[90,14.5,90,45.5]];
   return (
     <g>
-      <rect x="0" y="0" width="100" height="54" rx="6" fill="#171a1d"/>
-      <rect x="1.4" y="1.4" width="97.2" height="51.2" rx="4.6" fill="none" stroke="#34383c" strokeWidth=".5" opacity=".8"/>
-      <rect x="6" y="6" width="88" height="42" rx="2.2" fill="#bcc2c6"/>
-      {cushions.map((c,i)=><rect key={'c'+i} x={c[0]} y={c[1]} width={c[2]} height={c[3]} rx="1.2" fill="#8c9298"/>)}
+      <rect x="0" y="0" width="100" height="60" rx="6" fill="#171a1d"/>
+      <rect x="1.4" y="1.4" width="97.2" height="57.2" rx="4.6" fill="none" stroke="#34383c" strokeWidth=".5" opacity=".8"/>
+      <rect x="6" y="6" width="88" height="48" rx="2.2" fill="#bcc2c6"/>
+      {cushions.map((pts,i)=><polygon key={'c'+i} points={pts} fill="#8c9298"/>)}
       {noses.map((n,i)=><line key={'n'+i} x1={n[0]} y1={n[1]} x2={n[2]} y2={n[3]} stroke="#4f565c" strokeWidth=".7" strokeLinecap="round" opacity=".9"/>)}
       {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1} L ${p[0]+1} ${p[1]} L ${p[0]} ${p[1]+1} L ${p[0]-1} ${p[1]} Z`} fill="#e9e3d2"/>)}
-      {/* Lỗ: miệng (khe băng) ≈ 2× đường kính bi theo chuẩn WPA; hố vẽ nhỏ = ~1.3× bi (bi vừa lọt). */}
+      {/* Lỗ: hố ~1.15× bi; miệng (khe hàm băng) rộng hơn — theo chuẩn WPA. */}
       {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="2.9" fill="#0c0d0f" stroke="#3d4146" strokeWidth=".35"/><circle cx={p[0]} cy={p[1]} r="2.4" fill="#000"/></g>))}
     </g>
   );
@@ -2224,7 +2240,7 @@ function cuePath(cue,obj,tip,power){
 function MiniTable({dia}){
   if(!dia) return null;
   return (
-    <svg className="mtable" viewBox="0 0 100 54" role="img" aria-label="Sơ đồ bàn bi-a">
+    <svg className="mtable" viewBox="0 0 100 60" role="img" aria-label="Sơ đồ bàn bi-a">
       <defs>
         <marker id="ncAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto">
           <path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/>
@@ -2376,7 +2392,7 @@ function DrillBuilder({init,onSave,close}){
   const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
     return {x:Math.round(Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100))),
-            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54)))}; };
+            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*60)))}; };
   const place=(k,p)=>{ if(k==='cue') setCue(p); else setBalls(a=>a.map((b,i)=>i===k?p:b)); };
   const down=(e)=>{ const p=toSvg(e); let best='cue',bd=Math.hypot(p.x-cue.x,p.y-cue.y);
     balls.forEach((b,i)=>{const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<bd){bd=d;best=i;}});
@@ -2391,7 +2407,7 @@ function DrillBuilder({init,onSave,close}){
       <div className="sheet" onClick={e=>e.stopPropagation()}>
         <h3>{init?'Sửa bài tập':'Tạo bài tập'}</h3>
         <div className="muted small" style={{margin:'-8px 0 6px'}}>Kéo bi để đặt vị trí; thêm tối đa 15 bi + bi cái.</div>
-        <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet"
           style={{width:'100%',maxWidth:'none',touchAction:'none'}}
           onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
           onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
@@ -2437,7 +2453,7 @@ function ProblemBuilder({init,onSave,close}){
   const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
     return {x:Math.round(Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100))),
-            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54)))}; };
+            y:Math.round(Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*60)))}; };
   const place=(k,p)=>{ if(k==='cue') setCue(p); else setBalls(a=>a.map((b,i)=>i===k?p:b)); };
   const down=(e)=>{ const p=toSvg(e); let best='cue',bd=Math.hypot(p.x-cue.x,p.y-cue.y);
     balls.forEach((b,i)=>{const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<bd){bd=d;best=i;}}); drag.current=best; place(best,p); };
@@ -2451,7 +2467,7 @@ function ProblemBuilder({init,onSave,close}){
       <div className="sheet" onClick={e=>e.stopPropagation()}>
         <h3>{init?'Sửa thế khó':'Thêm thế khó'}</h3>
         <div className="muted small" style={{margin:'-8px 0 6px'}}>Dựng thế bi minh hoạ, rồi ghi cách xử lý.</div>
-        <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet"
           style={{width:'100%',maxWidth:'none',touchAction:'none'}}
           onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
           onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
@@ -2875,7 +2891,7 @@ function AngleCalc(){
     const r=svgRef.current.getBoundingClientRect();
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
     return {x:Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100)),
-            y:Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*54))};
+            y:Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*60))};
   };
   const down=(e)=>{ const p=toSvg(e);
     drag.current = Math.hypot(p.x-A.x,p.y-A.y)<Math.hypot(p.x-B.x,p.y-B.y)?'A':'B';
@@ -2886,7 +2902,7 @@ function AngleCalc(){
   return (
     <div style={{display:'flex',flexDirection:'column',gap:12,padding:'2px 0'}}>
       <div className="tsub" style={{textAlign:'center'}}>Kéo <b style={{color:'var(--text)'}}>bi cái</b> (trắng) hoặc <b style={{color:'var(--gold)'}}>mốc hướng</b> — app vẽ đường bi nảy qua các băng (góc tới = góc phản).</div>
-      <svg ref={svgRef} className="mtable" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet"
+      <svg ref={svgRef} className="mtable" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet"
         style={{width:'100%',maxWidth:'none',touchAction:'none'}}
         onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
         onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
