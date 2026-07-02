@@ -2138,18 +2138,18 @@ const FELT=[10,90,10,44]; // đường mũi băng = giới hạn di chuyển & p
 // băng ngắn (trái/phải) 3 mốc chia đều — canh theo vùng chơi 10..90 × 10..44.
 const DIAMONDS=(()=>{ const d=[]; [20,30,40,60,70,80].forEach(x=>{d.push([x,2.5]);d.push([x,51.5]);}); [18.5,27,35.5].forEach(y=>{d.push([2.5,y]);d.push([97.5,y]);}); return d; })();
 function TableFrame(){
-  // Băng (cushion) = dải cao su viền quanh vùng chơi, chừa khe ở các lỗ; mũi băng nằm ở FELT.
-  const cushions=[[12,5,33,5],[55,5,33,5],[12,44,33,5],[55,44,33,5],[5,12,5,30],[90,12,5,30]];
+  // Băng (cushion) mỏng = dải cao su viền quanh vùng chơi, chừa khe ở các lỗ; mũi băng nằm ở FELT.
+  const cushions=[[12,7,33,3],[55,7,33,3],[12,44,33,3],[55,44,33,3],[7,12,3,30],[90,12,3,30]];
   const noses=[[12,10,45,10],[55,10,88,10],[12,44,45,44],[55,44,88,44],[10,12,10,42],[90,12,90,42]];
   return (
     <g>
-      <rect x="0" y="0" width="100" height="54" rx="6" fill="#5c3d22"/>
-      <rect x="1.4" y="1.4" width="97.2" height="51.2" rx="4.6" fill="none" stroke="#7a5230" strokeWidth=".5" opacity=".7"/>
-      <rect x="5" y="5" width="90" height="44" rx="2.4" fill="#0e5e3c"/>
-      {cushions.map((c,i)=><rect key={'c'+i} x={c[0]} y={c[1]} width={c[2]} height={c[3]} rx="1.5" fill="#0a4a30"/>)}
-      {noses.map((n,i)=><line key={'n'+i} x1={n[0]} y1={n[1]} x2={n[2]} y2={n[3]} stroke="#37ab77" strokeWidth=".9" strokeLinecap="round" opacity=".9"/>)}
-      {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1} L ${p[0]+1} ${p[1]} L ${p[0]} ${p[1]+1} L ${p[0]-1} ${p[1]} Z`} fill="#efe4c8"/>)}
-      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="4.4" fill="#1a120b"/><circle cx={p[0]} cy={p[1]} r="3.1" fill="#04120b"/></g>))}
+      <rect x="0" y="0" width="100" height="54" rx="6" fill="#171a1d"/>
+      <rect x="1.4" y="1.4" width="97.2" height="51.2" rx="4.6" fill="none" stroke="#34383c" strokeWidth=".5" opacity=".8"/>
+      <rect x="6" y="6" width="88" height="42" rx="2.2" fill="#bcc2c6"/>
+      {cushions.map((c,i)=><rect key={'c'+i} x={c[0]} y={c[1]} width={c[2]} height={c[3]} rx="1.2" fill="#8c9298"/>)}
+      {noses.map((n,i)=><line key={'n'+i} x1={n[0]} y1={n[1]} x2={n[2]} y2={n[3]} stroke="#4f565c" strokeWidth=".7" strokeLinecap="round" opacity=".9"/>)}
+      {DIAMONDS.map((p,i)=><path key={'d'+i} d={`M ${p[0]} ${p[1]-1} L ${p[0]+1} ${p[1]} L ${p[0]} ${p[1]+1} L ${p[0]-1} ${p[1]} Z`} fill="#e9e3d2"/>)}
+      {POCKETS.map((p,i)=>(<g key={'p'+i}><circle cx={p[0]} cy={p[1]} r="4.2" fill="#0c0d0f" stroke="#3d4146" strokeWidth=".4"/><circle cx={p[0]} cy={p[1]} r="3" fill="#000"/></g>))}
     </g>
   );
 }
@@ -2161,7 +2161,7 @@ function bandPath(cx,cy,r,b){
 const POOL=[null,'#e8c020','#2456c8','#d8412f','#6b3fa0','#e07b1a','#1f8a4c','#7a2230','#1a1a1a',
   '#e8c020','#2456c8','#d8412f','#6b3fa0','#e07b1a','#1f8a4c','#7a2230'];
 function Ball({x,y,r,b}){
-  r=r||3.05;
+  r=r||2.5;
   if(b.cue) return <circle cx={x} cy={y} r={r} fill="#f4f1e6" stroke="rgba(0,0,0,.4)" strokeWidth=".5"/>;
   if(b.num!=null) return (
     <g>
