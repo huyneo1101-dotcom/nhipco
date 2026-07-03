@@ -420,7 +420,7 @@ const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
-  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev'];
+  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
 // DATA = dữ liệu người dùng (trận, thế bi, lỗi, tập luyện...) + vài key ngày-cục-bộ không đồng bộ.
 const PREF_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
@@ -835,6 +835,37 @@ const DRILLS=[
     dia:{balls:[{x:24,y:34,c:W},{x:66,y:20,c:R}],line:[27,33,64,21],zone:[66,20,7]}},
 ];
 const drillByKey=(k)=>DRILLS.find(d=>d.key===k);
+
+/* ===== Kế hoạch tuần tự sinh theo điểm yếu ===== */
+const WEEK_DOW=['T2','T3','T4','T5','T6','T7','CN'];
+const isoMonday=(d)=>{ const x=new Date(d); const off=(x.getDay()+6)%7; x.setDate(x.getDate()-off); x.setHours(0,0,0,0); return x; };
+// Trả về "ngày sửa điểm yếu" thứ idx (theo lỗi mắc nhiều nhất còn map được sang bài tập), hoặc null.
+function weaknessDay(weak, idx, usedMis){
+  let seen=0;
+  for(const [mis] of (weak||[])){
+    if(usedMis.has(mis)) continue;
+    const ds=DRILLS.filter(d=>d.fixes.includes(mis)&&d.key!=='stop');
+    if(!ds.length) continue;
+    if(seen===idx){ usedMis.add(mis); return {theme:'Sửa: '+mis, icon:'🔧', keys:ds.slice(0,2).map(d=>d.key), sub:'Điểm yếu hay mắc — luyện tập trung'}; }
+    seen++;
+  }
+  return null;
+}
+// 7 ngày: nền tảng → (yếu#1) → cắt → (yếu#2) → ra bi → (yếu#3/phòng thủ) → tổng duyệt+ghost.
+function buildWeekPlan(weak){
+  const used=new Set();
+  const w0=weaknessDay(weak,0,used), w1=weaknessDay(weak,1,used), w2=weaknessDay(weak,2,used);
+  const days=[
+    {theme:'Nền tảng',            icon:'🎯', keys:['stop','center'],        sub:'Chuẩn tâm bi & đưa cơ thẳng'},
+    w0 || {theme:'Bi đơn (vào lỗ)',icon:'🎱', keys:['longpot','wagon'],      sub:'Vào lỗ từ mọi góc'},
+    {theme:'Cú cắt',              icon:'✂️', keys:['cutladder','thincut'],   sub:'Mở rộng vùng góc cắt tự tin'},
+    w1 || {theme:'Vị trí & ra bi', icon:'📍', keys:['position3','cuecircle'], sub:'Bi cái dừng đúng vùng'},
+    {theme:'Ra bi nâng cao',      icon:'📌', keys:['lineup','follow_lane'],  sub:'Run-out & giữ làn bi cái'},
+    w2 || {theme:'Phòng thủ & phá',icon:'🛡️', keys:['safety','break9'],       sub:'Safety + phá kiểm soát'},
+    {theme:'Tổng duyệt & Ghost',  icon:'🏁', keys:['routine20','pressure'],  sub:'Kỷ luật routine + cú áp lực', ghost:true},
+  ];
+  return {days};
+}
 
 /* Thư viện thế khó — tình huống thực tế hay gặp + cách xử lý */
 const PROBLEMS=[
@@ -1597,6 +1628,7 @@ function MatchLog(){
   const [analysis,setAnalysis]=useState(null);
   const [view2,setView2]=useState(orderedOpts('log')[0][0]);
   const [fRes,setFRes]=useState('all'); const [fOpp,setFOpp]=useState('all');
+  const [oppSort,setOppSort]=useState('n');   // n=nhiều trận · wr=tỉ lệ thắng · recent=gần đây
   const upsert=(recs)=>{   // recs: mảng 1–2 bản ghi
     const fromLive=form&&form._live;
     const isNew=recs.some(m=>!m.id);
@@ -1642,6 +1674,15 @@ function MatchLog(){
     if((m.date||'')>o.last)o.last=m.date;
   });
   const opps=Object.values(omap).sort((a,b)=>b.n-a.n||(b.last>a.last?1:-1));
+  // Tỉ lệ thắng theo đối thủ: xếp hạng + cờ khắc tinh / áp đảo
+  const oppWr=(o)=>(o.w+o.l)? Math.round(o.w/(o.w+o.l)*100):0;
+  const oppsSorted=[...opps].sort((a,b)=> oppSort==='wr' ? (oppWr(b)-oppWr(a))||(b.n-a.n)
+    : oppSort==='recent' ? ((b.last>a.last?1:b.last<a.last?-1:0)||(b.n-a.n))
+    : (b.n-a.n||(b.last>a.last?1:-1)));
+  const rankTop=opps.filter(o=>o.w+o.l>0).sort((a,b)=>oppWr(b)-oppWr(a)||b.n-a.n).slice(0,8);
+  const decisive=opps.filter(o=>o.w+o.l>=2);
+  const domin=decisive.length? decisive.reduce((m,o)=>oppWr(o)>oppWr(m)?o:m):null;
+  const nemesis=decisive.length? decisive.reduce((m,o)=>oppWr(o)<oppWr(m)?o:m):null;
 
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
@@ -1719,8 +1760,26 @@ function MatchLog(){
       {view2==='opps' && <>
         {opps.length===0
           ? <Empty ico="🧑‍🤝‍🧑" t="Chưa có đối thủ nào" s="Ghi tên đối thủ trong mỗi trận để xem thành tích đối đầu với từng người."/>
-          : <div className="list">
-              {opps.map(o=>{
+          : <>
+              {opps.length>=2 &&
+                <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+                  <div className="h" style={{marginBottom:8}}>🏆 Tỉ lệ thắng theo đối thủ</div>
+                  {rankTop.map(o=><Bar key={o.name} label={o.name} right={o.w+'–'+o.l+(o.d?(' ('+o.d+'h)'):'')+' · '+oppWr(o)+'%'} val={o.w} max={o.w+o.l}/>)}
+                  {(domin||nemesis) &&
+                    <div className="small" style={{marginTop:8,display:'flex',flexWrap:'wrap',gap:'4px 14px'}}>
+                      {domin && <span>😤 Áp đảo: <b style={{color:'var(--ok)'}}>{domin.name}</b> ({oppWr(domin)}%)</span>}
+                      {nemesis && nemesis!==domin && <span>☠️ Khắc tinh: <b style={{color:'var(--danger)'}}>{nemesis.name}</b> ({oppWr(nemesis)}%)</span>}
+                    </div>}
+                  <div className="muted small" style={{marginTop:6}}>Thanh = phần thắng trong các trận có phân định (bỏ hòa).</div>
+                </div>}
+              {opps.length>=2 &&
+                <div className="catbar" style={{marginTop:10}}>
+                  <span className="muted small" style={{alignSelf:'center',marginRight:2}}>Sắp xếp:</span>
+                  {[['n','Nhiều trận'],['wr','Tỉ lệ thắng'],['recent','Gần đây']].map(([k,t])=>
+                    <button key={k} className={'chip'+(oppSort===k?' on':'')} onClick={()=>setOppSort(k)}>{t}</button>)}
+                </div>}
+              <div className="list">
+              {oppsSorted.map(o=>{
                 const r=(o.w+o.l)? Math.round(o.w/(o.w+o.l)*100):0;
                 const gms=Object.entries(o.games).sort((a,b)=>b[1]-a[1]).map(g=>g[0]);
                 const tm=Object.entries(o.mis).sort((a,b)=>b[1]-a[1]).slice(0,3);
@@ -1746,7 +1805,8 @@ function MatchLog(){
                     <div className="tags">{tm.map(([x,c])=><span key={x} className="tag2">{x} · {c}×</span>)}</div>}
                 </div>);
               })}
-            </div>}
+              </div>
+            </>}
       </>}
 
       {/* Lỗi & Điều bi giờ nằm trong tab Tập luyện (MistakesView / PositionsView) */}
@@ -2570,16 +2630,23 @@ function Training(){
   if(!days.has(dk(probe))) probe.setDate(probe.getDate()-1);
   while(days.has(dk(probe))){ streak++; probe.setDate(probe.getDate()-1); }
 
-  // Kế hoạch buổi tập hôm nay: khởi động + 2 bài theo điểm yếu + ghost
-  const focusD=[];
-  for(const [mis] of weak){
-    const d=DRILLS.find(x=>x.fixes.includes(mis)&&x.key!=='stop'&&!focusD.includes(x));
-    if(d) focusD.push(d);
-    if(focusD.length>=2) break;
-  }
-  for(const k of ['longpot','position3','cuecircle']){ if(focusD.length>=2) break; const d=drillByKey(k); if(d&&!focusD.includes(d)) focusD.push(d); }
-  const plan=[{d:drillByKey('stop'),role:'Khởi động — chuẩn nhịp cơ'},
-    ...focusD.map((d,i)=>({d,role:(weak.length? 'Sửa điểm yếu':'Bài cốt lõi')+' '+(i+1)}))];
+  // ---- Kế hoạch TUẦN tự sinh theo điểm yếu (xoay vòng 7 ngày) ----
+  const curWeek=isoMonday(new Date());
+  const curWeekId=dk(curWeek);
+  const [weekplan,setWeekplan]=useState(()=>{ const wp=store.get('nc.weekplan',null);
+    if(wp&&wp.week===curWeekId&&Array.isArray(wp.days)&&wp.days.length===7) return wp;
+    const np={week:curWeekId,...buildWeekPlan(weak)}; store.set('nc.weekplan',np); return np; });
+  const [expDay,setExpDay]=useState(null);
+  useEffect(()=>{ if(!weekplan||weekplan.week!==curWeekId){ const np={week:curWeekId,...buildWeekPlan(weak)}; setWeekplan(np); store.set('nc.weekplan',np); } },[curWeekId]);
+  const regenWeek=()=>{ const np={week:curWeekId,...buildWeekPlan(weak)}; setWeekplan(np); store.set('nc.weekplan',np); setExpDay(null); };
+  const todayIdx=(new Date().getDay()+6)%7;
+  const dayDateStr=(i)=>{ const m=new Date(curWeek); m.setDate(m.getDate()+i); return dk(m); };
+  const dayDone=(i)=>{ const day=weekplan.days[i]||{}; const dt=dayDateStr(i); const keys=day.keys||[];
+    return recs.some(r=>r.date===dt&&keys.includes(r.drill)) || (day.ghost&&ghost.some(g=>g.date===dt)); };
+  const weekDoneCount=weekplan.days.filter((_,i)=>dayDone(i)).length;
+  const todayDay=weekplan.days[todayIdx]||weekplan.days[0];
+  // Buổi hôm nay = đúng ngày tương ứng trong kế hoạch tuần
+  const plan=(todayDay.keys||[]).map(k=>({d:drillOf(k),role:todayDay.sub})).filter(x=>x.d);
 
   const lib=cat==='all'? allDrills : allDrills.filter(d=>d.cat===cat);
   const g20=ghost.slice(0,20), gw=g20.filter(x=>x.won).length;
@@ -2626,7 +2693,50 @@ function Training(){
       <div className="h2">📌 Ghi nhớ cách chơi đúng</div>
       <MyTips/>
 
-      <div className="h2">🗓️ Buổi tập hôm nay</div>
+      <div className="h2" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <span>🗓️ Kế hoạch tuần</span>
+        <button className="chip" onClick={regenWeek} title="Tạo lại theo điểm yếu mới nhất">🔁 Tạo lại</button>
+      </div>
+      <div className="tsub" style={{marginTop:2}}>Tự sinh theo điểm yếu (từ Nhật ký) · xoay vòng 7 ngày. Chạm một ngày để xem bài.</div>
+      <div className="card" style={{padding:'12px 14px',marginTop:8}}>
+        <div className="chartcap"><span><b>Tiến độ tuần</b></span><span>hoàn thành <b>{weekDoneCount}</b>/7 ngày</span></div>
+        <div className="mbar" style={{marginTop:4}}><div style={{width:Math.round(weekDoneCount/7*100)+'%'}}/></div>
+        <div style={{display:'flex',gap:4,marginTop:10}}>
+          {weekplan.days.map((d,i)=>{ const done=dayDone(i); const isToday=i===todayIdx; const sel=expDay===i;
+            return (
+            <button key={i} onClick={()=>setExpDay(sel?null:i)} title={d.theme}
+              style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'7px 2px',borderRadius:10,cursor:'pointer',
+                border:'1.5px solid '+(isToday?'var(--gold)':sel?'var(--accent)':'var(--line)'),
+                background:isToday?'var(--card2)':'transparent',color:'var(--text)'}}>
+              <small style={{fontSize:10,fontWeight:800,color:isToday?'var(--gold)':'var(--muted)'}}>{WEEK_DOW[i]}</small>
+              <span style={{fontSize:16,lineHeight:1}}>{done?'✅':d.icon}</span>
+            </button>); })}
+        </div>
+      </div>
+      {expDay!=null && expDay!==todayIdx && (()=>{ const d=weekplan.days[expDay]; if(!d) return null; return (
+        <div className="card plan" style={{marginTop:8}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:8,marginBottom:6}}>
+            <b>{d.icon} {WEEK_DOW[expDay]} · {d.theme}</b>
+            <small className="muted">{dayDone(expDay)?'đã tập ✅':d.sub}</small>
+          </div>
+          {(d.keys||[]).map(k=>{ const dr=drillOf(k); if(!dr) return null; return (
+            <div key={k} className="planrow">
+              <div className="pi">{dayDone(expDay)?'✅':'•'}</div>
+              <div className="pt"><b>{dr.name}</b><small>mục tiêu {dr.target}</small></div>
+              <button className="btn acc sm" onClick={()=>setScoring(dr)}>Ghi điểm</button>
+            </div>); })}
+          {d.ghost &&
+            <div className="planrow">
+              <div className="pi">👻</div>
+              <div className="pt"><b>Đấu với Ghost</b><small>ván benchmark cuối tuần</small></div>
+              <div style={{display:'flex',gap:6}}>
+                <button className="btn acc sm" onClick={()=>addGhost(true)}>Thắng</button>
+                <button className="btn ghost sm" onClick={()=>addGhost(false)}>Thua</button>
+              </div>
+            </div>}
+        </div>); })()}
+
+      <div className="h2">{todayDay.icon} Hôm nay · {todayDay.theme}</div>
       <div className="card plan">
         {plan.filter(({d})=>!planHide.includes(d.key)).map(({d,role},i)=>(
           <div key={d.key} className="planrow">
