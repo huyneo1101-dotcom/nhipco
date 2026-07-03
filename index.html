@@ -927,6 +927,11 @@ function mergeOrder(saved){
   TAB_IDS.forEach(id=>{ if(!base.includes(id)) base.push(id); });
   return base;
 }
+// Điều hướng chéo tab: NAV.go(tab, seg). App gán go; tab đích đọc _pendingSeg khi remount (key=tab).
+let _pendingSeg=null;   // {tab, seg}
+let _pendingLive=null;  // {keys, counts} — từ bảng Đang đấu → mở Ghi trận bên Nhật ký
+const NAV={ go:()=>{} };
+function takePendingSeg(tab, def){ if(_pendingSeg && _pendingSeg.tab===tab){ const s=_pendingSeg.seg; _pendingSeg=null; return s; } return def; }
 function tabView(id){
   switch(id){
     case 'pre': return <PreMatch/>;
@@ -946,9 +951,9 @@ function Seg({val,set,opts}){
 }
 /* Các nhóm mục con (segment) cho phép đổi thứ tự */
 const SEG_DEFS={
-  table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['cue','🔔 Nhắc nhở'],['clock','⏱ Đồng hồ'],['routine','✓ Routine'],['metro','🎵 Nhịp']]},
-  train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['drills','🎯 Bài tập']]},
-  log:  {lab:'Nhật ký',   items:[['live','🔴 Đang đấu'],['log','Lịch sử'],['opps','Đối thủ']]},
+  table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['cue','🔔 Nhắc nhở'],['live','🔴 Đang đấu'],['positions','🎱 Điều bi'],['routine','✓ Routine']]},
+  train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['drills','🎯 Bài tập'],['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
+  log:  {lab:'Nhật ký',   items:[['log','Lịch sử'],['opps','Đối thủ']]},
   know: {lab:'Kiến thức', items:[['read','📖 Đọc'],['review','🎴 Ôn luyện']]},
 };
 function segKeys(group){
@@ -1048,6 +1053,7 @@ function App(){
   useEffect(()=>{ const el=tabRef.current&&tabRef.current.querySelector('.tab.on'); if(el&&el.scrollIntoView) el.scrollIntoView({inline:'center',block:'nearest'}); },[tab,order]);
   useEffect(()=>{ const off=onCloud(()=>{ setCuser(getCloudUser()); setCstatus(getCloudStatus()); }); cloudInit(); return off; },[]);
   const saveOrder=(o)=>{ setOrder(o); store.set('nc.taborder',o); };
+  NAV.go=(t,s)=>{ if(s) _pendingSeg={tab:t,seg:s}; setTab(t); };
 
   return (
     <div className="app">
@@ -1600,8 +1606,9 @@ function MatchLog(){
     if(fromLive) store.set('nc.liveTally',{});   // đã ghi trận từ bảng đánh dấu → xoá bảng
     if(isNew){ const a=analyze(recs); if(a.fresh.length||a.heavy.length||a.detected.length){ setAnalysis(a); setView2('log'); } }
   };
-  // Kết thúc trận từ bảng đánh dấu lỗi → mở Ghi trận với lỗi đã tick sẵn.
+  // Kết thúc trận từ bảng đánh dấu lỗi (tab Thi đấu) → mở Ghi trận với lỗi đã tick sẵn.
   const startFromLive=(keys,counts)=>{ setForm({date:todayStr(),result:'W',game:'10-bi',feel:3,mistakes:keys,mistakeCounts:counts,_live:true}); };
+  useEffect(()=>{ if(_pendingLive){ const {keys,counts}=_pendingLive; _pendingLive=null; startFromLive(keys,counts); } },[]);
   // Tự phân tích trận vừa ghi: lỗi mới + lỗi lặp nhiều + lỗi tự dò từ ghi chú
   const analyze=(recs)=>{
     const extra=store.get('nc.mistakes',[]);
@@ -1644,8 +1651,6 @@ function MatchLog(){
       </div>
 
       <Seg val={view2} set={setView2} opts={orderedOpts('log')}/>
-
-      {view2==='live' && <LiveTally onEnd={startFromLive}/>}
 
       {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0||(analysis.detected&&analysis.detected.length>0)) &&
         <div className="card" style={{padding:'12px 14px',marginTop:8,borderColor:'var(--gold)'}}>
@@ -1924,12 +1929,13 @@ function SummaryView(){
               </div>}
             <div className="list">
               {todo.slice(0,20).map(p=>{ const sug=suggestTip(p.cue,p.obj,p.nxt); return (
-                <div key={p.id} className="card" style={{padding:10,display:'flex',gap:10,alignItems:'center'}}>
+                <div key={p.id} className="card mcard" onClick={()=>NAV.go('table','positions')} title="Mở mục Điều bi"
+                  style={{padding:10,display:'flex',gap:10,alignItems:'center',cursor:'pointer'}}>
                   <div style={{width:96,flex:'none'}}><MiniTable dia={posDia(p)}/></div>
                   <div style={{flex:1,minWidth:0}}>
                     {p.note && <div className="preline" style={{fontSize:13,lineHeight:1.4}}>{p.note}</div>}
                     <div className="muted small" style={{marginTop:3}}>bạn đánh: {p.tip?tipLabel(p.tip):'—'} · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
-                    <div className="muted small" style={{marginTop:2}}>{fmtDate(p.date)}</div>
+                    <div className="muted small" style={{marginTop:2}}>{fmtDate(p.date)} · <span style={{color:'var(--accent)'}}>🎱 Điều bi ›</span></div>
                   </div>
                 </div>); })}
             </div>
@@ -2590,7 +2596,8 @@ function Training(){
       <Seg val={tseg} set={setTseg} opts={orderedOpts('train')}/>
       {tseg==='summary' && <SummaryView/>}
       {tseg==='mistakes' && <MistakesView/>}
-      {tseg==='positions' && <PositionsView/>}
+      {tseg==='clock' && <ShotClock/>}
+      {tseg==='metro' && <Metronome/>}
       {tseg==='drills' && <>
       <div className="h">Bài tập</div>
       <div className="tsub">Luyện có mục tiêu, chấm điểm và theo dõi tiến bộ — không chỉ "đánh cho vui".</div>
@@ -2763,15 +2770,16 @@ function Training(){
 
 /* ================= Tại bàn: shot clock + góc phản xạ ================= */
 function AtTable(){
-  const [seg,setSeg]=useState(orderedOpts('table')[0][0]);
+  const [seg,setSeg]=useState(()=>takePendingSeg('table', orderedOpts('table')[0][0]));
+  const endLive=(keys,counts)=>{ _pendingLive={keys,counts}; NAV.go('log'); };
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <Seg val={seg} set={setSeg} opts={orderedOpts('table')}/>
       {seg==='breathe' && <Breathe/>}
       {seg==='cue' && <Cue/>}
-      {seg==='clock' && <ShotClock/>}
+      {seg==='live' && <LiveTally onEnd={endLive}/>}
+      {seg==='positions' && <PositionsView/>}
       {seg==='routine' && <Routine/>}
-      {seg==='metro' && <Metronome/>}
     </div>
   );
 }
