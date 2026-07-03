@@ -924,7 +924,7 @@ function Seg({val,set,opts}){
 /* Các nhóm mục con (segment) cho phép đổi thứ tự */
 const SEG_DEFS={
   table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['cue','🔔 Nhắc nhở'],['clock','⏱ Đồng hồ'],['routine','✓ Routine'],['metro','🎵 Nhịp']]},
-  train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['drills','🎯 Bài tập']]},
+  train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['positions','🎱 Điều bi'],['drills','🎯 Bài tập'],['interactive','🎮 Luyện tương tác']]},
   log:  {lab:'Nhật ký',   items:[['live','🔴 Đang đấu'],['log','Lịch sử'],['opps','Đối thủ']]},
   know: {lab:'Kiến thức', items:[['read','📖 Đọc'],['review','🎴 Ôn luyện']]},
 };
@@ -2479,6 +2479,154 @@ function ProblemBuilder({init,onSave,close}){
     </div>
   );
 }
+/* ---- Luyện tương tác: bài tập làm ngay trên màn hình (tái dùng cuePath/reflect) ---- */
+const _rand=(a,b)=>a+Math.random()*(b-a);
+const _dist=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y);
+function makePosPuzzle(){
+  for(let t=0;t<40;t++){
+    const A={x:_rand(20,44),y:_rand(18,40)};
+    const B={x:_rand(56,82),y:_rand(14,42)};
+    if(_dist(A,B)<22) continue;
+    const solTip={x:_rand(-0.7,0.7),y:_rand(-0.8,0.6)}, solPower=_rand(0.3,0.85);
+    const cp=cuePath(A,B,solTip,solPower);
+    if(cp.stop||!cp.pts.length) continue;
+    const end=cp.pts[cp.pts.length-1];
+    if(end.x<18||end.x>82||end.y<16||end.y>38) continue;
+    if(_dist(end,A)<12||_dist(end,B)<8) continue;
+    return {A,B,zone:{x:end.x,y:end.y,r:8}};
+  }
+  return {A:{x:26,y:34},B:{x:64,y:22},zone:{x:44,y:36,r:8}};
+}
+function PositionDrill({onBack}){
+  const [pz,setPz]=useState(makePosPuzzle);
+  const [tip,setTip]=useState({x:0,y:0});
+  const [power,setPower]=useState(0.5);
+  const [res,setRes]=useState(null);
+  const tipRef=useRef(null), tdrag=useRef(false);
+  const tipAt=(e)=>{ const r=tipRef.current.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    let x=(cx-r.left)/r.width*2-1, y=(cy-r.top)/r.height*2-1; const m=Math.hypot(x,y); if(m>1){x/=m;y/=m;}
+    setTip({x:Math.round(x*100)/100,y:Math.round(y*100)/100}); setRes(null); };
+  const tdown=(e)=>{ tdrag.current=true; e.preventDefault(); tipAt(e); };
+  const tmove=(e)=>{ if(!tdrag.current)return; e.preventDefault(); tipAt(e); };
+  const tup=()=>{ tdrag.current=false; };
+  const cp=cuePath(pz.A,pz.B,tip,power); const pts=cp.pts;
+  const check=()=>{ const end=pts[pts.length-1]||pz.A; const d=_dist(end,pz.zone); setRes({d,ok:d<=pz.zone.r}); };
+  const next=()=>{ setPz(makePosPuzzle()); setTip({x:0,y:0}); setPower(0.5); setRes(null); };
+  const stars= !res?'': res.d<=pz.zone.r?'⭐⭐⭐': res.d<=pz.zone.r+4?'⭐⭐': res.d<=pz.zone.r+9?'⭐':'—';
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="drow" style={{marginBottom:2}}><button className="chip" onClick={onBack}>← Quay lại</button><b style={{fontSize:14}}>Thả bi cái vào vùng</b><span style={{width:56}}/></div>
+      <div className="tsub">Chọn ĐẦU CƠ + LỰC để bi cái (sau khi ăn bi 9) dừng trong vòng đích xanh. Kéo điểm trên bi cái, chỉnh lực, rồi Kiểm tra.</div>
+      <svg className="mtable" viewBox="0 0 100 60" style={{width:'100%',marginTop:8}}>
+        <defs><marker id="pdAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto"><path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#5fb6ff"/></marker></defs>
+        <TableFrame/>
+        <circle cx={pz.zone.x} cy={pz.zone.y} r={pz.zone.r} fill="rgba(52,211,153,.16)" stroke="var(--accent)" strokeWidth="1.4" strokeDasharray="2.5 1.6"/>
+        {pts.length>1 && <polyline points={pts.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth="1.3" strokeLinejoin="round" strokeDasharray="3 2" markerEnd="url(#pdAh)"/>}
+        <Ball x={pz.A.x} y={pz.A.y} b={{cue:true}}/>
+        <Ball x={pz.B.x} y={pz.B.y} b={{num:9,stripe:'#e8c020'}}/>
+        {res && pts.length>0 && <circle cx={pts[pts.length-1].x} cy={pts[pts.length-1].y} r="2.4" fill={res.ok?'var(--ok)':'var(--danger)'}/>}
+      </svg>
+      <div className="field" style={{alignItems:'center',marginTop:8}}>
+        <label style={{alignSelf:'flex-start'}}>Đầu cơ (chạm/kéo trên bi cái) · {tipLabel(tip)}</label>
+        <svg ref={tipRef} className="cueball" viewBox="0 0 100 100" style={{cursor:'pointer',touchAction:'none'}}
+          onMouseDown={tdown} onMouseMove={tmove} onMouseUp={tup} onMouseLeave={tup} onTouchStart={tdown} onTouchMove={tmove} onTouchEnd={tup}>
+          <circle cx="50" cy="50" r="46" fill="#f4f1e6" stroke="var(--line)" strokeWidth="2"/>
+          <line x1="50" y1="8" x2="50" y2="92" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
+          <line x1="8" y1="50" x2="92" y2="50" stroke="#000" strokeOpacity=".12" strokeWidth="1"/>
+          <circle cx={50+tip.x*40} cy={50+tip.y*40} r="9" fill="var(--accent)" stroke="#04231a" strokeWidth="1.5"/>
+        </svg>
+      </div>
+      <div className="field"><label>Lực: {Math.round(power*100)}%</label>
+        <input type="range" min="0" max="100" value={Math.round(power*100)} onChange={e=>{setPower(+e.target.value/100);setRes(null);}} style={{width:'100%',accentColor:'var(--gold)'}}/></div>
+      {res && <div className="card" style={{padding:'12px 14px',textAlign:'center',borderColor:res.ok?'var(--ok)':'var(--line)'}}>
+        <div style={{fontSize:20}}>{stars}</div>
+        <div style={{fontWeight:800,color:res.ok?'var(--ok)':'var(--soft)'}}>{res.ok?'Đạt! Bi cái vào vùng đích.':'Chưa vào vùng — chỉnh đầu cơ/lực rồi thử lại.'}</div>
+        <div className="muted small">Cách tâm đích {Math.round(res.d*10)/10} đơn vị (bán kính vòng {pz.zone.r}).</div>
+      </div>}
+      <div className="rowbtns">
+        <button className="btn acc" style={{flex:1}} onClick={check}>✔ Kiểm tra</button>
+        <button className="btn ghost" style={{flex:1}} onClick={next}>🔀 Bài khác</button>
+      </div>
+    </div>
+  );
+}
+function makeBankPuzzle(){
+  for(let t=0;t<60;t++){
+    const A={x:_rand(22,78),y:_rand(15,39)};
+    const ang=_rand(0,Math.PI*2);
+    const B={x:A.x+Math.cos(ang)*30,y:A.y+Math.sin(ang)*30};
+    const res=reflect(A,B,FELT,POCKETS);
+    if(res.made||res.pts.length<3) continue;
+    if(_dist(res.pts[0],res.pts[1])<12||_dist(res.pts[1],res.pts[2])<12) continue;
+    return {A,hit1:res.pts[1],ans:res.pts[2],full:res.pts};
+  }
+  const res=reflect({x:30,y:20},{x:80,y:42},FELT,POCKETS);
+  return {A:{x:30,y:20},hit1:res.pts[1],ans:res.pts[2],full:res.pts};
+}
+function BankDrill({onBack}){
+  const [pz,setPz]=useState(makeBankPuzzle);
+  const [guess,setGuess]=useState(null);
+  const [reveal,setReveal]=useState(false);
+  const svgRef=useRef(null), drag=useRef(false);
+  const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    return {x:Math.round(Math.max(2,Math.min(98,(cx-r.left)/r.width*100))), y:Math.round(Math.max(2,Math.min(52,(cy-r.top)/r.height*60)))}; };
+  const down=(e)=>{ if(reveal)return; drag.current=true; e.preventDefault(); setGuess(toSvg(e)); };
+  const move=(e)=>{ if(!drag.current)return; e.preventDefault(); setGuess(toSvg(e)); };
+  const up=()=>{ drag.current=false; };
+  const next=()=>{ setPz(makeBankPuzzle()); setGuess(null); setReveal(false); };
+  const err=(guess&&reveal)?_dist(guess,pz.ans):null;
+  const stars= err==null?'': err<=4?'⭐⭐⭐': err<=8?'⭐⭐': err<=13?'⭐':'—';
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="drow" style={{marginBottom:2}}><button className="chip" onClick={onBack}>← Quay lại</button><b style={{fontSize:14}}>Đoán đường băng</b><span style={{width:56}}/></div>
+      <div className="tsub">Bi lăn theo mũi tên và sẽ chạm băng ở chấm vàng. Kéo dấu ❓ tới nơi bạn nghĩ bi TỚI sau khi bật băng (góc tới = góc phản), rồi Kiểm tra.</div>
+      <svg ref={svgRef} className="mtable" viewBox="0 0 100 60" style={{width:'100%',marginTop:8,touchAction:'none'}}
+        onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up} onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
+        <defs><marker id="bkAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto"><path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/></marker></defs>
+        <TableFrame/>
+        <line x1={pz.A.x} y1={pz.A.y} x2={pz.hit1.x} y2={pz.hit1.y} stroke="#ffd166" strokeWidth="1.3" markerEnd="url(#bkAh)"/>
+        <circle cx={pz.hit1.x} cy={pz.hit1.y} r="1.7" fill="#ffd166"/>
+        {reveal && <polyline points={pz.full.slice(1).map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth="1.3" strokeLinejoin="round" strokeDasharray="3 2"/>}
+        {reveal && <circle cx={pz.ans.x} cy={pz.ans.y} r="2.6" fill="none" stroke="#5fb6ff" strokeWidth="1.6"/>}
+        <Ball x={pz.A.x} y={pz.A.y} b={{cue:true}}/>
+        {guess && <g><circle cx={guess.x} cy={guess.y} r="3" fill="rgba(224,85,107,.28)" stroke="var(--danger)" strokeWidth="1.4"/><text x={guess.x} y={guess.y+1.3} fontSize="3.4" textAnchor="middle" fill="var(--danger)" fontWeight="700">?</text></g>}
+      </svg>
+      {reveal && <div className="card" style={{padding:'12px 14px',textAlign:'center'}}>
+        <div style={{fontSize:20}}>{stars}</div>
+        <div style={{fontWeight:800,color:'var(--soft)'}}>Sai lệch {Math.round(err*10)/10} đơn vị</div>
+        <div className="muted small">Vòng xanh = nơi bi thật sự tới sau khi bật băng.</div>
+      </div>}
+      <div className="rowbtns">
+        {!reveal
+          ? <button className="btn acc wide" onClick={()=>setReveal(true)} disabled={!guess}>✔ Kiểm tra</button>
+          : <button className="btn acc wide" onClick={next}>🔀 Bài khác</button>}
+      </div>
+    </div>
+  );
+}
+function InteractiveTrain(){
+  const [ex,setEx]=useState(null);
+  if(ex==='position') return <PositionDrill onBack={()=>setEx(null)}/>;
+  if(ex==='bank') return <BankDrill onBack={()=>setEx(null)}/>;
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">🎮 Luyện tương tác</div>
+      <div className="tsub">Bài tập làm ngay trên màn hình để rèn cảm giác — chọn một bài:</div>
+      <div className="list">
+        <div className="card mcard" onClick={()=>setEx('position')} style={{padding:14}}>
+          <div style={{fontWeight:800,fontSize:15}}>🎯 Thả bi cái vào vùng</div>
+          <div className="muted small" style={{marginTop:3}}>Chọn đầu cơ + lực để bi cái dừng đúng vùng đích. Rèn điều bi.</div>
+        </div>
+        <div className="card mcard" onClick={()=>setEx('bank')} style={{padding:14}}>
+          <div style={{fontWeight:800,fontSize:15}}>↩️ Đoán đường băng</div>
+          <div className="muted small" style={{marginTop:3}}>Dự đoán bi bật băng đi đâu (góc tới = góc phản). Rèn đọc băng.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 function Training(){
   const matches=store.get('nc.matches',[]);
   const [recs,setRecs]=useState(()=>store.get('nc.training',[]));     // {id,date,drill,score,max,note}
@@ -2566,6 +2714,7 @@ function Training(){
       {tseg==='summary' && <SummaryView/>}
       {tseg==='mistakes' && <MistakesView/>}
       {tseg==='positions' && <PositionsView/>}
+      {tseg==='interactive' && <InteractiveTrain/>}
       {tseg==='drills' && <>
       <div className="h">Bài tập</div>
       <div className="tsub">Luyện có mục tiêu, chấm điểm và theo dõi tiến bộ — không chỉ "đánh cho vui".</div>
