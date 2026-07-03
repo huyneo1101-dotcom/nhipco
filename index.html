@@ -589,13 +589,13 @@ const scanNote=(note)=>{ const n=normVN(note); if(!n) return []; const out=[]; O
 const entryMistakes=(arr,key)=>{ const s=new Set(arr[key]||[]); scanNote(arr.note).forEach(x=>s.add(x)); return [...s]; };
 // Tự phân loại lỗi TỰ THÊM vào đúng nhóm bằng từ khoá (không dấu) — điểm nhóm nào cao nhất thì chọn.
 const MIS_CAT_KW={
-  'Kỹ thuật & tư thế':['day co','dua co','giat tay','giat co','nhom nguoi','nhom dau','nhac dau','cam co chat','siet co','ghi co','bop co','the dung','tu the','dung khong vung','dung chua vung','dung sai','sai chan','the chan','chan','lung','cui','gong','cau tay','vung co','ti tay','tay tru','khuyu','giu co','dua co run','co lech','lech co','mat roi','nhin theo co'],
-  'Ngắm & nhắm':['ngam sai','ngam le','nham sai','diem cham','goc cat','sai goc','bu vang','bu xoay','throw','phan so','ghost','duong ngam'],
-  'Cú bắn còn kém':['cat mong','cat le','cu cat','can bang','danh bang','cu bang','bank','cu de','cu phe','de phe','rut bi','cu rut','draw','le bi','cu le','follow','lo xa','ban lo','combo','chum bi','thang dai','cu xoay','english'],
-  'Lực & vị trí bi cái':['qua manh','qua nhe','manh tay','nhe tay','thieu luc','du luc','vi tri bi','bi cai','chet cai','scratch','ra bi','duong ra','di qua duong','qua da','dieu bi','mat vi tri','lui lo','cai lui'],
-  'Tư duy & chọn cú':['chon sai','chon lo','sai lo','duong bi','doc ban','ke hoach','thu tu bi','sai thu tu','cum bi','pha cum','tach cum','tinh sai','tinh duong','bo lo','cu de','khong nghi','khong tinh','doc sai'],
+  'Kỹ thuật & tư thế':['day co','dua co','giat tay','giat co','nhom nguoi','nhom dau','nhac dau','cam co','siet co','ghi co','bop co','the dung','tu the','dung khong vung','dung chua vung','dung sai','sai chan','the chan','chan','lung','cui','gong','cau tay','vung co','ti tay','tay tru','khuyu','giu co','dua co run','co lech','lech co','mat roi','nhin theo co','vao bo','bo au','tam bi','danh tam','ap phe','vay ap phe','vay phe','nhip','boi lo','danh phan','dung cu'],
+  'Ngắm & nhắm':['ngam','nham','diem cham','goc cat','sai goc','bu vang','bu xoay','throw','phan so','ghost','duong ngam','diem chet','nhin diem','tinh diem','can diem'],
+  'Cú bắn còn kém':['cat mong','chem mong','mong','cu cat','can bang','danh bang','cu bang','tren bang','bank','cu de','cu phe','de phe','rut bi','cu rut','draw','le bi','cu le','cu theo','follow','lo xa','ban lo','duong xa','combo','chum bi','thang dai','cu xoay','english'],
+  'Lực & vị trí bi cái':['qua manh','qua nhe','manh tay','nhe tay','thieu luc','du luc','vi tri bi','bi cai','chet cai','scratch','ra bi','duong ra','di qua duong','qua da','dieu bi','mat vi tri','lui lo','cai lui','di dau','le di dau'],
+  'Tư duy & chọn cú':['chon sai','chon lo','sai lo','duong bi','doc ban','ke hoach','thu tu bi','sai thu tu','cum bi','pha cum','tach cum','tinh sai','tinh duong','bo lo','cu de','khong nghi','khong tinh','doc sai','phuong an','du phong','tiep theo','bi tiep','nhin 2 bi','2 bi','gan nhau','bi gan','sao cho vao','khong biet ban','ke tiep','nhin truoc'],
   'Chiến thuật':['safety','safe','phong thu','khoa bi','khong khoa','che bi','snooker','giau bi','pha bi','pha phom','break','de mo'],
-  'Tâm lý':['nong voi','voi vang','hap tap','danh nhanh','mat tap trung','tap trung','lo dang','xao nhang','phan tam','kien nhan','sot ruot','run tay','tay run','run','cang thang','binh tinh','tilt','noi nong','buc minh','so thang','so thua','tu tin','hoi hop','lo lang','hoang','ap luc','chu quan','tieu cuc','nao nung','ap dao','trinh dien','cau toan','so'],
+  'Tâm lý':['nong voi','voi vang','hap tap','danh nhanh','danh au','choi au','met','mat tap trung','tap trung','lo dang','xao nhang','phan tam','kien nhan','sot ruot','run tay','tay run','run','cang thang','binh tinh','tilt','noi nong','buc minh','so thang','so thua','tu tin','hoi hop','lo lang','hoang','ap luc','chu quan','tieu cuc','nao nung','ap dao','trinh dien','cau toan'],
 };
 const classifyMistake=(name)=>{
   const n=normVN(name); if(!n) return 'Khác';
@@ -603,6 +603,13 @@ const classifyMistake=(name)=>{
   MISTAKE_CATS.forEach(c=>{ const kws=MIS_CAT_KW[c.t]||[]; let s=0; kws.forEach(kw=>{ if(n.includes(kw)) s++; }); if(s>bestScore){ bestScore=s; best=c.t; } });
   return best;
 };
+// Gộp lỗi thành các nhóm: preset + lỗi tự thêm đã tự phân loại (còn lại 'Khác').
+function groupMistakes(customList){
+  const groups=MISTAKE_CATS.map(c=>({t:c.t, items:c.items.slice()}));
+  const other=[];
+  (customList||[]).forEach(m=>{ const g=groups.find(x=>x.t===classifyMistake(m)); if(g){ if(!g.items.includes(m)) g.items.push(m); } else other.push(m); });
+  return {groups, other};
+}
 // Lỗi tự thêm (ngoài danh mục có sẵn) — lưu để tái dùng & tự dò trong ghi chú các trận sau.
 function saveCustomMistake(name){ name=(name||'').trim(); if(!name) return false; const cur=store.get('nc.customMistakes',[])||[]; if(MISTAKES.includes(name)||cur.includes(name)) return false; store.set('nc.customMistakes',[...cur,name]); return true; }
 function getCustomMistakes(){ return (store.get('nc.customMistakes',[])||[]).filter(x=>!MISTAKES.includes(x)); }
@@ -1555,23 +1562,25 @@ function LiveTally({onEnd}){
             </div>))}
         </div>}
       <div className="h2">Chạm để đánh dấu lỗi</div>
-      {MISTAKE_CATS.map(c=>(
-        <div key={c.t} style={{marginTop:8}}>
-          <div className="muted small" style={{fontWeight:800,margin:'2px 0 5px'}}>{c.t}</div>
-          <div className="presets" style={{justifyContent:'flex-start'}}>
-            {c.items.map(x=>{ const n=tally[x]||0; return (
-              <button key={x} className={'chip'+(n>0?' on':'')} onClick={()=>bump(x,1)}>{x}{n>0?' · '+n:''}</button>); })}
-          </div>
-        </div>))}
-      <div style={{marginTop:8}}>
-        <div className="muted small" style={{fontWeight:800,margin:'2px 0 5px'}}>🆕 Tự thêm</div>
-        {customMis.length>0 &&
-          <div className="presets" style={{justifyContent:'flex-start'}}>
-            {customMis.map(x=>{ const n=tally[x]||0; return (
-              <button key={x} className={'chip'+(n>0?' on':'')} onClick={()=>bump(x,1)}>{x}{n>0?' · '+n:''}</button>); })}
+      {(()=>{ const {groups,other}=groupMistakes(customMis); return <>
+        {groups.map(c=>(
+          <div key={c.t} style={{marginTop:8}}>
+            <div className="muted small" style={{fontWeight:800,margin:'2px 0 5px'}}>{c.t}</div>
+            <div className="presets" style={{justifyContent:'flex-start'}}>
+              {c.items.map(x=>{ const n=tally[x]||0; return (
+                <button key={x} className={'chip'+(n>0?' on':'')} onClick={()=>bump(x,1)}>{x}{n>0?' · '+n:''}</button>); })}
+            </div>
+          </div>))}
+        {other.length>0 &&
+          <div style={{marginTop:8}}>
+            <div className="muted small" style={{fontWeight:800,margin:'2px 0 5px'}}>🆕 Khác (tự thêm)</div>
+            <div className="presets" style={{justifyContent:'flex-start'}}>
+              {other.map(x=>{ const n=tally[x]||0; return (
+                <button key={x} className={'chip'+(n>0?' on':'')} onClick={()=>bump(x,1)}>{x}{n>0?' · '+n:''}</button>); })}
+            </div>
           </div>}
-        <CustomMisAdd onAdd={onAddCustom}/>
-      </div>
+      </>; })()}
+      <div style={{marginTop:10}}><CustomMisAdd onAdd={onAddCustom}/></div>
       <div style={{height:8}}/>
     </div>
   );
