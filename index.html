@@ -1002,7 +1002,7 @@ function Seg({val,set,opts}){
 }
 /* Các nhóm mục con (segment) cho phép đổi thứ tự */
 const SEG_DEFS={
-  table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['cue','🔔 Nhắc nhở'],['live','🔴 Đang đấu'],['positions','🎱 Điều bi'],['routine','✓ Routine']]},
+  table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['anchor','🎯 Neo mắt'],['cue','🔔 Nhắc nhở'],['live','🔴 Đang đấu'],['positions','🎱 Điều bi'],['routine','✓ Routine']]},
   train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['drills','🎯 Bài tập'],['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
   log:  {lab:'Nhật ký',   items:[['log','Lịch sử'],['opps','Đối thủ']]},
   know: {lab:'Kiến thức', items:[['read','📖 Đọc'],['review','🎴 Ôn luyện']]},
@@ -2928,6 +2928,7 @@ function AtTable(){
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <Seg val={seg} set={setSeg} opts={orderedOpts('table')}/>
       {seg==='breathe' && <Breathe/>}
+      {seg==='anchor' && <FocusAnchor/>}
       {seg==='cue' && <Cue/>}
       {seg==='live' && <LiveTally onEnd={endLive}/>}
       {seg==='positions' && <PositionsView/>}
@@ -3197,6 +3198,31 @@ const KNOWLEDGE=[
       {h:'Ám ảnh tỉ số / kết quả', p:'Vì sao: nghĩ thắng-thua là nghĩ về TƯƠNG LAI và thứ ngoài tầm kiểm soát, tạo lo âu mà chẳng giúp cú hiện tại.\nCách chữa: chuyển hẳn sang mục tiêu QUY TRÌNH bạn kiểm soát được: routine đủ, ngắm rõ, đưa cơ thẳng, ra bi có kế hoạch. Nghịch lý: càng buông kết quả, kết quả càng tốt. Bắt gặp mình đang tính điểm thì dán nhãn "đang nghĩ tỉ số" rồi quay về cú trước mặt.'},
       {h:'Dễ bị ngoại cảnh phân tâm', p:'Vì sao: não luôn quét môi trường tìm cái mới lạ (tiếng động, chuyển động, điện thoại) — bản năng, không phải bạn yếu.\nCách chữa: đừng CHỐNG tiếng ồn (càng chống càng để ý), chấp nhận nó tồn tại rồi dồn chú ý vào đường cơ; routine tạo "đường hầm chú ý". Giữa trận TRÁNH lướt điện thoại — vừa mỏi mắt vừa kéo tâm trí ra khỏi trận; thay bằng nhìn xa thư giãn.'},
       {h:'Chủ quan khi đang dẫn', p:'Vì sao: dẫn điểm tạo cảm giác an toàn giả, não giảm cảnh giác và ta bắt đầu đánh cẩu thả những cú "chắc ăn".\nCách chữa: coi mỗi cú như lúc đang HOÀ. Vẫn làm đủ routine cho cả cú dễ (cú dễ bị coi thường là lúc dễ trượt nhất). Tự nhắc "trận chưa xong tới bi cuối". Dẫn là lợi thế, không phải chiến thắng.'},
+    ]},
+  {key:'psy_crowd', tag:'Tâm lý', title:'Tập trung khi có người xem',
+    intro:'Bị nhiều người nhìn, ta dễ tưởng "ai cũng soi từng cú của mình" — nên căng, tay cứng, chú ý trôi khỏi bàn ra phía khán giả. Sự thật: người xem để ý bạn ÍT hơn bạn tưởng rất nhiều (hiệu ứng "ánh đèn sân khấu"), và dù họ có nhìn thì ánh mắt đó cũng không đổi được đường cơ. Việc cần rèn là NHẬN RA khi chú ý trôi và KÉO nó về thật nhanh.',
+    body:[
+      {h:'Vì sao có người xem là mất tập trung', p:'Não coi "bị quan sát" như một mối đe doạ nhẹ: tim đập nhanh hơn, cơ căng, và chú ý tự động quét ra ngoài tìm những khuôn mặt đang nhìn. Cộng thêm hiệu ứng "ánh đèn sân khấu" — ta phóng đại mức người khác chú ý và phán xét mình. Kết quả: đầu bận lo "họ nghĩ gì" thay vì lo đường cơ.'},
+      {h:'Nhận ra mình đã tuột tập trung', p:'Bước đầu tiên là BẮT được lúc chú ý trôi. Dấu hiệu:\n• Cúi xuống bàn mà đầu vẫn nghĩ chuyện khác (tỉ số, khán giả, cú vừa hỏng).\n• Mắt liếc về phía người xem, để ý ai đang nhìn mình.\n• Đánh vội cho "xong", bỏ bước ngắm.\n• Lo mình TRÔNG thế nào thay vì lo cú này đi ĐÂU.\nChỉ cần gọi tên nó trong đầu — "mình đang mất tập trung" — là đã kéo lại được một nửa.'},
+      {h:'Reset nhanh 10 giây (khi thấy mình mất tập trung)', p:'Đừng cố "ép mình phải tập trung" — hãy cho mắt và đầu một việc CỤ THỂ:\n1) LÙI khỏi bàn, đứng thẳng (đổi tư thế = đổi trạng thái).\n2) Thở hắt ra MỘT hơi thật dài, buông vai.\n3) NEO mắt vào đúng một điểm — chấm trên bi mục tiêu hoặc điểm chạm — nhìn tới khi mọi thứ xung quanh mờ đi.\n4) Một từ khoá ("điểm chạm"), rồi mới cúi xuống.\nTrong app: nút ⟳ Reset (thở) và Thi đấu → 🎯 Neo mắt chạy đúng chuỗi này cho bạn.'},
+      {h:'Thu nhỏ "đường hầm chú ý"', p:'Không thể xoá đám đông khỏi phòng — nhưng có thể chủ động đẩy họ ra RÌA tầm nhìn. Dồn toàn bộ chú ý vào thứ nhỏ và trong tầm kiểm soát: đường cơ, điểm chạm, nhịp đưa cơ. Kỹ thuật "quiet eye": trước khi bắn, dán mắt YÊN trên bi mục tiêu khoảng 1 giây rồi mới đưa cơ. Mắt yên thì đầu yên.'},
+      {h:'"Họ không soi mày kỹ như mày tưởng"', p:'Người xem phần lớn đang lo ván của họ, xem điện thoại, hoặc chờ tới lượt — hiếm ai chấm điểm từng cú của bạn như bạn sợ. Và kể cả họ có nhìn: ánh mắt của họ KHÔNG chạm vào viên bi, không đổi được góc cơ. Đường cơ chỉ nghe theo tay bạn. Nhả bớt gánh nặng "phải trông cho giỏi" thì tay tự mềm ra.'},
+      {h:'Chơi cho VÁN, không cho khán giả', p:'Bị nhìn dễ sinh ý muốn đánh cú đẹp/khó để gây ấn tượng — đó là bẫy. Người hiểu bi-a nể cú đơn giản mà thắng ván, không nể cú liều mà may. Trước mỗi cú hỏi: "cú này giúp tôi THẮNG, hay chỉ để tôi trông ngầu?" — luôn chọn vế đầu. (Xem thêm bài "Áp lực & khoảnh khắc căng".)'},
+      {h:'Biến ánh mắt thành nhiên liệu', p:'Đảo lại cách nhìn: có người xem nghĩa là trận này ĐÁNG xem — một đặc quyền, không phải mối đe doạ. Đối thủ cũng đang bị nhìn y như bạn, và cũng đang căng. Dùng sự chú ý đó làm lý do để vào cú NGHIÊM TÚC hơn, tập trung hơn — thay vì để nó rút cạn năng lượng của mình.'},
+      {h:'Tập cho quen bị nhìn', p:'Tập trung khi bị quan sát là kỹ năng RÈN được, không phải tính cách. Cách quen dần: rủ người đứng xem lúc tập; tự quay video mình đánh (cảm giác "bị ghi hình" gần giống bị nhìn); đánh giải nhỏ / độ nhẹ thường xuyên cho hệ thần kinh chai với áp lực. Càng phơi nhiễm có kiểm soát, đám đông càng lùi thành "nền" chứ không còn là "tâm điểm".'},
+      {h:'Giữ tập trung suốt cả trận', p:'Tập trung là cơ bắp — nó mỏi và trôi; việc của bạn là kéo về, lặp lại. Neo bằng pre-shot routine giống hệt mỗi cú. Giữa các cú, nhìn ra xa thư giãn và TRÁNH lướt điện thoại (vừa mỏi mắt vừa kéo đầu ra khỏi trận). Sau mỗi lỗi, chạy reset rồi coi cú kế là cú mới. Đừng đòi tập trung 100% cả trận — chỉ cần tập trung ĐÚNG LÚC: khoảnh khắc cúi xuống và bắn.'},
+    ]},
+  {key:'psy_chair', tag:'Tâm lý', title:'Ngồi chờ tới lượt — vì sao nói chuyện là mất tập trung',
+    intro:'Bạn đang tĩnh và tập trung, rồi ngồi xuống ghế chờ tới lượt — chỉ cần nói vài câu với ai đó là tập trung bay sạch. Không phải bạn kém bản lĩnh: tập trung (khi đánh) và trò chuyện DÙNG CHUNG một kênh trí óc nhưng ở hai chế độ ĐỐI NGHỊCH. Nói chuyện bật "não ngôn ngữ – xã hội" lên, đá văng trạng thái tĩnh bạn vừa gây dựng, và để lại "dư âm" bám theo khi quay lại bàn.',
+    body:[
+      {h:'Vì sao chỉ một câu nói cũng phá tập trung', p:'Khi đánh, chú ý của bạn HẸP – HƯỚNG VÀO TRONG – KHÔNG lời: chỉ có cảm giác cú đánh, điểm chạm, nhịp tay. Trò chuyện thì NGƯỢC HẲN: rộng, hướng ra ngoài, bằng ngôn ngữ và mang tính xã hội (nghe, hiểu, nghĩ câu đáp, đọc nét mặt). Não gần như không chạy được hai chế độ này cùng lúc. Tệ hơn: bật chế độ "nói" lên thì dễ, còn tắt nó đi để về lại trạng thái tĩnh thì CHẬM.'},
+      {h:'"Dư âm" bám theo về bàn', p:'Khi chuyển từ việc này sang việc khác, một phần tâm trí bị kẹt lại ở việc cũ. Vừa buôn xong một câu chuyện, bạn về bàn nhưng đầu vẫn đang "phát lại" câu vừa nói, chuyện vừa nghe. Cái dư âm đó tranh chỗ với cú đánh — nên dù đã cúi xuống, bạn vẫn thấy "chưa thật vào".'},
+      {h:'Bộ nhớ làm việc bị chiếm chỗ', p:'Đầu ta chỉ giữ được vài thứ cùng lúc. Trước khi ngồi xuống, "bộ nhớ" đang chứa game plan, nhịp và cảm giác tay. Một cuộc nói chuyện nhồi vào đó toàn nội dung xã hội (câu chữ, phải đáp gì, thái độ người kia) — đẩy hết kế hoạch và cảm giác ra ngoài. Tới lượt, bạn phải dựng lại từ số 0.'},
+      {h:'Trạng thái bị xê dịch', p:'Nói chuyện — nhất là cười đùa hay một câu hơi khó chịu — làm đổi nhịp tim và cảm xúc, kéo bạn ra khỏi "vùng tĩnh" vừa canh được. Biên độ cảm xúc càng lớn (cười to, bực nhẹ) thì càng lâu mới lắng lại. Nó cũng gọi sự để-ý-người-khác quay lại (xem bài "Tập trung khi có người xem").'},
+      {h:'Ghế chờ là MỘT PHẦN của trận', p:'Sai lầm gốc: coi lúc ngồi là "giờ giải lao". Người chơi giỏi khi ở trên ghế vẫn Ở TRONG trận — mắt theo bàn, tính sẵn đường đi của mình, giữ nhịp thở và trạng thái. Họ không rời trận rồi mới cố nhảy vào lại; họ chưa từng rời đi. Nói chuyện phiếm chính là bước "rời trận" đó.'},
+      {h:'Giữ tập trung khi ngồi chờ', p:'• Quyết TRƯỚC: trong trận không sa vào chuyện phiếm. Đáp lịch sự, ngắn — hoặc nói thẳng, vui vẻ: "cho tao tập trung tí nhé".\n• Mắt nhìn BÀN hoặc nhìn xuống, đừng quét khán giả; theo dõi bi để đọc thế bàn.\n• Giữ một mỏ neo tĩnh: cơ trong tay, một hơi thở đều, một từ khoá.\n• Ở yên trong "bong bóng" của mình — đây là thói quen bình thường của dân chuyên, không phải bất lịch sự.'},
+      {h:'Lỡ nói chuyện rồi — nghi thức VÀO LẠI', p:'Nếu đã trót buôn, đừng bước thẳng vào bàn từ trạng thái nguội. Khi tới lượt:\n1) Đứng dậy sớm vài giây, tách khỏi cuộc nói chuyện.\n2) Một–hai hơi thở ra thật dài (nút ⟳ Reset).\n3) NEO mắt về một điểm cho tới khi xung quanh mờ đi (Thi đấu → 🎯 Neo mắt).\n4) Chạy ĐỦ pre-shot routine, thật chậm ở cú đầu, để khởi động lại cảm giác.\nCoi cú đầu sau khi ngồi là "cú làm nóng lại", đừng kỳ vọng vào ngay.'},
+      {h:'Tập trung tự nhiên bền hơn tập trung gồng', p:'Nếu bạn đang PHẢI gồng để tĩnh thì trạng thái đó mong manh — một câu nói là vỡ. Đích đến không phải "cấm tiệt nói chuyện" (bất khả và không cần), mà là xây một routine vào-lại-trạng-thái NHANH và đáng tin, để dù bị ngắt thì bạn quay lại chỉ trong vài hơi thở. Khi việc "vào lại" thành phản xạ, chuyện phiếm không còn giết được sự tập trung của bạn.'},
     ]},
   {key:'psy_after', tag:'Tâm lý', title:'Sau lỗi & kiểm soát cảm xúc',
     intro:'Không ai chơi cả trận không lỗi. Điều tách người bản lĩnh với người thường không phải SỐ lỗi, mà là thời gian trở lại bình thường sau lỗi. Một cú hỏng chỉ mất một điểm; nhưng nếu nó kéo theo cáu giận và ba cú ẩu tiếp theo, bạn mất cả ván. Kỹ năng cốt lõi ở đây là RESET — cắt cảm xúc khỏi cú vừa rồi.',
@@ -3581,6 +3607,59 @@ function ResetOverlay({close}){
       {done
         ? <button className="btn acc" style={{maxWidth:260}} onClick={close}>Tôi ổn rồi — vào bàn</button>
         : <div className="scHint">Theo nhịp thở · còn {breathsLeft} hơi</div>}
+    </div>
+  );
+}
+
+/* ===== Neo mắt — thu nhỏ tiêu điểm (reset chú ý nhanh nhất) ===== */
+const ANCHOR_LINES={
+  xa:'Thở hắt ra một hơi thật dài — buông vai xuống.',
+  neo:'Cả thế giới thu lại còn MỘT điểm. Giữ mắt trên nó, đừng để trôi.',
+  done:'Điểm chạm. Vào bàn.'
+};
+// [nhãn, số giây, scale đích, thời gian chuyển]
+const ANCHOR_PH=[['xa',4,0.5,3.6],['neo',5,0.13,0.7]];
+function FocusAnchor(){
+  const [run,setRun]=useState(false);
+  if(run) return <AnchorRun close={()=>setRun(false)}/>;
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Neo mắt — thu nhỏ tiêu điểm</div>
+      <div className="tsub">Khi thấy mình tuột tập trung, hoặc bị đám đông và ánh mắt làm phân tâm: một hơi thở ra thật dài rồi <b>neo mắt vào MỘT điểm</b> cho tới khi xung quanh mờ đi. ~10 giây để kéo chú ý trở lại.</div>
+      <div className="card" style={{alignItems:'center',textAlign:'center',gap:12,padding:'22px 16px'}}>
+        <div style={{fontSize:42,lineHeight:1}}>🎯</div>
+        <div className="preline" style={{color:'var(--soft)',fontSize:14,maxWidth:300,lineHeight:1.55}}>Xả một hơi → thế giới thu về một điểm → mang sự tập trung đó vào cú đánh. Vào bàn, chọn ngay một điểm thật (chấm trên bi / điểm chạm) và giữ mắt trên nó.</div>
+        <button className="btn acc wide" style={{maxWidth:260}} onClick={()=>setRun(true)}>▶ Bắt đầu · 10 giây</button>
+      </div>
+    </div>
+  );
+}
+function AnchorRun({close}){
+  const total=ANCHOR_PH.reduce((s,p)=>s+p[1],0);
+  const [t,setT]=useState(0);
+  const [armed,setArmed]=useState(false);
+  const ref=useRef(null), lastPi=useRef(-1);
+  useEffect(()=>{ try{ const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen().catch(()=>{}); }catch(e){}
+    return ()=>{ try{ if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{}); }catch(e){} }; },[]);
+  useEffect(()=>{ const id=setTimeout(()=>setArmed(true),60); return ()=>clearTimeout(id); },[]);
+  useEffect(()=>{ ref.current=setInterval(()=>setT(x=>Math.round((x+0.1)*10)/10),100); return ()=>clearInterval(ref.current); },[]);
+  const done=t>=total;
+  let acc=0, ph=ANCHOR_PH[0], pi=0;
+  for(let i=0;i<ANCHOR_PH.length;i++){ if(t<acc+ANCHOR_PH[i][1]){ ph=ANCHOR_PH[i]; pi=i; break; } acc+=ANCHOR_PH[i][1]; }
+  useEffect(()=>{ if(done){ clearInterval(ref.current); return; } if(pi!==lastPi.current){ lastPi.current=pi; buzz(50); } });
+  const key=done?'done':ph[0];
+  const scale=!armed?1.3:(done?0.13:ph[2]);
+  const dur=!armed?0.3:(done?0.7:ph[3]);
+  return (
+    <div className="scOverlay" style={{background:'var(--bg)',gap:26}} onClick={()=>{ if(done) close(); }}>
+      <button className="scClose" onClick={(e)=>{e.stopPropagation();close();}} aria-label="Đóng">✕</button>
+      <div className="resetLine">{ANCHOR_LINES[key]}</div>
+      <div className="orb" style={{width:'min(64vw,240px)',transform:`scale(${scale})`,transitionDuration:dur+'s',transitionTimingFunction:'ease-out'}}>
+        <div><div className="ph"></div></div>
+      </div>
+      {done
+        ? <button className="btn acc" style={{maxWidth:260}} onClick={close}>Tôi tập trung rồi — vào bàn</button>
+        : <div className="scHint">{key==='xa'?'Xả căng…':'Neo mắt · giữ yên'}</div>}
     </div>
   );
 }
