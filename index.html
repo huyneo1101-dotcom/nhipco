@@ -420,7 +420,7 @@ const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.cuevotes','nc.customcues',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
-  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan'];
+  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan','nc.knowarchive'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
 // DATA = dữ liệu người dùng (trận, thế bi, lỗi, tập luyện...) + vài key ngày-cục-bộ không đồng bộ.
 const PREF_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
@@ -3416,12 +3416,13 @@ const KNOWLEDGE=[
       {h:'Lưu ý', p:'Nhẹ nhàng, đều đặn quan trọng hơn nặng. ĐỪNG tập tay quá nặng ngay trước hôm thi đấu — mỏi cơ làm hỏng cảm giác tay.'},
     ]},
 ];
-function KnowCard({a,defaultOpen}){
+function KnowCard({a,defaultOpen,onArchive,archived}){
   const [open,setOpen]=useState(!!defaultOpen);
   return (
     <div className="card drillC">
       <div className="drillH" onClick={()=>setOpen(o=>!o)}>
         <div className="dn" style={{flex:1,minWidth:0}}><b>{a.title}</b><small>{open?'thu gọn':'đọc'}</small></div>
+        {onArchive && <button className="chip" title={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} onClick={(e)=>{e.stopPropagation();onArchive();}} style={{marginLeft:6,flex:'none'}}>{archived?'↩︎':'🗄'}</button>}
         <span className="muted" style={{fontSize:16}}>{open?'▾':'▸'}</span>
       </div>
       {open &&
@@ -3445,21 +3446,41 @@ const KNOW_CATS=[
   {tag:'Tâm lý', label:'🧠 Tâm lý'},
 ];
 function KnowledgeView(){
+  const [archived,setArchived]=usePersist('nc.knowarchive',[]);
+  const [showArch,setShowArch]=useState(false);
+  const isArch=(k)=>archived.includes(k);
+  const toggleArch=(k)=>setArchived(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
+  const archList=KNOWLEDGE.filter(a=>isArch(a.key));
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Kiến thức bi-a</div>
-      <div className="tsub">Phân theo mục — chạm để mở/đóng từng bài.</div>
+      <div className="tsub">Phân theo mục — chạm để mở/đóng từng bài. Bài ít quan tâm bấm 🗄 để lưu trữ.</div>
       {KNOW_CATS.map(c=>{
-        const arts=KNOWLEDGE.filter(a=>a.tag===c.tag);
+        const arts=KNOWLEDGE.filter(a=>a.tag===c.tag && !isArch(a.key));
         if(!arts.length) return null;
         return (
           <div key={c.tag}>
             <div className="h2">{c.label}</div>
             <div className="list">
-              {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'}/>)}
+              {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} onArchive={()=>toggleArch(a.key)}/>)}
             </div>
           </div>);
       })}
+      {archList.length>0 &&
+        <div style={{marginTop:16}}>
+          <div className="h2" style={{cursor:'pointer',display:'flex',alignItems:'center',gap:8}} onClick={()=>setShowArch(s=>!s)}>
+            <span style={{flex:1}}>🗄️ Lưu trữ ({archList.length})</span>
+            <span className="muted" style={{fontSize:15}}>{showArch?'▾':'▸'}</span>
+          </div>
+          {showArch
+            ? <>
+                <div className="list">
+                  {archList.map(a=><KnowCard key={a.key} a={a} onArchive={()=>toggleArch(a.key)} archived={true}/>)}
+                </div>
+                <button className="btn ghost wide" style={{marginTop:8}} onClick={()=>setArchived([])}>↺ Bỏ lưu trữ tất cả ({archList.length})</button>
+              </>
+            : <div className="tsub" style={{marginTop:2}}>Chạm để xem {archList.length} bài đã lưu trữ.</div>}
+        </div>}
     </div>
   );
 }
