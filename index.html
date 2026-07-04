@@ -418,7 +418,7 @@ const cloudNotify=()=>cloudSubs.forEach(f=>{ try{f();}catch(e){} });
 const setStatus=(s)=>{ cloudStatus=s; cloudNotify(); };
 const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
-  'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes',
+  'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.cuevotes','nc.customcues',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
   'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
@@ -526,6 +526,26 @@ const CUES=[
   {tag:'Khôn ngoan',t:'Thấy cú liều hấp dẫn? Hỏi: an toàn có khôn hơn không?'},
   {tag:'Làm lại',   t:'Sau lỗi: hai hơi thở, đứng thẳng, coi như cú đầu tiên.'},
   {tag:'Kết thúc',  t:'Có cơ hội dọn bàn thì đừng nương tay. Kết liễu gọn.'},
+  {tag:'Xác suất',  t:'Chọn cú thắng nhiều ván nhất, không phải cú trông oách nhất.'},
+  {tag:'Điểm chạm', t:'Cú cuối khoá mắt vào điểm chạm, đừng liếc về phía lỗ.'},
+  {tag:'Ra bi',     t:'Ra bi cho góc dễ của cú SAU, đừng chỉ lo cú trước mặt.'},
+  {tag:'Đủ dùng',   t:'Vị trí "tạm đẹp" chắc ăn hơn vị trí "hoàn hảo" mà liều.'},
+  {tag:'Trước khi cúi',t:'Quyết định xong hết rồi mới cúi — cúi xuống là chỉ việc bắn.'},
+  {tag:'Không gồng',t:'Nắm cơ nhẹ như cầm quả trứng. Gồng tay là chệch hướng.'},
+  {tag:'Theo hết cú',t:'Giữ đầu cơ đi theo bi thêm một nhịp sau khi chạm.'},
+  {tag:'Chân đế',   t:'Trọng tâm vững trước, tay sau mới ổn định được.'},
+  {tag:'Một mục tiêu',t:'Mỗi cú chỉ một việc: đưa cơ thẳng qua điểm ngắm.'},
+  {tag:'Chậm mà chắc',t:'Rút cơ chậm, dừng một nhịp ở sau, rồi mới đẩy đi.'},
+  {tag:'Đừng tham', t:'Không phải bi nào cũng ăn được. Bỏ đúng lúc là khôn.'},
+  {tag:'Giải sớm',  t:'Nhìn cả cụm: đâu là bi khó nhất? Xử lý nó khi còn dễ.'},
+  {tag:'Không đổi ý',t:'Đổi phương án giữa lúc cúi là nguồn gốc của cú trượt.'},
+  {tag:'Hít–thở–bắn',t:'Hít vào khi ngắm, thở nhẹ ra, rồi mới đưa cơ cú cuối.'},
+  {tag:'Kệ xung quanh',t:'Không ai đánh thay bạn. Chỉ còn bạn và bi cái.'},
+  {tag:'Đường ngắn',t:'Bi cái đi càng ít càng ít sai. Ưu tiên ra bi ngắn.'},
+  {tag:'Đầu ván',   t:'Phá kiểm soát được hơn phá thật mạnh cầu may.'},
+  {tag:'Giữ lực',   t:'Đủ lực tới vị trí là được — thừa lực là mất bi cái.'},
+  {tag:'Lạnh lùng', t:'Dẫn điểm thì càng phải chắc tay, đừng lơi ra vì tự mãn.'},
+  {tag:'Nghỉ mắt',  t:'Giữa các cú, rời mắt khỏi bàn vài giây cho đỡ mỏi.'},
 ];
 
 const GAMES=['9-bi','10-bi'];
@@ -1319,17 +1339,53 @@ function RoutineEdit({steps,save,close}){
 
 /* ================= Cue ================= */
 function Cue(){
-  const [i,setI]=useState(()=>Math.floor((Date.now()/1000)%CUES.length));
-  const next=()=>setI(p=>{ let n=p; while(n===p) n=Math.floor(Math.random()*CUES.length); return n; });
-  const c=CUES[i];
+  const [votes,setVotes]=useState(()=>store.get('nc.cuevotes',{}));      // {text:'up'|'down'} — 'down' = tự bỏ khỏi danh sách
+  const [custom,setCustom]=useState(()=>store.get('nc.customcues',[]));  // [{tag,t}] do người dùng tạo
+  const [newT,setNewT]=useState(''); const [addOpen,setAddOpen]=useState(false);
+  const all=[...custom,...CUES];
+  const pool=all.filter(c=>votes[c.t]!=='down');
+  const pick=(arr,not)=>{ const a=arr.filter(c=>!not||c.t!==not.t); if(!a.length) return arr[0]||null; return a[Math.floor(Math.random()*a.length)]; };
+  const [cur,setCur]=useState(()=>{ const p=[...store.get('nc.customcues',[]),...CUES].filter(c=>(store.get('nc.cuevotes',{})[c.t])!=='down'); return p.length?p[Math.floor((Date.now()/1000)%p.length)]:null; });
+  const saveV=(v)=>{ setVotes(v); store.set('nc.cuevotes',v); };
+  const saveC=(l)=>{ setCustom(l); store.set('nc.customcues',l); };
+  const next=()=>setCur(pick(pool,cur));
+  const like=()=>{ if(!cur) return; const v={...votes}; if(v[cur.t]==='up') delete v[cur.t]; else v[cur.t]='up'; saveV(v); };
+  const dislike=()=>{ if(!cur) return; const v={...votes}; v[cur.t]='down'; saveV(v); const np=all.filter(c=>v[c.t]!=='down'); setCur(np.length?pick(np,cur):null); };
+  const addCue=()=>{ const t=newT.trim(); if(t && !all.some(c=>c.t===t)){ const nc={tag:'Của tôi',t}; const l=[nc,...custom]; saveC(l); if(votes[t]==='down'){ const v={...votes}; delete v[t]; saveV(v); } setCur(nc); } setNewT(''); setAddOpen(false); };
+  const delCustom=(t)=>{ const l=custom.filter(c=>c.t!==t); saveC(l); const np=[...l,...CUES].filter(c=>votes[c.t]!=='down'); setCur(np.length?pick(np,cur):null); };
+  const restore=()=>{ const v={}; Object.keys(votes).forEach(k=>{ if(votes[k]==='up') v[k]='up'; }); saveV(v); const np=all.filter(c=>v[c.t]!=='down'); setCur(np.length?np[Math.floor((Date.now()/1000)%np.length)]:null); };
+  const hidden=Object.values(votes).filter(x=>x==='down').length;
+  const liked=cur&&votes[cur.t]==='up';
+  const isCustom=cur&&custom.some(c=>c.t===cur.t);
   return (
     <div className="cue">
-      <div className="card cuecard" onClick={next}>
-        <div className="tag">{c.tag}</div>
-        <div className="t">{c.t}</div>
-      </div>
-      <button className="btn acc wide" onClick={next}>🔀 Câu nhắc khác</button>
-      <div className="muted" style={{fontSize:13}}>Chạm thẻ để đổi câu</div>
+      {(pool.length>0 && cur) ? <>
+        <div className="card cuecard" onClick={next}>
+          <div className="tag">{cur.tag}</div>
+          <div className="t">{cur.t}</div>
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:10}}>
+          <button className="btn ghost" style={{flex:'0 0 auto',color:liked?'var(--gold)':'var(--text)'}} onClick={like}>{liked?'❤️':'🤍'} Thích</button>
+          <button className="btn ghost" style={{flex:'0 0 auto'}} onClick={dislike}>👎 Bỏ câu</button>
+          <button className="btn acc" style={{flex:1}} onClick={next}>🔀 Câu khác</button>
+        </div>
+        {isCustom && <button className="chip" style={{marginTop:8}} onClick={()=>delCustom(cur.t)}>🗑 Xoá câu của tôi</button>}
+      </> : (
+        <div className="card" style={{padding:18,textAlign:'center'}}>
+          <div className="muted" style={{fontSize:14,marginBottom:10}}>Bạn đã bỏ hết câu nhắc.</div>
+          {hidden>0 && <button className="btn ghost wide" onClick={restore}>↺ Khôi phục {hidden} câu đã bỏ</button>}
+        </div>
+      )}
+      {addOpen ? (
+        <div className="editrow" style={{marginTop:10}}>
+          <input value={newT} autoFocus onChange={e=>setNewT(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter') addCue(); }} placeholder="Nhập câu nhắc của bạn…"/>
+          <button className="btn acc" style={{flex:'0 0 auto'}} onClick={addCue}>Thêm</button>
+        </div>
+      ) : (
+        <button className="btn ghost wide" style={{marginTop:10}} onClick={()=>setAddOpen(true)}>＋ Tạo câu nhắc nhở</button>
+      )}
+      {hidden>0 && pool.length>0 && <button className="chip" style={{marginTop:8}} onClick={restore}>↺ Bỏ ẩn {hidden} câu</button>}
+      <div className="muted" style={{fontSize:13,marginTop:8}}>Chạm thẻ để đổi câu · 👎 Bỏ câu là tự ẩn khỏi danh sách.</div>
     </div>
   );
 }
@@ -2838,20 +2894,6 @@ function Training(){
       <div className="h2">👻 Đấu với Ghost</div>
       <GhostSection ghost={ghost} setGhost={setGhost}/>
 
-      {lessons.length>0 && <>
-        <div className="h2">📝 Bài học bạn tự ghi</div>
-        <div className="list">
-          {lessons.map(m=>(
-            <div key={m.id} className="card lesson">
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
-                <div className="muted small">{fmtDate(m.date)} · {m.opp||'?'} · {m.result==='W'?'Thắng':m.result==='L'?'Thua':'Hòa'}</div>
-                <button className="xbtn" onClick={()=>clearLesson(m.id)}>✕</button>
-              </div>
-              <div className="lz">“{m.note}”</div>
-            </div>))}
-        </div>
-      </>}
-
       <div style={{height:8}}/>
       </>}
       {scoring && <ScoreModal d={scoring} onSave={addScore} close={()=>setScoring(null)}/>}
@@ -3076,6 +3118,19 @@ function ProblemCard({p,onDelete,onEdit}){
 
 /* ================= Kiến thức bi-a ================= */
 const KNOWLEDGE=[
+  {key:'percent', tag:'Chiến thuật', title:'Chơi theo xác suất (percentage play)',
+    intro:'Người chơi giỏi không chọn cú "đẹp nhất" mà chọn cú cho mình cơ hội THẮNG VÁN cao nhất. Chơi theo xác suất = mỗi quyết định đều nghiêng phần thắng về phía mình qua nhiều ván, không phải ăn may một cú.',
+    body:[
+      {h:'Xác suất là gì trong bi-a', p:'Mỗi cú có hai con số: % vào lỗ và % giữ được thế tốt sau đó. "Chơi theo xác suất" là chọn phương án có TÍCH hai thứ đó cao nhất, xét trên NHIỀU ván — chứ không phải cú trông oách nhất hay liều một phát ăn ngay.'},
+      {h:'3 câu hỏi trước khi cúi xuống', p:'Trước mỗi cú, tự hỏi nhanh:\n• Cú này mình vào khoảng bao nhiêu %?\n• Vào rồi có ra bi cho cú SAU không?\n• Nếu trượt, mình để lại gì cho đối thủ?\nChọn phương án cân bằng nhất giữa "dễ vào" và "an toàn nếu hỏng".'},
+      {h:'Cú 70% chắc hơn cú 90% mạo hiểm', p:'Một cú vào 70% mà trượt vẫn an toàn thường TỐT HƠN cú 90% mà trượt là tặng nguyên bàn. Luôn tính cả HẬU QUẢ khi hỏng, đừng chỉ nhìn khả năng vào.'},
+      {h:'Bỏ cái tôi — chọn cú xấu mà thắng', p:'Cú phòng thủ hay cú đi vòng "nhìn không ngầu" nhưng thắng ván nhiều hơn thì vẫn là cú ĐÚNG. Đánh để thắng, không phải để biểu diễn cho người xem.'},
+      {h:'Đường ra bi ngắn = ít sai số', p:'Bi cái đi càng xa, sai số càng lớn. Ưu tiên phương án ra bi NGẮN, lực vừa, tận dụng góc tự nhiên (theo/rút/tâm bi) thay vì xoáy cầu kỳ hay lực mạnh.'},
+      {h:'Xác suất đổi theo tỉ số', p:'Đang dẫn đậm → chọn chắc, giảm rủi ro, ép đối thủ tự hỏng. Đang bị dẫn sắp thua → chấp nhận cú % thấp hơn để tạo đột biến. Cùng một thế bàn, quyết định đúng phụ thuộc tình thế ván.'},
+      {h:'Biết khi nào KHÔNG ăn', p:'Không có cú nào vừa dễ vào vừa ra bi tốt? Đánh safety. Nhường lượt đúng lúc để ép đối thủ mắc lỗi cũng là chơi theo xác suất — thắng nhờ đối thủ hỏng cũng là thắng.'},
+      {h:'Phá & mở ván cũng là xác suất', p:'Chọn cú phá KIỂM SOÁT được (giữ bi cái, có bi vào hoặc để lại thế) thay vì phá thật mạnh cầu may. Đầu ván đặt mình vào thế % cao thì cả ván nhẹ nhàng hơn.'},
+      {h:'Luyện tư duy này thế nào', p:'Sau mỗi ván, xem lại: cú nào mình chọn theo cảm hứng thay vì theo %? Ghi vào Nhật ký. Dần dần "máy tính xác suất" trong đầu sẽ tự bật lên trước mỗi cú, và bạn ngừng tặng ván cho đối thủ.'},
+    ]},
   {key:'tired', tag:'Thể trạng', title:'Chơi bi-a khi mệt',
     intro:'Khi mệt, kỹ thuật và quyết định đều tụt. Mục tiêu không phải chơi hay nhất, mà là chơi ĐỦ TỐT và ÍT LỖI nhất có thể.',
     body:[
@@ -3194,6 +3249,7 @@ function KnowCard({a,defaultOpen}){
 }
 // Kiến thức phân theo mục (nhóm theo tag)
 const KNOW_CATS=[
+  {tag:'Chiến thuật', label:'🎯 Tư duy & chiến thuật'},
   {tag:'Thể trạng', label:'🔋 Thể trạng & sức bền'},
   {tag:'Dinh dưỡng', label:'🥗 Dinh dưỡng'},
   {tag:'Thể lực', label:'💪 Thể lực'},
@@ -3211,7 +3267,7 @@ function KnowledgeView(){
           <div key={c.tag}>
             <div className="h2">{c.label}</div>
             <div className="list">
-              {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='tired'}/>)}
+              {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'}/>)}
             </div>
           </div>);
       })}
