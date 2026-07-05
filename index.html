@@ -490,9 +490,9 @@ function aimToPot(A,O,pocket,bx,speed){var G=ghostBall(O,pocket),des=nm(sb(pocke
  var lo=base-0.30,hi=base+0.30,gr=0.6180339887,c1=hi-gr*(hi-lo),c2=lo+gr*(hi-lo),f1=cost(c1),f2=cost(c2);
  for(var it=0;it<13;it++){if(f1<f2){hi=c2;c2=c1;f2=f1;c1=hi-gr*(hi-lo);f1=cost(c1);}else{lo=c1;c1=c2;f1=f2;c2=lo+gr*(hi-lo);f2=cost(c2);}if(hi-lo<1e-3)break;}
  cost((lo+hi)/2);return eb;}
-function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2)opts.quick=true;var felt=opts.felt||null,others=opts.others||(opts.ten?[opts.ten]:null),dt=1e-4; // others[] = mọi bi khác phải né (run-out: các bi còn lại); ten = tương thích cũ (1 bi)
+function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.quick3)opts.quick=true;var felt=opts.felt||null,others=opts.others||(opts.ten?[opts.ten]:null),dt=opts.quick?2e-4:1e-4; // run-out(quick): dt thô 2e-4 cho nhanh (đủ cm); Cố vấn: 1e-4 chính xác. others[] = bi phải né
  var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]];
- var bxG=opts.quick2?[-0.22,0,0.22]:opts.quick?[-0.3,-0.12,0,0.12,0.3]:[-0.42,-0.28,-0.14,0,0.14,0.28,0.42],byG=opts.quick2?[-0.3,-0.1,0,0.1,0.3]:opts.quick?[-0.4,-0.2,-0.08,0,0.08,0.2,0.4]:[-0.45,-0.3,-0.18,-0.08,0,0.08,0.18,0.3,0.45],spG=opts.quick2?[1.0,1.7,2.5]:[0.7,1.1,1.6,2.1,2.6,3.2]; // Cố vấn: lưới mịn; run-out(quick): thô; quick2: RẤT thô (nước-2 ước lượng)
+ var bxG=opts.quick3?[-0.2,0,0.2]:opts.quick2?[-0.22,0,0.22]:opts.quick?[-0.3,-0.12,0,0.12,0.3]:[-0.42,-0.28,-0.14,0,0.14,0.28,0.42],byG=opts.quick3?[-0.3,0,0.3]:opts.quick2?[-0.3,-0.1,0,0.1,0.3]:opts.quick?[-0.4,-0.2,-0.08,0,0.08,0.2,0.4]:[-0.45,-0.3,-0.18,-0.08,0,0.08,0.18,0.3,0.45],spG=opts.quick3?[1.5,2.5]:opts.quick2?[1.0,1.7,2.5]:[0.7,1.1,1.6,2.1,2.6,3.2]; // Cố vấn: mịn; run-out(quick): thô; quick2: nước-2; quick3: SIÊU thô 18 điểm (phương án phụ, không refine/probe)
  function cl(v,a,b){return Math.max(a,Math.min(b,v));}
  var tgtPk=Infinity;for(var q=0;q<6;q++){var dq=ln(sb(Tt,POCK[q]));if(dq<tgtPk)tgtPk=dq;} // nearest pocket to the user's target
  var tgtRail=felt?Math.min(Tt[0]-felt[0],felt[1]-Tt[0],Tt[1]-felt[2],felt[3]-Tt[1]):9; // đích cách băng gần nhất (nếu đích cố ý sát băng thì đừng phạt rest sát băng)
@@ -523,11 +523,11 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2)opts.qu
  // refine the best representative of up to 4 distinct techniques → diverse options
  var maxSeeds=opts.quick?1:4; var seeds=[],seen={};for(var p=0;p<pool.length&&seeds.length<maxSeeds;p++){var kk=techKey(pool[p]);if(seen[kk])continue;seen[kk]=1;seeds.push(pool[p]);} // quick=1 seed (run-out chỉ cần cú tốt nhất, khỏi phí đa phương án)
  var missSeeds=[]; if(!opts.quick){var byMiss=pool.slice().sort(function(a,b){return ln(sb(a.cueRest,Tt))-ln(sb(b.cueRest,Tt));});for(var m2=0;m2<3&&m2<byMiss.length;m2++)missSeeds.push(byMiss[m2]);} // cú SÁT ĐÍCH nhất (kể cả english cao) → refine theo độ CHÍNH XÁC thuần, khỏi bị phạt english kéo trôi
- var refined=seeds.map(function(s){return refineFrom(s,score);}).concat(missSeeds.map(function(s){return refineFrom(s,missObj);}));
+ var refined=opts.quick3?seeds.slice():seeds.map(function(s){return refineFrom(s,score);}).concat(missSeeds.map(function(s){return refineFrom(s,missObj);})); // quick3: KHÔNG refine (siêu nhanh)
  var nextBall=(!opts.quick&&others&&others.length)?others[0]:null; // #5: "bi kế" để chấm GÓC LEAVE (Cố vấn: con 10)
  function leaveAng(rest){ if(!nextBall) return 0.4; var rest2=others.filter(function(o){return o!==nextBall;}),pk=pickPocket(rest,nextBall,rest2); if(pk<0)return 1.4; var a=nm(sb(nextBall,rest)),b=nm(sb(POCK[pk],nextBall)); return Math.acos(Math.max(-1,Math.min(1,dt2(a,b)))); } // góc cắt trên bi kế nếu để cue ở rest
  function leavePen(a){ return Math.max(0,0.16-a)*4 + Math.max(0,a-0.95)*3; } // quá thẳng(<9°, chỉ stun được) hoặc quá mỏng(>54°) = khó điều cú kế
- function finalize(e){var probes=[];for(var a2 of[-0.06,0.06])for(var s2 of[-0.25,0.25]){var pe=evalC(cl(e.bx+a2,-0.48,0.48),e.by,cl(e.sp+s2,0.5,3.3));if(pe)probes.push(ln(sb(pe.cueRest,e.cueRest)));}
+ function finalize(e){var probes=[];if(!opts.quick3)for(var a2 of[-0.06,0.06])for(var s2 of[-0.25,0.25]){var pe=evalC(cl(e.bx+a2,-0.48,0.48),e.by,cl(e.sp+s2,0.5,3.3));if(pe)probes.push(ln(sb(pe.cueRest,e.cueRest)));} // quick3: bỏ probe độ nhạy
   e.sensitivity=probes.length?probes.reduce(function(a,b){return a+b;},0)/probes.length:0;
   e.leaveAng=leaveAng(e.cueRest);
   e.missBy=ln(sb(e.cueRest,Tt));e.onTarget=e.missBy<2*R;e.reachable=e.missBy<5*R;e.potted=Math.abs(e.potErr)<0.03;e.speed=e.sp;
@@ -563,18 +563,21 @@ function rnMakeable(cue,ball,others){var out=[],dCO=cue?ln(sb(ball,cue)):0.6; //
   var frag=potFragility(ln(sb(RN_POCK[k],ball)),dCO,cc);if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));}
   out.push({pk:k,frag:frag});}
  out.sort(function(a,b){return a.frag-b.frag;});return out;}
-function rnLeave(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?RN_POCK[npk]:[1.27,0.635],C=[1.27,0.635]; // chỗ để bi: AN TOÀN — ƯU TIÊN GIỮA BÀN, KHÔNG sát băng/lỗ (đui/cò/với), KHÔNG quá xa bi kế, góc đẹp
+function rnLeaves(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?RN_POCK[npk]:[1.27,0.635],C=[1.27,0.635]; // TOP-3 chỗ để bi AN TOÀN & KHÁC NHAU (giữa bàn, né băng/lỗ, cách vừa) → 2-3 PHƯƠNG ÁN
  var back=nm(sb(nb,npos)),perp=[-back[1],back[0]];
  var mk=function(a,sd,D){var cs=Math.cos(a),sn=Math.sin(a),d=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];return[Math.max(felt[0]+2*R,Math.min(felt[1]-2*R,nb[0]+d[0]*D)),Math.max(felt[2]+2*R,Math.min(felt[3]-2*R,nb[1]+d[1]*D))];};
  var clr=function(t){for(var q=0;q<after.length;q++){if(ln(sb(after[q],t))<3*R)return false;if(distSeg(after[q],t,nb)<2.9*R)return false;}return true;};
- var angs=[0.16,0.26,0.36],dists=[0.3,0.42,0.55],best=null,bsc=Infinity;
+ var angs=[0.16,0.26,0.36],dists=[0.3,0.42,0.55],cand=[];
  for(var ai=0;ai<3;ai++)for(var sd=-1;sd<=1;sd+=2)for(var di=0;di<3;di++){var t=mk(angs[ai],sd,dists[di]);if(!clr(t))continue;
   var sc=ln(sb(t,C))*1.5,k,dp; // ƯU TIÊN GIỮA BÀN
-  var rail=Math.min(t[0]-felt[0],felt[1]-t[0],t[1]-felt[2],felt[3]-t[1]);if(rail<0.18)sc+=(0.18-rail)*12; // sát băng → cò tay / với
+  var rail=Math.min(t[0]-felt[0],felt[1]-t[0],t[1]-felt[2],felt[3]-t[1]);if(rail<0.18)sc+=(0.18-rail)*12; // sát băng → cò/với
   var mp=Infinity;for(k=0;k<6;k++){dp=ln(sb(t,RN_POCK[k]));if(dp<mp)mp=dp;}if(mp<0.18)sc+=(0.18-mp)*16; // sát lỗ → đui
   var dnb=ln(sb(t,nb));if(dnb>0.62)sc+=(dnb-0.62)*4;if(dnb<0.26)sc+=(0.26-dnb)*5; // quá xa/gần bi kế
-  if(sc<bsc){bsc=sc;best=t;}}
- return best||mk(0.26,1,0.42);}
+  cand.push({t:t,sc:sc});}
+ cand.sort(function(a,b){return a.sc-b.sc;});
+ var out=[];for(var ci=0;ci<cand.length&&out.length<3;ci++){var tt=cand[ci].t,dup=false;for(var z=0;z<out.length;z++)if(ln(sb(out[z],tt))<0.16){dup=true;break;}if(!dup)out.push(tt);} // top-3 KHÁC NHAU (cách ≥16cm)
+ return out.length?out:[mk(0.26,1,0.42)];}
+function rnLeave(nb,after,felt){return rnLeaves(nb,after,felt)[0];}
 function circInt(c1,r1,c2,r2){var dx=c2[0]-c1[0],dy=c2[1]-c1[1],D=Math.hypot(dx,dy); // giao 2 đường tròn → 2 điểm (hoặc null)
  if(D>r1+r2||D<Math.abs(r1-r2)||D<1e-9)return null;var a=(r1*r1-r2*r2+D*D)/(2*D),h2=r1*r1-a*a;if(h2<0)return null;var h=Math.sqrt(h2);
  var xm=c1[0]+a*dx/D,ym=c1[1]+a*dy/D;return[[xm+h*dy/D,ym-h*dx/D],[xm-h*dy/D,ym+h*dx/D]];}
@@ -639,7 +642,7 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
    var sL=solveFast(cue,ball,RN_POCK[pk],ball,{felt:felt,others:others,quick:true});
    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[pk],pk:pk,path:sL.potFail?null:sL.path,bx:sL.bx,by:sL.by,speed:sL.speed,rails:sL.rails,landing:sL.potFail?null:sL.cueRest,last:true,potFail:sL.potFail});potted[i]=true;break;}
   var pockets=rnMakeable(cue,ball,others),done=false;
-  if(pockets.length){var tgt1=rnLeave(nb,after,felt);
+  if(pockets.length){var leaves=rnLeaves(nb,after,felt),tgt1=leaves[0];
    var evalP=function(P,frag){var s1=solveFast(cue,ball,RN_POCK[P],tgt1,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
     var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
     if(pk1<0)look=6; // 1 NƯỚC: bi kế KẸT từ chỗ dừng
@@ -649,7 +652,8 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
     return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+thinNow,look:look};};
    var bestC=evalP(pockets[0].pk,pockets[0].frag);
    if((!bestC||bestC.look>=2.0)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 dính bẫy 2-nước → thử lỗ-2 (đường điều khác)
-   if(bestC){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:tgt1,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
+   if(bestC){var zAlts=[];for(var li=1;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (2-3 phương án điều bi, miễn phí từ rnLeaves): cú chính vẽ đủ, các vùng còn lại = chỗ có thể điều tới
+    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:tgt1,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
   if(done)continue;
   var cm=rnCarom(cue,ball,others,felt,nb,after); // KẸT → GÃI (carom, ăn CHÍNH bi mục tiêu)
   if(cm){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'carom',comboB:cm.B,comboBn:seq.indexOf(cm.B)+1,caromX:cm.X,pk:cm.pk,pocket:cm.pocket,path:cm.path,bx:cm.bx,by:cm.by,speed:cm.speed,landing:cm.cueRest,last:false});cue=cm.cueRest.slice();potted[i]=true;continue;}
@@ -3011,7 +3015,7 @@ const rnA2S=(p)=>[(p.x-10)/RN_K,(p.y-10)/RN_K];   // bàn app {x,y} → SI [x,y]
 const rnS2A=(p)=>({x:10+p[0]*RN_K,y:10+p[1]*RN_K});// SI [x,y] → bàn app {x,y}
 const RN_PK=['trên-trái','trên-phải','dưới-trái','dưới-phải','giữa-trên','giữa-dưới']; // theo thứ tự POCK engine
 // steps[] do engine runoutRoute trả (toạ độ SI). Dựng dia theo toạ độ bàn app.
-function rnDia(layout, steps, ov){
+function rnDia(layout, steps, ov, altOpt){
   const overview=(ov===-1), noRoute=(ov==null || !steps || !steps.length || (ov>=0 && !steps[ov]));
   if(overview || noRoute){ // Tổng quan = cả bàn + mũi tên thứ tự; đang lập map / chưa tính = chỉ bi (giấu thứ tự)
     const balls=[{x:layout.cue.x,y:layout.cue.y,cue:true}];
@@ -3020,7 +3024,8 @@ function rnDia(layout, steps, ov){
     if(overview){ const ar=[]; for(let i=0;i<layout.balls.length-1;i++){ const a=layout.balls[i],b=layout.balls[i+1]; ar.push([a.x,a.y,b.x,b.y]); } dia.arrows=ar; }
     return dia;
   }
-  const s=steps[ov], cueA=rnS2A(s.cue), tb=rnS2A(s.ballPos);        // bi mục tiêu Ở VỊ TRÍ CỦA CÚ NÀY (có thể đã dời do combo)
+  const s0=steps[ov], s=altOpt?{...s0,path:altOpt.path,bx:altOpt.bx,by:altOpt.by,landing:altOpt.landing,rails:altOpt.rails}:s0; // phương án điều bi đang chọn ghi đè path/english/leave
+  const cueA=rnS2A(s.cue), tb=rnS2A(s.ballPos);                     // bi mục tiêu Ở VỊ TRÍ CỦA CÚ NÀY (có thể đã dời do combo)
   const balls=[{x:cueA.x,y:cueA.y,cue:true}];                       // bi cái ở VỊ TRÍ CHUỖI của cú này (req: cue theo từng cú)
   (s.remain||[]).forEach(b=>{ const n=b.n, pa=rnS2A(b.p); balls.push(n<=8?{x:pa.x,y:pa.y,num:n,solid:POOL[n]}:{x:pa.x,y:pa.y,num:n,stripe:POOL[n]}); }); // bi CÒN trên bàn của cú này (engine tự mang, đúng cả khi combo đảo thứ tự)
   const dia={balls, targetHi:[tb.x,tb.y]};
@@ -3032,7 +3037,8 @@ function rnDia(layout, steps, ov){
       else if(s.caromX){ const Xp=rnS2A(s.caromX), Bp=rnS2A(s.comboB); dia.comboLine=[tb.x,tb.y,Xp.x,Xp.y]; dia.potLine=[Xp.x,Xp.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; dia.comboHi=[Bp.x,Bp.y]; } // GÃI (carom): bi mục tiêu → điểm gãi (chạm B) → lỗ
     }
     else if(s.pocket){ const pkA=rnS2A(s.pocket); dia.potLine=[tb.x,tb.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; } // bi mục tiêu → lỗ nào
-    if(!s.last && s.landing){ const L=rnS2A(s.landing); dia.zone=[L.x,L.y,2.0]; } // điểm bi cái dừng = cue cú kế
+    if(!s.last && s.landing){ const L=rnS2A(s.landing); dia.zone=[L.x,L.y,2.0]; } // điểm bi cái dừng = cue cú kế (phương án chính)
+    if(!s.last && s.leaveAlts && s.leaveAlts.length) dia.leaveZones=s.leaveAlts.map(rnS2A); // 2-3 PHƯƠNG ÁN: các VÙNG ĐỂ BI khác cho bi kế (tuỳ chọn)
   }
   return dia;
 }
@@ -3058,6 +3064,7 @@ function CoachTable({dia,photo,onClick,cls}){
     {dia.pocketHi && <circle cx={dia.pocketHi[0]} cy={dia.pocketHi[1]} r="3.4" fill="none" stroke="#ffd166" strokeWidth="1.1"/>}
     {dia.path&&dia.path.length>1 && <polyline points={dia.path.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth=".95" strokeLinejoin="round" strokeLinecap="round"/>}
     {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="rgba(95,182,255,.16)" stroke="#5fb6ff" strokeWidth=".7" strokeDasharray="1.6 1.2"/>}
+    {(dia.leaveZones||[]).map((z,i)=><g key={'lz'+i}><circle cx={z.x} cy={z.y} r="1.9" fill="rgba(120,200,120,.12)" stroke="#7ec97e" strokeOpacity=".85" strokeWidth=".6" strokeDasharray="1.3 1.1"/><text x={z.x} y={z.y+0.85} textAnchor="middle" fontSize="2.3" fill="#7ec97e" fontWeight="700">{i+2}</text></g>)}
     {dia.targetHi && <circle cx={dia.targetHi[0]} cy={dia.targetHi[1]} r="1.7" fill="none" stroke="#fff" strokeOpacity=".9" strokeWidth=".7"/>}
     {dia.balls.map((b,i)=><Ball key={'b'+i} x={b.x} y={b.y} r={b.r||1.1} b={b}/>)}
   </svg>);
@@ -3066,6 +3073,7 @@ function RunoutCoach(){
   const [layout,setLayout]=useState(()=>genRack(9));
   const [mode,setMode]=useState('guide');
   const [shot,setShot]=useState(0);
+  const [altSel,setAltSel]=useState(0);   // phương án điều bi đang xem (0=chính)
   const [edit,setEdit]=useState(false);
   const [pcue,setPcue]=useState(null);
   const [pballs,setPballs]=useState([]);
@@ -3078,8 +3086,9 @@ function RunoutCoach(){
   const [full,setFull]=useState(false);  // bàn fullscreen
   const {solve,busy}=useSolver();
   const fileRef=useRef(null);
+  useEffect(()=>{ setAltSel(0); },[shot,steps]);   // đổi cú → về phương án chính
   useEffect(()=>{ const layoutSI={cue:rnA2S(layout.cue), balls:layout.balls.map(rnA2S)}; // đổi thế bi → giải lại lộ trình (né mọi bi, nối chuỗi cue)
-    solve({type:'runout', layout:layoutSI, felt:[0,2.54,0,1.27]}, (res)=>setSteps(Array.isArray(res)?res.map(s=>(typeof s.bx==='number'?{...s,bx:-s.bx}:s)):[])); },[layout]); // ĐỔI english trái↔phải khi hiển thị (theo yêu cầu chủ); path vẫn là physics gốc
+    solve({type:'runout', layout:layoutSI, felt:[0,2.54,0,1.27]}, (res)=>setSteps(Array.isArray(res)?res.map(s=>{ let o=(typeof s.bx==='number')?{...s,bx:-s.bx}:s; if(o.alts)o={...o,alts:o.alts.map(a=>(typeof a.bx==='number'?{...a,bx:-a.bx}:a))}; return o; }):[])); },[layout]); // ĐỔI english trái↔phải khi hiển thị (theo yêu cầu chủ); path vẫn là physics gốc
   const newRack=(n)=>{ setEdit(false); setPhoto(null); setLayout(genRack(n)); setShot(0); if(mode==='quiz'){ setPhase('plan'); setT0(Date.now()); } };
   const startEdit=()=>{ setPhoto(null); setPcue(null); setPballs([]); setEdit(true); };
   const onFile=(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ setPhoto(rd.result); setPcue(null); setPballs([]); setEdit(true); }; rd.readAsDataURL(f); e.target.value=''; };
@@ -3101,7 +3110,11 @@ function RunoutCoach(){
   if(pcue) editDia.balls.push({x:pcue.x,y:pcue.y,cue:true});
   pballs.forEach((b,i)=>{ const n=i+1; editDia.balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); });
   const planning=(mode==='quiz'&&phase==='plan');
-  const mainDia=rnDia(layout, steps, planning?null:shot);
+  const curStep=(shot>=0&&steps[shot])?steps[shot]:null;                    // 2-3 PHƯƠNG ÁN điều bi: alts[altSel]
+  const curAlts=(curStep&&curStep.alts&&curStep.alts.length>1)?curStep.alts:null;
+  const curAlt=(curAlts&&curAlts[altSel])?curAlts[altSel]:null;
+  const dispStep=curAlt?{...curStep,bx:curAlt.bx,by:curAlt.by,speed:curAlt.speed,rails:curAlt.rails}:curStep; // step hiển thị theo phương án đang chọn
+  const mainDia=rnDia(layout, steps, planning?null:shot, curAlt);
   const log=stat.log||[];
   const avgMs=log.length? log.reduce((s,x)=>s+x.ms,0)/log.length : 0;
   const okRate=log.length? Math.round(log.filter(x=>x.ok).length/log.length*100) : 0;
@@ -3173,19 +3186,24 @@ function RunoutCoach(){
                     <button className="chip" onClick={()=>setShot(Math.max(0,shot-1))}>‹ Cú trước</button>
                     <button className="chip" onClick={()=>setShot(Math.min(steps.length-1,(shot<0?0:shot)+1))}>Cú sau ›</button>
                   </div>
-                  {shot>=0 && steps[shot] && !steps[shot].potFail &&
+                  {curAlts &&
+                    <div className="presets" style={{justifyContent:'flex-start',marginTop:6,alignItems:'center'}}>
+                      <span className="muted small" style={{marginRight:2}}>Điều bi ({curAlts.length} cách):</span>
+                      {curAlts.map((a,ai)=><button key={ai} className={'chip'+(altSel===ai?' on':'')} onClick={()=>setAltSel(ai)}>Cách {ai+1}{ai===0?' ✓':''}</button>)}
+                    </div>}
+                  {shot>=0 && steps[shot] && !steps[shot].potFail && dispStep &&
                     <div className="card rncur">
-                      {!steps[shot].last && <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={78}/>}
-                      {steps[shot].last && steps[shot].isCombo && <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={78}/>}
+                      {!dispStep.last && <TipFace tip={{x:dispStep.bx,y:-dispStep.by}} size={78}/>}
+                      {dispStep.last && dispStep.isCombo && <TipFace tip={{x:dispStep.bx,y:-dispStep.by}} size={78}/>}
                       <div className="rncurinfo">
-                        <div className="rncurhead"><span className="rnnum">{steps[shot].n}</span><b>{steps[shot].isCombo?('🎯 Bi '+steps[shot].n+(steps[shot].comboMode==='combo'?' combo bi ':' gãi bi ')+steps[shot].comboBn+' → lỗ '+RN_PK[steps[shot].pk]):('Bi '+steps[shot].n+' → lỗ '+RN_PK[steps[shot].pk])}</b></div>
-                        {steps[shot].isCombo
-                          ? (steps[shot].comboMode==='combo'
-                            ? <div style={{marginTop:3}}><b>Combo dọn chắn</b>: bi {steps[shot].comboBn} đang cản — đánh bi {steps[shot].n} đẩy bi {steps[shot].comboBn} vào lỗ {RN_PK[steps[shot].pk]} · đầu cơ <b>{tipLabel({x:steps[shot].bx,y:-steps[shot].by})}</b> · lực {steps[shot].speed<2.3?'vừa':'chắc'}<br/><span className="muted">hợp lệ (chạm bi {steps[shot].n} trước) · dọn xong bi {steps[shot].n} thông → bắn tiếp</span></div>
-                            : <div style={{marginTop:3}}><b>Gãi bi (carom)</b>: bi {steps[shot].n} gãi vào bi {steps[shot].comboBn} rồi lăn vào lỗ {RN_PK[steps[shot].pk]} · đầu cơ <b>{tipLabel({x:steps[shot].bx,y:-steps[shot].by})}</b> · lực {steps[shot].speed<2.3?'vừa':'chắc'}<br/><span className="muted">bi {steps[shot].n} kẹt (không lỗ trực tiếp) → gãi để ăn{steps[shot].last?'':' + ra bi cho bi kế'}</span></div>)
-                          : steps[shot].last
+                        <div className="rncurhead"><span className="rnnum">{dispStep.n}</span><b>{dispStep.isCombo?('🎯 Bi '+dispStep.n+(dispStep.comboMode==='combo'?' combo bi ':' gãi bi ')+dispStep.comboBn+' → lỗ '+RN_PK[dispStep.pk]):('Bi '+dispStep.n+' → lỗ '+RN_PK[dispStep.pk])}</b></div>
+                        {dispStep.isCombo
+                          ? (dispStep.comboMode==='combo'
+                            ? <div style={{marginTop:3}}><b>Combo dọn chắn</b>: bi {dispStep.comboBn} đang cản — đánh bi {dispStep.n} đẩy bi {dispStep.comboBn} vào lỗ {RN_PK[dispStep.pk]} · đầu cơ <b>{tipLabel({x:dispStep.bx,y:-dispStep.by})}</b> · lực {dispStep.speed<2.3?'vừa':'chắc'}<br/><span className="muted">hợp lệ (chạm bi {dispStep.n} trước) · dọn xong bi {dispStep.n} thông → bắn tiếp</span></div>
+                            : <div style={{marginTop:3}}><b>Gãi bi (carom)</b>: bi {dispStep.n} gãi vào bi {dispStep.comboBn} rồi lăn vào lỗ {RN_PK[dispStep.pk]} · đầu cơ <b>{tipLabel({x:dispStep.bx,y:-dispStep.by})}</b> · lực {dispStep.speed<2.3?'vừa':'chắc'}<br/><span className="muted">bi {dispStep.n} kẹt (không lỗ trực tiếp) → gãi để ăn{dispStep.last?'':' + ra bi cho bi kế'}</span></div>)
+                          : dispStep.last
                           ? <div className="muted" style={{marginTop:3}}>Bi cuối — bắn vào là xong ván.</div>
-                          : <div style={{marginTop:3}}>đầu cơ <b>{tipLabel({x:steps[shot].bx,y:-steps[shot].by})}</b> · lực {steps[shot].speed<1.3?'nhẹ':steps[shot].speed<2.3?'vừa':'chắc'}{steps[shot].rails>0?' · '+steps[shot].rails+' băng':''}<br/><span className="muted">ra bi cho bi {steps[shot].n+1}</span></div>}
+                          : <div style={{marginTop:3}}>đầu cơ <b>{tipLabel({x:dispStep.bx,y:-dispStep.by})}</b> · lực {dispStep.speed<1.3?'nhẹ':dispStep.speed<2.3?'vừa':'chắc'}{dispStep.rails>0?' · '+dispStep.rails+' băng':''}<br/><span className="muted">ra bi cho bi {dispStep.n+1}{dispStep.leaveAlts&&dispStep.leaveAlts.length?(' · '+(dispStep.leaveAlts.length+1)+' cách điều — vùng xanh ②'+(dispStep.leaveAlts.length>1?'③':'')+' là chỗ để bi khác'):''}</span></div>}
                       </div>
                     </div>}
                   <div className="muted small" style={{marginTop:6}}>{busy?'⏳ Đang tính lộ trình (né mọi bi)…':(stuck?('⚠ Lộ trình dừng ở cú '+(clr+1)+' — kẹt, cần safety'):('✓ Lộ trình sạch '+clr+' bi'))}</div>
