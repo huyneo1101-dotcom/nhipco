@@ -289,6 +289,13 @@ body{
 .dbspin-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .ncspin{width:28px;height:28px;border:3px solid rgba(0,0,0,.18);border-top-color:var(--gold);border-radius:50%;animation:ncspin .8s linear infinite}
 @keyframes ncspin{to{transform:rotate(360deg)}}
+/* Bàn run-out: to nhất có thể, cách dòng trên/dưới; nút + overlay fullscreen */
+.rnboardwrap{position:relative;margin:12px auto 14px;width:100%;max-width:min(96vw,560px)}
+.rnboard{width:100%;display:block;border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.32)}
+.rnfull{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:8px;padding:2px 9px;font-size:16px;cursor:pointer;line-height:1.2}
+.rnfullov{position:fixed;inset:0;z-index:80;background:rgba(8,10,12,.93);display:flex;align-items:center;justify-content:center;padding:12px}
+.rnfullinner{width:100%;max-width:min(97vw,calc(92vh*1.667))}
+.rnfulltable{width:100%;display:block;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.55)}
 .ghostform{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px}
 .dot.W{background:var(--ok)} .dot.L{background:var(--danger)}
@@ -434,16 +441,16 @@ function ballCollide(cue,obj){var n=nm(sb(obj.p,cue.p)),t=pp(n),vn=dt2(cue.v,n),
 function cushionCollide(b,rt){var n;if(rt=='x0')n=[1,0];else if(rt=='x1')n=[-1,0];else if(rt=='y0')n=[0,1];else n=[0,-1];
  var t=pp(n),vn=dt2(b.v,n),vt=dt2(b.v,t);if(vn>=0)return;vt+=MU_RAIL*(b.w[2]*R);vn=-E_RAIL*vn;vt=vt*0.95;b.v=ad(ml(n,vn),ml(t,vt));
  b.w[2]*=0.7;b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;} // re-establish natural roll after bank (un-reflected topspin would otherwise create a large artificial slip → unnatural curve back toward rail)
-function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,cush=!!opts.cushions,noPath=!!opts.noPath,dt=opts.dt||1e-4,maxT=opts.maxT||12,ten=opts.tenBall||null;
+function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,cush=!!opts.cushions,noPath=!!opts.noPath,dt=opts.dt||1e-4,maxT=opts.maxT||12,obs=opts.obs||(opts.tenBall?[opts.tenBall]:null);
  var cue=launchSpin(speed,dir,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]};
- var path=noPath?null:[cue.p.slice()],t=0,collided=false,tenHit=false,rails=0;
+ var path=noPath?null:[cue.p.slice()],t=0,collided=false,obsHit=obs?obs.map(function(){return false;}):null,rails=0;
  while(t<maxT){
   if(!collided){if(ln(sb(cue.p,obj.p))<=2*R){ballCollide(cue,obj);collided=true;}}
-  if(ten&&!tenHit&&ln(sb(cue.p,ten))<=2*R){ballCollide(cue,{p:ten.slice(),v:[0,0],w:[0,0,0]});tenHit=true;} // 10-ball is a physical obstacle: cue bounces off it (never drawn passing through)
+  if(obs)for(var oi=0;oi<obs.length;oi++){if(!obsHit[oi]&&ln(sb(cue.p,obs[oi]))<=2*R){ballCollide(cue,{p:obs[oi].slice(),v:[0,0],w:[0,0,0]});obsHit[oi]=true;}} // other balls are physical obstacles: cue bounces off them (never drawn passing through)
   var inside=!f||(cue.p[0]>f[0]+R-1e-6&&cue.p[0]<f[1]-R+1e-6&&cue.p[1]>f[2]+R-1e-6&&cue.p[1]<f[3]-R+1e-6);
   if(inside&&ln(slip(cue))<0.03&&ln(cue.v)>2e-3){var s=ln(cue.v),d=nm(cue.v),a=MU_ROLL*gg,D=s*s/(2*a),L=Infinity;
    if(!collided){var rel=sb(cue.p,O),b1=dt2(rel,d),c1=dt2(rel,rel)-4*R*R,disc=b1*b1-c1;if(disc>=0){var tt=-b1-Math.sqrt(disc);if(tt>1e-6)L=tt;}}
-   if(ten&&!tenHit){var rl2=sb(cue.p,ten),b2=dt2(rl2,d),c2=dt2(rl2,rl2)-4*R*R,ds2=b2*b2-c2;if(ds2>=0){var t2=-b2-Math.sqrt(ds2);if(t2>1e-6&&t2<L)L=t2;}} // stop analytic roll at the 10 so the step-collision above can fire
+   if(obs)for(var oj=0;oj<obs.length;oj++){if(obsHit[oj])continue;var rl2=sb(cue.p,obs[oj]),b2=dt2(rl2,d),c2=dt2(rl2,rl2)-4*R*R,ds2=b2*b2-c2;if(ds2>=0){var t2=-b2-Math.sqrt(ds2);if(t2>1e-6&&t2<L)L=t2;}} // stop analytic roll at any obstacle so the step-collision fires
    if(f){var cd=[];if(d[0]>1e-9)cd.push((f[1]-R-cue.p[0])/d[0]);if(d[0]<-1e-9)cd.push((f[0]+R-cue.p[0])/d[0]);if(d[1]>1e-9)cd.push((f[3]-R-cue.p[1])/d[1]);if(d[1]<-1e-9)cd.push((f[2]+R-cue.p[1])/d[1]);for(var i=0;i<cd.length;i++)if(cd[i]>1e-6&&cd[i]<L)L=cd[i];}
    if(D<=L){var rest=ad(cue.p,ml(d,D));if(!f||(rest[0]>=f[0]+R-1e-3&&rest[0]<=f[1]-R+1e-3&&rest[1]>=f[2]+R-1e-3&&rest[1]<=f[3]-R+1e-3)){cue.p=rest;cue.v=[0,0];cue.w=[0,0,0];break;}}
    var jmp=Math.max(0,L-1e-4),s2=Math.sqrt(Math.max(0,s*s-2*a*jmp));cue.p=ad(cue.p,ml(d,jmp));cue.v=ml(d,s2);cue.w[0]=-cue.v[1]/R;cue.w[1]=cue.v[0]/R;cue.w[2]*=Math.exp(-jmp*1.5);if(path&&path.length<4000)path.push(cue.p.slice());}
@@ -466,17 +473,17 @@ function aimToPot(A,O,pocket,bx,speed){var G=ghostBall(O,pocket),des=nm(sb(pocke
  var lo=base-0.30,hi=base+0.30,gr=0.6180339887,c1=hi-gr*(hi-lo),c2=lo+gr*(hi-lo),f1=cost(c1),f2=cost(c2);
  for(var it=0;it<13;it++){if(f1<f2){hi=c2;c2=c1;f2=f1;c1=hi-gr*(hi-lo);f1=cost(c1);}else{lo=c1;c1=c2;f1=f2;c2=lo+gr*(hi-lo);f2=cost(c2);}if(hi-lo<1e-3)break;}
  cost((lo+hi)/2);return eb;}
-function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||null,ten=opts.ten||null,dt=1e-4;
+function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||null,others=opts.others||(opts.ten?[opts.ten]:null),dt=1e-4; // others[] = mọi bi khác phải né (run-out: các bi còn lại); ten = tương thích cũ (1 bi)
  var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]];
  var bxG=[-0.3,-0.12,0,0.12,0.3],byG=[-0.45,-0.28,-0.12,0,0.12,0.28,0.45],spG=[0.7,1.1,1.6,2.1,2.6,3.2];
  function cl(v,a,b){return Math.max(a,Math.min(b,v));}
  var tgtPk=Infinity;for(var q=0;q<6;q++){var dq=ln(sb(Tt,POCK[q]));if(dq<tgtPk)tgtPk=dq;} // nearest pocket to the user's target
- function hazardPen(path,rest){var minD=Infinity,minR=Infinity,minT=Infinity,i,k;for(i=0;i<path.length;i++){for(k=0;k<6;k++){var d=ln(sb(path[i],POCK[k]));if(d<minD)minD=d;}if(ten){var dtt=ln(sb(path[i],ten));if(dtt<minT)minT=dtt;}}for(k=0;k<6;k++){var d2=ln(sb(rest,POCK[k]));if(d2<minR)minR=d2;}
+ function hazardPen(path,rest){var minD=Infinity,minR=Infinity,minT=Infinity,i,k;for(i=0;i<path.length;i++){for(k=0;k<6;k++){var d=ln(sb(path[i],POCK[k]));if(d<minD)minD=d;}if(others){for(var oc=0;oc<others.length;oc++){var dtt=ln(sb(path[i],others[oc]));if(dtt<minT)minT=dtt;}}}for(k=0;k<6;k++){var d2=ln(sb(rest,POCK[k]));if(d2<minR)minR=d2;}
   var pen=0;if(minD<0.06)pen+=2.5;if(minR<0.07)pen+=2.2; // real scratch (path over pocket mouth / cue resting in the jaw) — ALWAYS forbidden
   if(tgtPk>0.20){if(minD>=0.06&&minD<0.15)pen+=(0.15-minD)*3.5;if(minR>=0.07&&minR<0.17)pen+=(0.17-minR)*2.5;} // soft "keep off the pocket" only when the user did NOT deliberately park near a pocket
-  if(ten&&minT<2.2*R)pen+=3.0;return pen;} // never touch the 10
+  if(others&&minT<2.2*R)pen+=3.0;return pen;} // never touch any other ball on the table
  var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
- function evalC(bx,by,sp){var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,tenBall:ten});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,scr:hazardPen(r.cuePath,r.cueRest)};}
+ function evalC(bx,by,sp){var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,scr:hazardPen(r.cuePath,r.cueRest)};}
  function score(e){return e?ln(sb(e.cueRest,Tt))+0.05*Math.abs(e.bx)+0.07*Math.max(0,e.sp-2.5)+e.scr:Infinity;} // distance to target + gentle english/power/scratch penalties
  function techKey(e){return (e.by>0.14?'F':e.by<-0.14?'D':'S')+(e.bx>0.12?'R':e.bx<-0.12?'L':'C');} // Follow/Stun/Draw × Right/Center/Left
  function refineFrom(seed){var cur=seed,curD=score(seed),sBx=0.12,sBy=0.15,sSp=0.5;
@@ -490,7 +497,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||nu
  if(!pool.length)return{potFail:true};
  pool.sort(function(a,b){return score(a)-score(b);});
  // refine the best representative of up to 4 distinct techniques → diverse options
- var seeds=[],seen={};for(var p=0;p<pool.length&&seeds.length<4;p++){var kk=techKey(pool[p]);if(seen[kk])continue;seen[kk]=1;seeds.push(pool[p]);}
+ var maxSeeds=opts.quick?1:4; var seeds=[],seen={};for(var p=0;p<pool.length&&seeds.length<maxSeeds;p++){var kk=techKey(pool[p]);if(seen[kk])continue;seen[kk]=1;seeds.push(pool[p]);} // quick=1 seed (run-out chỉ cần cú tốt nhất, khỏi phí đa phương án)
  var refined=seeds.map(refineFrom);
  function finalize(e){var probes=[];for(var a2 of[-0.06,0.06])for(var s2 of[-0.25,0.25]){var pe=evalC(cl(e.bx+a2,-0.48,0.48),e.by,cl(e.sp+s2,0.5,3.3));if(pe)probes.push(ln(sb(pe.cueRest,e.cueRest)));}
   e.sensitivity=probes.length?probes.reduce(function(a,b){return a+b;},0)/probes.length:0;
@@ -503,8 +510,29 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||nu
  var b=kept[0];
  return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,rails:b.rails,path:b.path,scr:b.scr,
   options:kept.map(function(o){return{bx:o.bx,by:o.by,speed:o.speed,aim:o.aim,cueRest:o.cueRest,missBy:o.missBy,onTarget:o.onTarget,sensitivity:o.sensitivity,rails:o.rails,path:o.path,scr:o.scr,label:o.label};})};}
+// ---- RUN-OUT: chuỗi dọn bàn (chọn lỗ từng viên · né MỌI bi còn lại · nối cue: điểm dừng cú i = cue cú i+1) ----
+function distSeg(p,a,b){var ab=sb(b,a),d2=dt2(ab,ab)||1e-9,t=Math.max(0,Math.min(1,dt2(sb(p,a),ab)/d2));return ln(sb(p,ad(a,ml(ab,t))));}
+function pickPocket(cue,ball,others){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],best=-1,bs=Infinity;
+ for(var k=0;k<6;k++){var toP=nm(sb(POCK[k],ball)),straight=0;
+  if(cue){var cc=dt2(nm(sb(ball,cue)),toP);if(cc<0.22)continue;straight=(1-cc)*2.2;} // cut > ~77° → bỏ lỗ này
+  var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,POCK[k])<2.05*R){blk=true;break;} // bi khác chắn đường bi→lỗ
+  if(blk)continue;var dp=ln(sb(POCK[k],ball)),sc=straight+dp*0.6;if(sc<bs){bs=sc;best=k;}}
+ return best;} // -1 = không lỗ nào ăn được
+function runoutRoute(layout,felt){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],seq=layout.balls,cue=layout.cue.slice(),steps=[];
+ for(var i=0;i<seq.length;i++){var ball=seq[i],others=seq.slice(i+1),last=(i===seq.length-1); // các bi đã bắn = mất; others = bi còn trên bàn
+  var pk=pickPocket(cue,ball,others);
+  if(pk<0){steps.push({n:i+1,ball:ball,cue:cue.slice(),potFail:true,reason:'kẹt (bi chắn / góc cắt >77°)'});break;}
+  var tgt;
+  if(last)tgt=ball; // bi cuối: vào lỗ là xong, cue dừng đâu cũng được
+  else{var nb=seq[i+1],npk=pickPocket(null,nb,seq.slice(i+2)),npos=npk>=0?POCK[npk]:[1.27,0.635];
+   var back=nm(sb(nb,npos));tgt=[Math.max(felt[0]+R,Math.min(felt[1]-R,nb[0]+back[0]*0.32)),Math.max(felt[2]+R,Math.min(felt[3]-R,nb[1]+back[1]*0.32))];} // để cue ~32cm sau bi kế (phía đối lỗ) → cú kế thẳng
+  var sol=solveFast(cue,ball,POCK[pk],tgt,{felt:felt,others:others,quick:true});
+  if(sol.potFail){steps.push({n:i+1,ball:ball,cue:cue.slice(),potFail:true,reason:'không pot được viên này'});break;}
+  steps.push({n:i+1,ball:ball,cue:cue.slice(),pocket:POCK[pk],pk:pk,target:last?null:tgt,path:sol.path,bx:sol.bx,by:sol.by,speed:sol.speed,rails:sol.rails,missBy:last?0:sol.missBy,landing:sol.cueRest,last:last});
+  cue=sol.cueRest.slice();} // NỐI CHUỖI: cue cú kế = điểm bi cái vừa dừng
+ return steps;}
 /*DIEUBI-ENGINE-END*/
-self.onmessage=function(e){var d=e.data;try{var res=solveFast(d.cue,d.nine,d.pocket,d.target,{felt:d.felt,ten:d.ten});self.postMessage({gen:d.gen,res:res});}catch(err){self.postMessage({gen:d.gen,res:{potFail:true,err:String(err&&err.message||err)}});}};
+self.onmessage=function(e){var d=e.data;try{var res=d.type==='runout'?runoutRoute(d.layout,d.felt):solveFast(d.cue,d.nine,d.pocket,d.target,{felt:d.felt,others:d.others,ten:d.ten});self.postMessage({gen:d.gen,res:res});}catch(err){self.postMessage({gen:d.gen,res:d.type==='runout'?[]:{potFail:true,err:String(err&&err.message||err)}});}};
 </script>
 <script type="text/babel" data-presets="react">
 const {useState,useEffect,useRef,useCallback} = React;
@@ -528,7 +556,7 @@ const cloudNotify=()=>cloudSubs.forEach(f=>{ try{f();}catch(e){} });
 const setStatus=(s)=>{ cloudStatus=s; cloudNotify(); };
 const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
-  'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.cuevotes','nc.customcues',
+  'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.cuevotes','nc.customcues','nc.mindsetquotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
   'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan','nc.knowarchive','nc.knowpin','nc.knowfav','nc.readtable'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
@@ -1219,6 +1247,8 @@ const WAR_QUOTES=[
   'Cơ trong tay, thế trong đầu, thắng trong tim.',
   'Mỗi lần cúi xuống bàn là một lời hứa với chính mình.',
 ];
+// Các câu "Mindset chiến đấu" cũ giờ được đưa vào danh sách Nhắc nhở (tag "Chiến đấu").
+const WAR_CUES=WAR_QUOTES.map(t=>({tag:'Chiến đấu',t}));
 const RESET_LINES=[
   'Một cú là một cú. Thở ra, làm lại.',
   'Quá khứ đã xong. Chỉ còn cú tiếp theo.',
@@ -1481,10 +1511,10 @@ function Cue(){
   const [votes,setVotes]=useState(()=>store.get('nc.cuevotes',{}));      // {text:'up'|'down'} — 'down' = tự bỏ khỏi danh sách
   const [custom,setCustom]=useState(()=>store.get('nc.customcues',[]));  // [{tag,t}] do người dùng tạo
   const [newT,setNewT]=useState(''); const [addOpen,setAddOpen]=useState(false);
-  const all=[...custom,...CUES];
+  const all=[...custom,...CUES,...WAR_CUES];
   const pool=all.filter(c=>votes[c.t]!=='down');
   const pick=(arr,not)=>{ const a=arr.filter(c=>!not||c.t!==not.t); if(!a.length) return arr[0]||null; return a[Math.floor(Math.random()*a.length)]; };
-  const [cur,setCur]=useState(()=>{ const p=[...store.get('nc.customcues',[]),...CUES].filter(c=>(store.get('nc.cuevotes',{})[c.t])!=='down'); return p.length?p[Math.floor((Date.now()/1000)%p.length)]:null; });
+  const [cur,setCur]=useState(()=>{ const p=[...store.get('nc.customcues',[]),...CUES,...WAR_CUES].filter(c=>(store.get('nc.cuevotes',{})[c.t])!=='down'); return p.length?p[Math.floor((Date.now()/1000)%p.length)]:null; });
   const saveV=(v)=>{ setVotes(v); store.set('nc.cuevotes',v); };
   const saveC=(l)=>{ setCustom(l); store.set('nc.customcues',l); };
   const next=()=>setCur(pick(pool,cur));
@@ -2018,10 +2048,13 @@ function useSolver(){ // tạo 1 Worker từ Blob (engine ở <script id="dieubi
   const wref=useRef(null), fnRef=useRef(null), gen=useRef(0), cb=useRef(null), last=useRef(null), busyRef=useRef(false);
   const [busy,setB]=useState(false); const setBusy=(v)=>{ busyRef.current=v; setB(v); };
   const fallback=useCallback((payload,g)=>{ setTimeout(()=>{ if(g!==gen.current) return; let res; // chạy engine trên main-thread (đơ ~1s, có spinner)
-    try{ res=fnRef.current?fnRef.current(payload.cue,payload.nine,payload.pocket,payload.target,{felt:payload.felt,ten:payload.ten}):{potFail:true}; }catch(e){ res={potFail:true}; }
+    try{ if(!fnRef.current) res=payload.type==='runout'?[]:{potFail:true};
+      else if(payload.type==='runout') res=fnRef.current.runoutRoute(payload.layout,payload.felt);
+      else res=fnRef.current.solveFast(payload.cue,payload.nine,payload.pocket,payload.target,{felt:payload.felt,others:payload.others,ten:payload.ten}); }
+    catch(e){ res=payload.type==='runout'?[]:{potFail:true}; }
     setBusy(false); if(cb.current) cb.current(res); },20); },[]);
   useEffect(()=>{ let w=null; const src=document.getElementById('dieubi-engine').textContent;
-    try{ fnRef.current=new Function(src+'\n;return (typeof solveFast!=="undefined")?solveFast:null;')(); }catch(e){ fnRef.current=null; } // engine cho main-thread (dự phòng)
+    try{ fnRef.current=new Function(src+'\n;return (typeof solveFast!=="undefined")?{solveFast:solveFast,runoutRoute:runoutRoute}:null;')(); }catch(e){ fnRef.current=null; } // engine cho main-thread (dự phòng)
     try{ w=new Worker(URL.createObjectURL(new Blob([src],{type:'application/javascript'})));
       w.onmessage=(e)=>{ if(e.data.gen!==gen.current) return; setBusy(false); if(cb.current) cb.current(e.data.res); };
       w.onerror=()=>{ wref.current=null; if(busyRef.current&&last.current) fallback(last.current,gen.current); }; // Worker bị chặn (vd mở bằng file://) → tự chuyển sang main-thread
@@ -2837,12 +2870,30 @@ function runoutGuide(layout){
   }
   return steps;
 }
+const RN_K=80/2.54;                               // app-units / mét (bàn app FELT=[10,90,10,50])
+const rnA2S=(p)=>[(p.x-10)/RN_K,(p.y-10)/RN_K];   // bàn app {x,y} → SI [x,y]
+const rnS2A=(p)=>({x:10+p[0]*RN_K,y:10+p[1]*RN_K});// SI [x,y] → bàn app {x,y}
+const RN_PK=['trên-trái','trên-phải','dưới-trái','dưới-phải','giữa-trên','giữa-dưới']; // theo thứ tự POCK engine
+// steps[] do engine runoutRoute trả (toạ độ SI). Dựng dia theo toạ độ bàn app.
 function rnDia(layout, steps, ov){
-  const balls=[{x:layout.cue.x,y:layout.cue.y,cue:true}];
-  layout.balls.forEach((b,i)=>{ const n=i+1; balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); });
-  const dia={balls};
-  if(ov===-1){ const ar=[]; for(let i=0;i<layout.balls.length-1;i++){ const a=layout.balls[i],b=layout.balls[i+1]; ar.push([a.x,a.y,b.x,b.y]); } dia.arrows=ar; }
-  else if(ov!=null && ov>=0 && steps[ov]){ const s=steps[ov]; dia.line=[s.cuePos.x,s.cuePos.y,s.obj.x,s.obj.y]; if(s.path&&s.path.length>1) dia.path=s.path.map(p=>({x:p.x,y:p.y})); if(s.zone) dia.zone=[s.zone.x,s.zone.y,s.zone.r]; }
+  const overview=(ov===-1), noRoute=(ov==null || !steps || !steps.length || (ov>=0 && !steps[ov]));
+  if(overview || noRoute){ // Tổng quan = cả bàn + mũi tên thứ tự; đang lập map / chưa tính = chỉ bi (giấu thứ tự)
+    const balls=[{x:layout.cue.x,y:layout.cue.y,cue:true}];
+    layout.balls.forEach((b,i)=>{ const n=i+1; balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); });
+    const dia={balls};
+    if(overview){ const ar=[]; for(let i=0;i<layout.balls.length-1;i++){ const a=layout.balls[i],b=layout.balls[i+1]; ar.push([a.x,a.y,b.x,b.y]); } dia.arrows=ar; }
+    return dia;
+  }
+  const s=steps[ov], cueA=rnS2A(s.cue), tb=layout.balls[ov];
+  const balls=[{x:cueA.x,y:cueA.y,cue:true}];                       // bi cái ở VỊ TRÍ CHUỖI của cú này (req: cue theo từng cú)
+  for(let i=ov;i<layout.balls.length;i++){ const b=layout.balls[i], n=i+1; balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); } // chỉ bi còn trên bàn (bi đã bắn = mất)
+  const dia={balls, targetHi:tb?[tb.x,tb.y]:null};
+  if(!s.potFail){
+    if(tb) dia.line=[cueA.x,cueA.y,tb.x,tb.y];                      // ngắm cue→bi mục tiêu
+    if(s.path&&s.path.length>1) dia.path=s.path.map(rnS2A);         // đường bi cái thật (engine)
+    if(s.pocket&&tb){ const pkA=rnS2A(s.pocket); dia.potLine=[tb.x,tb.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; } // bi mục tiêu → lỗ nào
+    if(!s.last && s.landing){ const L=rnS2A(s.landing); dia.zone=[L.x,L.y,3.4]; } // điểm bi cái dừng = cue cú kế
+  }
   return dia;
 }
 function TipFace({tip}){
@@ -2854,15 +2905,18 @@ function TipFace({tip}){
     <circle cx={cx+bx*k} cy={cy+by*k} r="3.4" fill="#e0556b" stroke="#fff" strokeWidth="1.1"/>
   </svg>);
 }
-function CoachTable({dia,photo,onClick}){
-  return (<svg className="mtable" viewBox="0 0 100 60" role="img" aria-label="Bàn bi-a" onClick={onClick} style={{cursor:onClick?'crosshair':'default'}}>
+function CoachTable({dia,photo,onClick,cls}){
+  return (<svg className={cls||'mtable'} viewBox="0 0 100 60" role="img" aria-label="Bàn bi-a" onClick={onClick} style={{cursor:onClick?'crosshair':'default'}}>
     <defs><marker id="rnAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto"><path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/></marker></defs>
     <TableFrame/>
     {photo && <image href={photo} x="10" y="10" width="80" height="40" preserveAspectRatio="xMidYMid slice" opacity="0.72"/>}
     {dia.line && <line x1={dia.line[0]} y1={dia.line[1]} x2={dia.line[2]} y2={dia.line[3]} stroke="#fff" strokeOpacity=".6" strokeWidth=".7" strokeDasharray="2 2"/>}
     {(dia.arrows||[]).map((a,i)=><line key={'a'+i} x1={a[0]} y1={a[1]} x2={a[2]} y2={a[3]} stroke="#ffd166" strokeWidth="1" strokeOpacity=".85" markerEnd="url(#rnAh)"/>)}
-    {dia.path&&dia.path.length>1 && <polyline points={dia.path.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth="1.3" strokeLinejoin="round" strokeDasharray="3 2"/>}
-    {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="rgba(255,209,102,.13)" stroke="#ffd166" strokeWidth=".8" strokeDasharray="2.2 1.6"/>}
+    {dia.potLine && <line x1={dia.potLine[0]} y1={dia.potLine[1]} x2={dia.potLine[2]} y2={dia.potLine[3]} stroke="#ffd166" strokeWidth="1.1" strokeOpacity=".9" strokeDasharray="1.6 1.4" markerEnd="url(#rnAh)"/>}
+    {dia.pocketHi && <circle cx={dia.pocketHi[0]} cy={dia.pocketHi[1]} r="3.7" fill="none" stroke="#ffd166" strokeWidth="1.5"/>}
+    {dia.path&&dia.path.length>1 && <polyline points={dia.path.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>}
+    {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="rgba(95,182,255,.16)" stroke="#5fb6ff" strokeWidth="1" strokeDasharray="2.2 1.6"/>}
+    {dia.targetHi && <circle cx={dia.targetHi[0]} cy={dia.targetHi[1]} r="3.5" fill="none" stroke="#fff" strokeOpacity=".85" strokeWidth="1.1"/>}
     {dia.balls.map((b,i)=><Ball key={'b'+i} x={b.x} y={b.y} r={b.r} b={b}/>)}
   </svg>);
 }
@@ -2878,8 +2932,12 @@ function RunoutCoach(){
   const [t0,setT0]=useState(0);
   const [planMs,setPlanMs]=useState(0);
   const [stat,setStat]=usePersist('nc.readtable',{log:[]});
+  const [steps,setSteps]=useState([]);   // do engine runoutRoute (Web Worker) tính — toạ độ SI
+  const [full,setFull]=useState(false);  // bàn fullscreen
+  const {solve,busy}=useSolver();
   const fileRef=useRef(null);
-  const steps=runoutGuide(layout);
+  useEffect(()=>{ const layoutSI={cue:rnA2S(layout.cue), balls:layout.balls.map(rnA2S)}; // đổi thế bi → giải lại lộ trình (né mọi bi, nối chuỗi cue)
+    solve({type:'runout', layout:layoutSI, felt:[0,2.54,0,1.27]}, (res)=>setSteps(Array.isArray(res)?res:[])); },[layout]);
   const newRack=(n)=>{ setEdit(false); setPhoto(null); setLayout(genRack(n)); setShot(0); if(mode==='quiz'){ setPhase('plan'); setT0(Date.now()); } };
   const startEdit=()=>{ setPhoto(null); setPcue(null); setPballs([]); setEdit(true); };
   const onFile=(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ setPhoto(rd.result); setPcue(null); setPballs([]); setEdit(true); }; rd.readAsDataURL(f); e.target.value=''; };
@@ -2908,21 +2966,27 @@ function RunoutCoach(){
   const StepList=()=> (
     <div>
       {steps.map((s,i)=>(
-        <div key={i} className={'card rnstep'+(i===shot?' on':'')} onClick={()=>setShot(i)}>
+        <div key={i} className={'card rnstep'+(i===shot?' on':'')} onClick={()=>!s.potFail&&setShot(i)}>
           <div className="rnnum">{s.n}</div>
-          <TipFace tip={s.tip}/>
-          <div style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.4}}>
-            {s.last
-              ? <b>Bi cuối — bắn thẳng vào lỗ, không cần điều.</b>
-              : <><b>Đầu cơ {tipLabel(s.tip)}</b> · {rnFollow(s.tip)}<br/><span className="muted">lực {s.force} · ra bi cho bi {s.n+1}</span></>}
-          </div>
+          {s.potFail
+            ? <div style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.4,color:'var(--danger)'}}><b>Kẹt ở bi {s.n}</b> — {s.reason}. Cần đánh safety / phá thế trước.</div>
+            : <>
+                <TipFace tip={s.last?null:{x:s.bx,y:-s.by}}/>
+                <div style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.4}}>
+                  {s.last
+                    ? <b>Bi {s.n} (cuối) → lỗ {RN_PK[s.pk]}. Bắn vào là xong ván.</b>
+                    : <><b>Bi {s.n} → lỗ {RN_PK[s.pk]}</b> · đầu cơ {tipLabel({x:s.bx,y:-s.by})}<br/><span className="muted">lực {s.speed<1.3?'nhẹ':s.speed<2.3?'vừa':'chắc'}{s.rails>0?' · '+s.rails+' băng':''} · ra bi cho bi {s.n+1}</span></>}
+                </div>
+              </>}
         </div>))}
     </div>
   );
+  const boardEl=(dia)=>(<div className="rnboardwrap"><CoachTable dia={dia} photo={photo} cls="rnboard"/>{busy&&<div className="dbspin-wrap"><div className="ncspin"/></div>}<button className="rnfull" onClick={()=>setFull(true)} title="Toàn màn hình">⛶</button></div>);
+  const clr=steps.filter(s=>!s.potFail).length, stuck=steps.some(s=>s.potFail);
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Hướng dẫn run-out</div>
-      <div className="tsub">Tự tạo thế 9/10-bi hoặc tự đặt bi → app chỉ thứ tự dọn bàn, đầu cơ, lực &amp; vùng ra bi cho từng viên. Dạy tư duy điều bi.</div>
+      <div className="tsub">Tự tạo thế 9/10-bi hoặc tự đặt bi → app tính <b>thứ tự dọn bàn</b>, mỗi viên vào <b>lỗ nào</b>, <b>đầu cơ · lực</b> và <b>đường bi cái</b> (né mọi bi, nối vị trí sang cú sau) — như mục Điều bi.</div>
       <div className="presets" style={{justifyContent:'flex-start'}}>
         <button className="chip" onClick={()=>newRack(9)}>🎲 9-bi</button>
         <button className="chip" onClick={()=>newRack(10)}>🎲 10-bi</button>
@@ -2948,7 +3012,7 @@ function RunoutCoach(){
             </div>
             {planning
               ? <>
-                  <CoachTable dia={mainDia} photo={photo}/>
+                  {boardEl(mainDia)}
                   <div className="tsub">Nhìn thế bi, lập bản đồ dọn cả bàn trong đầu (thứ tự + đầu cơ từng viên). Xong thì bấm.</div>
                   <button className="btn acc wide" style={{marginTop:6}} onClick={reveal}>✅ Đã có bản đồ</button>
                 </>
@@ -2959,13 +3023,14 @@ function RunoutCoach(){
                       {log.length>0 && <div className="stat"><b>{(avgMs/1000).toFixed(1)}s</b><small>TB {log.length} lần</small></div>}
                       {log.length>0 && <div className="stat"><b>{okRate}%</b><small>khớp</small></div>}
                     </div>}
-                  <CoachTable dia={mainDia} photo={photo}/>
+                  {boardEl(mainDia)}
                   <div className="presets" style={{justifyContent:'flex-start',marginTop:6}}>
                     <button className={'chip'+(shot===-1?' on':'')} onClick={()=>setShot(-1)}>🗺️ Tổng quan</button>
                     <button className="chip" onClick={()=>setShot(Math.max(0,shot-1))}>‹ Cú trước</button>
                     <button className="chip" onClick={()=>setShot(Math.min(steps.length-1,(shot<0?0:shot)+1))}>Cú sau ›</button>
                   </div>
-                  <div className="tsub" style={{marginTop:6}}>{mode==='quiz'?'Đối chiếu với bản đồ của bạn — chạm từng cú để xem trên bàn:':'Chạm từng cú để xem đường bi trên bàn:'}</div>
+                  <div className="muted small" style={{marginTop:6}}>{busy?'⏳ Đang tính lộ trình (né mọi bi)…':(stuck?('⚠ Lộ trình dừng ở cú '+(clr+1)+' — kẹt, cần safety'):('✓ Lộ trình sạch '+clr+' bi'))}</div>
+                  <div className="tsub" style={{marginTop:4}}>{mode==='quiz'?'Đối chiếu với bản đồ của bạn — chạm từng cú để xem trên bàn:':'Chạm từng cú để xem đường bi trên bàn:'}</div>
                   <StepList/>
                   {mode==='quiz' &&
                     <div className="presets" style={{justifyContent:'flex-start',marginTop:8}}>
@@ -2975,6 +3040,18 @@ function RunoutCoach(){
                     </div>}
                 </>}
           </>}
+      {full && <div className="rnfullov" onClick={()=>setFull(false)}>
+        <div className="rnfullinner" onClick={e=>e.stopPropagation()}>
+          <CoachTable dia={mainDia} photo={photo} cls="rnfulltable"/>
+          <div className="presets" style={{justifyContent:'center',marginTop:8}}>
+            <button className={'chip'+(shot===-1?' on':'')} onClick={()=>setShot(-1)}>🗺️ Tổng quan</button>
+            <button className="chip" onClick={()=>setShot(Math.max(0,shot-1))}>‹ Trước</button>
+            <button className="chip" onClick={()=>setShot(Math.min(steps.length-1,(shot<0?0:shot)+1))}>Sau ›</button>
+            <button className="btn acc sm" onClick={()=>setFull(false)}>✕ Đóng</button>
+          </div>
+          {shot>=0 && steps[shot] && !steps[shot].potFail && <div className="tsub" style={{textAlign:'center',marginTop:6}}>Cú {steps[shot].n}: {steps[shot].last?('bi cuối → lỗ '+RN_PK[steps[shot].pk]):('lỗ '+RN_PK[steps[shot].pk]+' · đầu cơ '+tipLabel({x:steps[shot].bx,y:-steps[shot].by})+' · lực '+(steps[shot].speed<1.3?'nhẹ':steps[shot].speed<2.3?'vừa':'chắc'))}</div>}
+        </div>
+      </div>}
     </div>
   );
 }
@@ -4008,7 +4085,7 @@ function KnowledgeView(){
   const [fav,setFav]=usePersist('nc.knowfav',[]);
   const [showArch,setShowArch]=useState(false);
   const [favMode,setFavMode]=useState(false);
-  const [sec,setSec]=useState('skill');   // 'skill' | 'psy' — Tâm lý là một phần riêng
+  const [sec,setSec]=useState('tactic');   // 'tactic' | 'phys' | 'psy' — mỗi mảng là một phần riêng
   const isArch=(k)=>archived.includes(k);
   const isPin=(k)=>pinned.includes(k);
   const isFav=(k)=>fav.includes(k);
@@ -4016,13 +4093,13 @@ function KnowledgeView(){
   const togglePin=(k)=>setPinned(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
   const toggleFav=(k)=>setFav(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
   const cardProps=(a)=>({onArchive:()=>toggleArch(a.key),onPin:()=>togglePin(a.key),pinned:isPin(a.key),onFav:()=>toggleFav(a.key),fav:isFav(a.key)});
-  const isPsy=(a)=>a.tag==='Tâm lý';
-  const inSec=(a)=> sec==='psy' ? isPsy(a) : !isPsy(a);
+  const secOf=(a)=> a.tag==='Tâm lý' ? 'psy' : (a.tag==='Chiến thuật' ? 'tactic' : 'phys');
+  const inSec=(a)=> secOf(a)===sec;
   const archList=KNOWLEDGE.filter(a=>isArch(a.key));
   const pinList=KNOWLEDGE.filter(a=>isPin(a.key) && !isArch(a.key) && inSec(a));
   const favList=KNOWLEDGE.filter(a=>isFav(a.key) && !isArch(a.key));
   const secArch=archList.filter(inSec);
-  const psyOther=KNOWLEDGE.filter(a=>isPsy(a) && !PSY_INSUB.has(a.key) && !isArch(a.key) && !isPin(a.key));
+  const psyOther=KNOWLEDGE.filter(a=>a.tag==='Tâm lý' && !PSY_INSUB.has(a.key) && !isArch(a.key) && !isPin(a.key));
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Kiến thức bi-a</div>
@@ -4038,7 +4115,8 @@ function KnowledgeView(){
           </div>
         : <>
             <div className="catbar" style={{marginTop:2,marginBottom:4}}>
-              <button className={'chip'+(sec==='skill'?' on':'')} onClick={()=>setSec('skill')}>🎱 Kỹ năng & thể chất</button>
+              <button className={'chip'+(sec==='tactic'?' on':'')} onClick={()=>setSec('tactic')}>🎯 Tư duy & chiến thuật</button>
+              <button className={'chip'+(sec==='phys'?' on':'')} onClick={()=>setSec('phys')}>💪 Thể chất & dinh dưỡng</button>
               <button className={'chip'+(sec==='psy'?' on':'')} onClick={()=>setSec('psy')}>🧠 Tâm lý</button>
             </div>
             {pinList.length>0 &&
@@ -4048,15 +4126,20 @@ function KnowledgeView(){
                   {pinList.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
                 </div>
               </div>}
-            {sec==='skill'
-              ? KNOW_CATS.filter(c=>c.tag!=='Tâm lý').map(c=>{
+            {sec==='tactic'
+              ? (()=>{ const arts=KNOWLEDGE.filter(a=>a.tag==='Chiến thuật' && !isArch(a.key) && !isPin(a.key));
+                  return arts.length
+                    ? <div className="list">{arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} {...cardProps(a)}/>)}</div>
+                    : null; })()
+              : sec==='phys'
+              ? KNOW_CATS.filter(c=>c.tag!=='Tâm lý' && c.tag!=='Chiến thuật').map(c=>{
                   const arts=KNOWLEDGE.filter(a=>a.tag===c.tag && !isArch(a.key) && !isPin(a.key));
                   if(!arts.length) return null;
                   return (
                     <div key={c.tag}>
                       <div className="h2">{c.label}</div>
                       <div className="list">
-                        {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} {...cardProps(a)}/>)}
+                        {arts.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
                       </div>
                     </div>);
                 })
@@ -4172,7 +4255,8 @@ function PreMatch(){
     <div style={{display:'flex',flexDirection:'column',gap:18,flex:1}}>
       <div>
         <div className="h">⚔️ Mindset chiến đấu</div>
-        <WarQuote/>
+        <div className="tsub" style={{marginTop:2}}>Tự thêm "khẩu quyết" chiến đấu của riêng bạn. (Các câu mẫu cũ đã chuyển sang Thi đấu → 🔔 Nhắc nhở.)</div>
+        <MindsetQuotes/>
       </div>
 
       <div>
@@ -4229,37 +4313,41 @@ function GuidedStretch({onDone}){
     </div>
   );
 }
-function WarQuote(){
-  const [votes,setVotes]=useState(()=>store.get('nc.warvotes',{}));
-  const pool=WAR_QUOTES.filter(q=>votes[q]!=='down');
-  const pick=(arr,not)=>{ const a=arr.filter(q=>q!==not); if(!a.length) return arr[0]||''; return a[Math.floor(Math.random()*a.length)]; };
-  const [cur,setCur]=useState(()=>{ const p=WAR_QUOTES.filter(q=>(store.get('nc.warvotes',{})[q])!=='down'); return p.length?p[Math.floor((Date.now()/1000)%p.length)]:''; });
-  const saveV=(v)=>{ setVotes(v); store.set('nc.warvotes',v); };
-  const next=()=>setCur(pick(pool,cur));
-  const like=()=>{ const v={...votes}; if(v[cur]==='up') delete v[cur]; else v[cur]='up'; saveV(v); };
-  const dislike=()=>{ const v={...votes}; v[cur]='down'; saveV(v); const np=WAR_QUOTES.filter(q=>v[q]!=='down'); setCur(np.length?pick(np,cur):''); };
-  const restore=()=>{ const v={}; Object.keys(votes).forEach(k=>{ if(votes[k]==='up') v[k]='up'; }); saveV(v); setCur(WAR_QUOTES[Math.floor((Date.now()/1000)%WAR_QUOTES.length)]); };
-  const liked=votes[cur]==='up';
-  const hidden=Object.values(votes).filter(x=>x==='down').length;
-  if(!pool.length) return (
-    <div style={{marginTop:6}} className="card" >
-      <div style={{padding:18,textAlign:'center'}}>
-        <div className="muted" style={{fontSize:14,marginBottom:10}}>Bạn đã ẩn hết câu.</div>
-        <button className="btn ghost wide" onClick={restore}>↺ Khôi phục {hidden} câu đã ẩn</button>
-      </div>
-    </div>
-  );
+function MindsetQuotes(){
+  const [list,save]=usePersist('nc.mindsetquotes',[]);
+  const [newT,setNewT]=useState('');
+  const [addOpen,setAddOpen]=useState(false);
+  const [idx,setIdx]=useState(0);
+  const cur=list[idx]||null;
+  const next=()=>{ if(list.length>1) setIdx(v=>(v+1)%list.length); };
+  const add=()=>{ const t=newT.trim(); if(t && !list.some(x=>x.t===t)){ save([{id:uid('mq'),t},...list]); setIdx(0); } setNewT(''); setAddOpen(false); };
+  const del=(id)=>{ const l=list.filter(x=>x.id!==id); save(l); setIdx(v=>Math.max(0,Math.min(v,l.length-1))); };
   return (
     <div style={{marginTop:6}}>
-      <div className="card cuecard" style={{minHeight:128}}>
-        <div className="t" style={{fontSize:19}}>{cur}</div>
-      </div>
-      <div style={{display:'flex',gap:8,marginTop:10}}>
-        <button className="btn ghost" style={{flex:'0 0 auto',color:liked?'var(--gold)':'var(--text)'}} onClick={like}>{liked?'❤️':'🤍'} Thích</button>
-        <button className="btn ghost" style={{flex:'0 0 auto'}} onClick={dislike}>👎 Ẩn</button>
-        <button className="btn acc" style={{flex:1}} onClick={next}>🔀 Câu khác</button>
-      </div>
-      {hidden>0 && <button className="chip" style={{marginTop:8}} onClick={restore}>↺ Bỏ ẩn {hidden} câu</button>}
+      {cur ? <>
+        <div className="card cuecard" style={{minHeight:128,cursor:'pointer'}} onClick={next}>
+          <div className="t" style={{fontSize:19}}>{cur.t}</div>
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:10}}>
+          <button className="btn ghost" style={{flex:'0 0 auto'}} onClick={()=>del(cur.id)}>🗑 Xoá câu</button>
+          <button className="btn acc" style={{flex:1}} onClick={next} disabled={list.length<2}>🔀 Câu khác</button>
+        </div>
+      </> : (
+        <div className="card" style={{marginTop:0}}>
+          <div style={{padding:18,textAlign:'center'}}>
+            <div className="muted" style={{fontSize:14}}>Chưa có câu nào. Tự thêm "khẩu quyết" chiến đấu của riêng bạn ở dưới.</div>
+          </div>
+        </div>
+      )}
+      {addOpen ? (
+        <div className="editrow" style={{marginTop:10}}>
+          <input value={newT} autoFocus onChange={e=>setNewT(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter') add(); }} placeholder="Nhập câu tự nhắc của bạn…"/>
+          <button className="btn acc" style={{flex:'0 0 auto'}} onClick={add}>Thêm</button>
+        </div>
+      ) : (
+        <button className="btn ghost wide" style={{marginTop:10}} onClick={()=>setAddOpen(true)}>＋ Thêm quote</button>
+      )}
+      {list.length>1 && <div className="muted" style={{fontSize:13,marginTop:8}}>Chạm thẻ để đổi câu · {list.length} câu.</div>}
     </div>
   );
 }
