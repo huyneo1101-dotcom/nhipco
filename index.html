@@ -480,6 +480,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||nu
  function cl(v,a,b){return Math.max(a,Math.min(b,v));}
  var tgtPk=Infinity;for(var q=0;q<6;q++){var dq=ln(sb(Tt,POCK[q]));if(dq<tgtPk)tgtPk=dq;} // nearest pocket to the user's target
  var tgtRail=felt?Math.min(Tt[0]-felt[0],felt[1]-Tt[0],Tt[1]-felt[2],felt[3]-Tt[1]):9; // đích cách băng gần nhất (nếu đích cố ý sát băng thì đừng phạt rest sát băng)
+ var potFrag=potFragility(ln(sb(pocket,nine)),ln(sb(nine,cue)),Math.max(0.05,dt2(nm(sb(nine,cue)),nm(sb(pocket,nine))))); // độ khó PHA ĂN con 9 (báo người dùng: dễ/vừa/khó)
  function hazardPen(path,rest){var minD=Infinity,minR=Infinity,minT=Infinity,i,k;for(i=0;i<path.length;i++){for(k=0;k<6;k++){var d=ln(sb(path[i],POCK[k]));if(d<minD)minD=d;}if(others){for(var oc=0;oc<others.length;oc++){var dtt=ln(sb(path[i],others[oc]));if(dtt<minT)minT=dtt;}}}for(k=0;k<6;k++){var d2=ln(sb(rest,POCK[k]));if(d2<minR)minR=d2;}
   var pen=0;if(minD<0.06)pen+=2.5;if(minR<0.07)pen+=2.2; // real scratch (path over pocket mouth / cue resting in the jaw) — ALWAYS forbidden
   if(tgtPk>0.20){if(minD>=0.06&&minD<0.15)pen+=(0.15-minD)*3.5;if(minR>=0.07&&minR<0.17)pen+=(0.17-minR)*2.5;} // soft "keep off the pocket" only when the user did NOT deliberately park near a pocket
@@ -520,16 +521,18 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||nu
  var opts=[];for(var r2=0;r2<refined.length;r2++){var o=refined[r2],dup=false;for(var z=0;z<opts.length;z++)if(techKey(opts[z])===techKey(o)){dup=true;break;}if(!dup)opts.push(o);} // one option per distinct technique (best-scoring of each)
  var REACH=5*R;var kept=opts.filter(function(o,idx){return idx===0||o.missBy<REACH;}).slice(0,3); // primary always kept; alternatives only if they genuinely reach near the target
  var b=kept[0];
- return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,rails:b.rails,path:b.path,scr:b.scr,
+ return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,rails:b.rails,path:b.path,scr:b.scr,potFrag:potFrag,
   options:kept.map(function(o){return{bx:o.bx,by:o.by,speed:o.speed,aim:o.aim,cueRest:o.cueRest,missBy:o.missBy,onTarget:o.onTarget,sensitivity:o.sensitivity,rails:o.rails,path:o.path,scr:o.scr,label:o.label};})};}
 // ---- RUN-OUT: chuỗi dọn bàn (chọn lỗ từng viên · né MỌI bi còn lại · nối cue: điểm dừng cú i = cue cú i+1) ----
 function distSeg(p,a,b){var ab=sb(b,a),d2=dt2(ab,ab)||1e-9,t=Math.max(0,Math.min(1,dt2(sb(p,a),ab)/d2));return ln(sb(p,ad(a,ml(ab,t))));}
+function potFragility(dOP,dCO,cutCos){return dOP*(0.45+0.4*dCO)/Math.max(0.28,cutCos);} // DUNG SAI PHA POT: xa lỗ × xa cue / độ dày cắt (cutCos~1=thẳng dễ, ~0=mỏng khó). Nhỏ = pot dễ/tha lỗi.
 function pickPocket(cue,ball,others){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],best=-1,bs=Infinity;
  if(cue){for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.05*R)return -1;} // #6: bi khác chắn đường CUE→BI → không ngắm được (kẹt)
- for(var k=0;k<6;k++){var toP=nm(sb(POCK[k],ball)),straight=0;
-  if(cue){var cc=dt2(nm(sb(ball,cue)),toP);if(cc<0.22)continue;straight=(1-cc)*2.2;} // cut > ~77° → bỏ lỗ này
+ var dCO=cue?ln(sb(ball,cue)):0.6;
+ for(var k=0;k<6;k++){var toP=nm(sb(POCK[k],ball)),cc=1;
+  if(cue){cc=dt2(nm(sb(ball,cue)),toP);if(cc<0.22)continue;} // cut > ~77° → bỏ lỗ này
   var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,POCK[k])<2.05*R){blk=true;break;} // bi khác chắn đường bi→lỗ
-  if(blk)continue;var dp=ln(sb(POCK[k],ball)),sc=straight+dp*0.6;if(sc<bs){bs=sc;best=k;}}
+  if(blk)continue;var frag=potFragility(ln(sb(POCK[k],ball)),dCO,cc);if(frag<bs){bs=frag;best=k;}} // chọn lỗ có PHA POT dễ nhất
  return best;} // -1 = không lỗ nào ăn được
 function runoutRoute(layout,felt){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],seq=layout.balls,cue=layout.cue.slice(),steps=[];
  for(var i=0;i<seq.length;i++){var ball=seq[i],others=seq.slice(i+1),last=(i===seq.length-1); // các bi đã bắn = mất; others = bi còn trên bàn
@@ -2157,6 +2160,7 @@ function DieuBiAdvisor(){
               <div className="muted small" style={{marginTop:2}}>Lực <b>{o.speed<1.3?'nhẹ':o.speed<2.3?'vừa':'chắc'}</b> · {o.speed.toFixed(1)} m/s</div>
               <div style={{marginTop:6}}>
                 {o.onTarget?<span className="chip on">✓ tới đích ({(o.missBy*100).toFixed(1)}cm)</span>:<span className="chip">gần nhất {Math.round(o.missBy*100)}cm</span>}
+                {res.potFrag!=null?<span className={'chip'+(res.potFrag<0.9?' on':'')}>pha ăn bi {res.potFrag<0.9?'dễ':res.potFrag<1.9?'vừa':'khó'}</span>:null}
                 {o.rails>0?<span className="chip">{o.rails} băng</span>:null}
                 {o.sensitivity*100>25?<span className="chip">nhạy {Math.round(o.sensitivity*100)}cm</span>:null}
                 {o.scr>0.5?<span className="chip">⚠ rủi ro lỗ/bi10</span>:null}
