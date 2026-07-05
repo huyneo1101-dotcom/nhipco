@@ -300,12 +300,12 @@ body{
 .rnboardwrap{position:relative;margin:12px auto 14px;width:100%;max-width:min(96vw,560px)}
 .rnboard{width:100%;display:block;border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.32)}
 .rnfull{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:8px;padding:2px 9px;font-size:16px;cursor:pointer;line-height:1.2}
-.rnfullov{position:fixed;inset:0;z-index:80;background:rgba(8,10,12,.93);display:flex;align-items:center;justify-content:center;padding:12px}
-.rnfullinner{width:100%;max-width:min(97vw,calc(92vh*1.667))}
+.rnfullov{position:fixed;inset:0;z-index:80;background:rgba(8,10,12,.93);display:flex;align-items:center;justify-content:flex-start;padding:12px 12px 12px 16px}
+.rnfullinner{width:100%;max-width:min(calc(96vw - 205px),calc(92vh*1.667))}
 .rnfulltable{width:100%;display:block;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.55)}
-.rntipfs{position:absolute;left:calc(10px + env(safe-area-inset-left));top:50%;transform:translateY(-50%);z-index:2;
-  background:rgba(16,20,22,.86);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 12px 10px;
-  display:flex;flex-direction:column;align-items:center;gap:7px;max-width:118px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.rntipfs{position:absolute;right:calc(14px + env(safe-area-inset-right));top:50%;transform:translateY(-50%);z-index:2;
+  background:rgba(16,20,22,.86);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px 14px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;max-width:172px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 .rntipfs .rntiplbl{font-size:12.5px;color:#eaf1ec;line-height:1.4;font-weight:800}
 .rntipfs .rntiplbl small{color:#a2b5ac;font-weight:600}
 .rncur{display:flex;align-items:center;gap:14px;padding:12px 14px;margin-top:8px;border:1px solid var(--gold)}
@@ -502,7 +502,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||nu
   if(others&&minTR<0.11)pen+=(0.11-minTR)*2.0; // bi cái dừng SÁT bi khác = cò tay / khó bắc cầu → phạt (né vị trí bí)
   if(tgtPk>0.20){if(minD>=0.06&&minD<0.15)pen+=(0.15-minD)*3.5;if(minR>=0.07&&minR<0.17)pen+=(0.17-minR)*2.5;} // soft "keep off the pocket" only when the user did NOT deliberately park near a pocket
   if(felt&&tgtRail>0.16){var rr=Math.min(rest[0]-felt[0],felt[1]-rest[0],rest[1]-felt[2],felt[3]-rest[1]);if(rr<0.10)pen+=(0.10-rr)*2.2;} // #4: bi cái dừng SÁT BĂNG = khó bắc cầu cú sau (chỉ phạt khi đích không cố ý sát băng)
-  if(others){if(minT<2.2*R)pen+=30;if(minT<3*R)pen+=(3*R-minT)/R*6;}return pen;} // TRAFFIC NẶNG: đường bi cái CHẠM bi khác (nảy, <2.2R) → +30 = LOẠI THẲNG; đi trong ~1R bề mặt bi khác (<3R) → phạt nặng tăng dần
+  if(others){if(minT<2.2*R)pen+=80;if(minT<3*R)pen+=(3*R-minT)/R*8;}return pen;} // TRAFFIC RẤT NẶNG: đường bi cái CHẠM bi khác (nảy, <2.2R) → +80 = CẤM (chỉ chọn nếu KHÔNG còn cách nào, vd gãi thế díu); đi trong ~1R bề mặt bi khác (<3R) → phạt nặng tăng dần
  var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
  function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
  function score(e){ if(!e) return Infinity; return ln(sb(e.cueRest,Tt)) // ĐÍCH là chính; các phạt dưới đây NHẸ (chỉ nghiêng chọn, không lấn độ chính xác)
@@ -562,10 +562,12 @@ function runoutRoute(layout,felt){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],
   var tgt;
   if(last)tgt=ball; // bi cuối: vào lỗ là xong, cue dừng đâu cũng được
   else{var nb=seq[i+1],npk=pickPocket(null,nb,seq.slice(i+2)),npos=npk>=0?POCK[npk]:[1.27,0.635],after=seq.slice(i+2);
-   var back=nm(sb(nb,npos)),perp=[-back[1],back[0]],toC=nm(sb([1.27,0.635],nb)),centerSide=(dt2(perp,toC)>=0)?1:-1,ang=0.24,cs=Math.cos(ang),sn=Math.sin(ang),D=0.34; // nghiêng ~14° → GÓC ĐẸP (không thẳng đơ, không cò), ~34cm: tương đối gần
-   var mkTgt=function(sd){var d=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];return[Math.max(felt[0]+R,Math.min(felt[1]-R,nb[0]+d[0]*D)),Math.max(felt[2]+R,Math.min(felt[3]-R,nb[1]+d[1]*D))];};
-   var clearLine=function(t){for(var q=0;q<after.length;q++)if(distSeg(after[q],t,nb)<2.05*R)return false;return true;}; // đường ngắm để-bi→bi-kế có thoáng không?
-   var tC=mkTgt(centerSide),tO=mkTgt(-centerSide); tgt=clearLine(tC)?tC:(clearLine(tO)?tO:tC);} // #6: ưu tiên bên tâm bàn; nếu bị bi chắn thì đổi bên
+   var back=nm(sb(nb,npos)),perp=[-back[1],back[0]],toC=nm(sb([1.27,0.635],nb)),centerSide=(dt2(perp,toC)>=0)?1:-1;
+   var mkTgt=function(ang,sd,D){var cs=Math.cos(ang),sn=Math.sin(ang),d=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];return[Math.max(felt[0]+R,Math.min(felt[1]-R,nb[0]+d[0]*D)),Math.max(felt[2]+R,Math.min(felt[3]-R,nb[1]+d[1]*D))];};
+   var clear=function(t){for(var q=0;q<after.length;q++){if(ln(sb(after[q],t))<3*R)return false;if(distSeg(after[q],t,nb)<2.9*R)return false;}return true;}; // chỗ để bi KHÔNG sát bi khác + đường ngắm cú kế thoáng
+   var cand=[[0.24,centerSide,0.34],[0.24,-centerSide,0.34],[0.14,centerSide,0.30],[0.14,-centerSide,0.30],[0.24,centerSide,0.24],[0.24,-centerSide,0.24],[0,centerSide,0.30]]; // GÓC ĐẸP ~14°, tương đối gần; thử nhiều bên/cự ly
+   tgt=null;for(var ci=0;ci<cand.length;ci++){var tt=mkTgt(cand[ci][0],cand[ci][1],cand[ci][2]);if(clear(tt)){tgt=tt;break;}}
+   if(!tgt)tgt=mkTgt(0.24,centerSide,0.34);} // không chỗ nào thoáng → least-bad (traffic penalty sẽ lo phần đường bi)
   var sol=solveFast(cue,ball,POCK[pk],tgt,{felt:felt,others:others,quick:true});
   if(sol.potFail){steps.push({n:i+1,ball:ball,cue:cue.slice(),potFail:true,reason:'không pot được viên này'});break;}
   steps.push({n:i+1,ball:ball,cue:cue.slice(),pocket:POCK[pk],pk:pk,target:last?null:tgt,path:sol.path,bx:sol.bx,by:sol.by,speed:sol.speed,rails:sol.rails,missBy:last?0:sol.missBy,landing:sol.cueRest,last:last});
@@ -3102,7 +3104,7 @@ function RunoutCoach(){
       {full && <div className="rnfullov" onClick={()=>setFull(false)}>
         {shot>=0 && steps[shot] && !steps[shot].potFail && !steps[shot].last &&
           <div className="rntipfs" onClick={e=>e.stopPropagation()}>
-            <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={66}/>
+            <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={132}/>
             <div className="rntiplbl">Bi {steps[shot].n} → lỗ {RN_PK[steps[shot].pk]}<br/>đầu cơ {tipLabel({x:steps[shot].bx,y:-steps[shot].by})}<br/><small>lực {steps[shot].speed<1.3?'nhẹ':steps[shot].speed<2.3?'vừa':'chắc'}{steps[shot].rails>0?' · '+steps[shot].rails+' băng':''}</small></div>
           </div>}
         <div className="rnfullinner" onClick={e=>e.stopPropagation()}>
