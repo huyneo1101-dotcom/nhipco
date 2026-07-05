@@ -596,33 +596,60 @@ function rnCarom(cue,ball,others,felt,nb,after){ // KẸT → GÃI (carom): bi m
   if(sc<bestSc){bestSc=sc;best={bx:bxs[xa],by:bys[ya],sp:sps[sa],r:r};}}
  if(!best)return null;
  return {B:C.B,Bidx:C.Bidx,pk:C.pk,pocket:RN_POCK[C.pk],X:C.X,cueRest:best.r.cueRest,path:best.r.cuePath,bx:best.bx,by:best.by,speed:best.sp};}
-function runoutRoute(layout,felt){var seq=layout.balls,cue=layout.cue.slice(),steps=[];
- for(var i=0;i<seq.length;i++){var ball=seq[i],others=seq.slice(i+1),last=(i===seq.length-1);
+function rnCombo(cue,ball,others,felt){ // COMBO DỌN CHẮN: bi mục tiêu KẸT vì bi B chắn → đẩy B vào lỗ (hợp lệ: chạm bi mục tiêu TRƯỚC), dọn B để bi mục tiêu thông; tối ưu cue để bắn bi mục tiêu (đã dời) tiếp
+ for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return null; // cue→bi bị chắn
+ var best=null,bf=Infinity;
+ for(var bi=0;bi<others.length;bi++){var B=others[bi],rest=others.filter(function(_,ii){return ii!==bi;});
+  var frees=false; // B có phải bi CHẮN dọn-được: tồn tại lỗ mà bi mục tiêu→lỗ CHỈ bị B chắn (dọn B → thông)
+  for(var k0=0;k0<6;k0++){if(dt2(nm(sb(ball,cue)),nm(sb(RN_POCK[k0],ball)))<0.25)continue;
+   if(distSeg(B,ball,RN_POCK[k0])>=2.2*R)continue;var ob=false;for(var o1=0;o1<rest.length;o1++)if(distSeg(rest[o1],ball,RN_POCK[k0])<2.2*R){ob=true;break;}if(!ob){frees=true;break;}}
+  if(!frees)continue; // dọn B không mở được lỗ nào cho bi mục tiêu → combo vô ích, bỏ
+  for(var k=0;k<6;k++){var toP=nm(sb(RN_POCK[k],B)),blkP=false;
+   for(var o2=0;o2<rest.length;o2++)if(distSeg(rest[o2],B,RN_POCK[k])<2.6*R){blkP=true;break;}if(blkP)continue; // B→lỗ bị chắn
+   var Bghost=sb(B,ml(toP,2*R)),cutB=dt2(nm(sb(Bghost,ball)),toP);if(cutB<0.35)continue; // bi mục tiêu cắt B quá mỏng
+   var blkI=false;for(var o3=0;o3<rest.length;o3++)if(distSeg(rest[o3],ball,Bghost)<2.6*R){blkI=true;break;}if(blkI)continue; // bi→B bị bi thứ 3 chắn
+   var frag=ln(sb(RN_POCK[k],B))+ln(sb(B,ball))*0.5+(1-cutB)*0.8;if(frag<bf){bf=frag;best={B:B,pk:k,Bghost:Bghost};}}}
+ if(!best)return null;
+ var restB=others.filter(function(b){return b!==best.B;}),Lt=rnLeave(best.Bghost,restB,felt),bc=null,bsc=Infinity; // sau combo bi mục tiêu ở ~Bghost → tối ưu cue để bắn nó tiếp
+ var bxs=[-0.2,0,0.2],bys=[-0.32,0,0.32],sps=[2.0,2.6,3.2];
+ for(var xa=0;xa<3;xa++)for(var ya=0;ya<3;ya++)for(var sa=0;sa<3;sa++){
+  var a=aimToPot(cue,ball,best.Bghost,bxs[xa],sps[sa]);if(!a||Math.abs(a.err)>0.04)continue;
+  var r=simulate(cue,sps[sa],a.aim,bxs[xa],bys[ya],ball,{cushions:true,felt:felt,dt:1e-4,obs:others});
+  var sc=ln(sb(r.cueRest,Lt)),mR=Infinity,mP=Infinity,o4,pp;
+  for(o4=0;o4<others.length;o4++){var dd=ln(sb(r.cueRest,others[o4]));if(dd<mR)mR=dd;}if(mR<3*R)sc+=(3*R-mR)*8;
+  for(pp=0;pp<6;pp++){var dp=ln(sb(r.cueRest,RN_POCK[pp]));if(dp<mP)mP=dp;}if(mP<0.06)sc+=3;
+  if(sc<bsc){bsc=sc;bc={bx:bxs[xa],by:bys[ya],sp:sps[sa],r:r};}}
+ if(!bc)return null;
+ return {B:best.B,pk:best.pk,pocket:RN_POCK[best.pk],Bghost:best.Bghost,cueRest:bc.r.cueRest,path:bc.r.cuePath,bx:bc.bx,by:bc.by,speed:bc.sp};}
+function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.slice();}),N=seq.length,potted=[],z; for(z=0;z<N;z++)potted.push(false); var cue=layout.cue.slice(),steps=[],guard=0;
+ while(guard++<N*2){
+  var i=-1,q;for(q=0;q<N;q++){if(!potted[q]){i=q;break;}}if(i<0)break; // bi thấp nhất CHƯA ăn = mục tiêu (9-bi: chạm nó trước)
+  var ball=seq[i],others=[];for(q=0;q<N;q++){if(!potted[q]&&q!==i)others.push(seq[q]);} var last=(others.length===0);
+  var remain=[];for(q=0;q<N;q++){if(!potted[q])remain.push({p:seq[q].slice(),n:q+1});} var ballPos=ball.slice(); // TRẠNG THÁI BÀN cho step (vẽ đúng dù combo ăn ngoài thứ tự / dời bi mục tiêu)
+  var nbi=-1;for(q=i+1;q<N;q++){if(!potted[q]){nbi=q;break;}} var nb=nbi>=0?seq[nbi]:null;
+  var nb2i=-1;if(nbi>=0)for(q=nbi+1;q<N;q++){if(!potted[q]){nb2i=q;break;}} var nb2=nb2i>=0?seq[nb2i]:null;
+  var after=[],after2=[];for(q=0;q<N;q++){if(potted[q]||q===i)continue;if(q!==nbi)after.push(seq[q]);if(q!==nbi&&q!==nb2i)after2.push(seq[q]);}
   if(last){var pk=pickPocket(cue,ball,others);
-   if(pk<0){var cbL=rnCarom(cue,ball,others,felt,null,[]);if(cbL){steps.push({n:i+1,ball:ball,cue:cue.slice(),isCombo:true,comboB:cbL.B,comboBn:i+cbL.Bidx+2,caromX:cbL.X,pk:cbL.pk,pocket:cbL.pocket,path:cbL.path,bx:cbL.bx,by:cbL.by,speed:cbL.speed,landing:cbL.cueRest,last:true});break;}steps.push({n:i+1,ball:ball,cue:cue.slice(),potFail:true,reason:'kẹt'});break;}
+   if(pk<0){var cm0=rnCarom(cue,ball,others,felt,null,[]);if(cm0){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'carom',comboB:cm0.B,comboBn:seq.indexOf(cm0.B)+1,caromX:cm0.X,pk:cm0.pk,pocket:cm0.pocket,path:cm0.path,bx:cm0.bx,by:cm0.by,speed:cm0.speed,landing:cm0.cueRest,last:true});potted[i]=true;break;}steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,potFail:true,reason:'kẹt'});break;}
    var sL=solveFast(cue,ball,RN_POCK[pk],ball,{felt:felt,others:others,quick:true});
-   steps.push({n:i+1,ball:ball,cue:cue.slice(),pocket:RN_POCK[pk],pk:pk,path:sL.potFail?null:sL.path,bx:sL.bx,by:sL.by,speed:sL.speed,rails:sL.rails,landing:sL.potFail?null:sL.cueRest,last:true,potFail:sL.potFail});break;}
-  var nb=seq[i+1],after=seq.slice(i+2),nb2=seq[i+2],after2=seq.slice(i+3);
-  var pockets=rnMakeable(cue,ball,others);
-  if(!pockets.length){var cb=rnCarom(cue,ball,others,felt,nb,after); // KHÔNG lỗ trực tiếp → thử GÃI BI (carom, ăn chính bi kẹt)
-   if(cb){steps.push({n:i+1,ball:ball,cue:cue.slice(),isCombo:true,comboB:cb.B,comboBn:i+cb.Bidx+2,caromX:cb.X,pk:cb.pk,pocket:cb.pocket,path:cb.path,bx:cb.bx,by:cb.by,speed:cb.speed,landing:cb.cueRest,last:false});cue=cb.cueRest.slice();continue;}
-   steps.push({n:i+1,ball:ball,cue:cue.slice(),potFail:true,reason:'kẹt (bi chắn/góc>77°) — cần phá thế'});break;}
-  var tgt1=rnLeave(nb,after,felt); // ĐA LỖ + LOOKAHEAD 2 NƯỚC (lazy: giải lỗ dễ nhất trước; chỉ giải lỗ-2 nếu lỗ-1 dính bẫy)
-  var evalP=function(P,frag){var s1=solveFast(cue,ball,RN_POCK[P],tgt1,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
-   var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
-   if(pk1<0)look=6; // 1 NƯỚC: bi kế KẸT từ chỗ dừng → tệ
-   else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb)))); // 2 NƯỚC (hình học — không giải lại, nhanh):
-    var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb); // cú kế dễ/khó từ chỗ dừng
-    var thin=Math.max(0,0.5-cutNb)*3.5; // cắt bi kế MỎNG từ chỗ dừng → khó điều ra bi kế-kế
-    var buried2=(nb2&&pickPocket(rnLeave(nb2,after2,felt),nb2,after2)<0)?2.5:0; // bi kế-kế KHÔNG lỗ nào kể cả từ chỗ đẹp → thế bí
-    look=frag1*0.4+thin+buried2;}
-   return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look,look:look};};
-  var bestC=evalP(pockets[0].pk,pockets[0].frag);
-  if((!bestC||bestC.look>=2.0)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 dính bẫy 2-nước (bí thật) → thử lỗ-2 (đường điều khác)
-  if(!bestC){steps.push({n:i+1,ball:ball,cue:cue.slice(),potFail:true,reason:'không pot được viên này'});break;}
-  var bestSol=bestC.s1,bestPk=bestC.P;
-  steps.push({n:i+1,ball:ball,cue:cue.slice(),pocket:RN_POCK[bestPk],pk:bestPk,target:tgt1,path:bestSol.path,bx:bestSol.bx,by:bestSol.by,speed:bestSol.speed,rails:bestSol.rails,missBy:bestSol.missBy,landing:bestSol.cueRest,last:false});
-  cue=bestSol.cueRest.slice();}
+   steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[pk],pk:pk,path:sL.potFail?null:sL.path,bx:sL.bx,by:sL.by,speed:sL.speed,rails:sL.rails,landing:sL.potFail?null:sL.cueRest,last:true,potFail:sL.potFail});potted[i]=true;break;}
+  var pockets=rnMakeable(cue,ball,others),done=false;
+  if(pockets.length){var tgt1=rnLeave(nb,after,felt);
+   var evalP=function(P,frag){var s1=solveFast(cue,ball,RN_POCK[P],tgt1,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
+    var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
+    if(pk1<0)look=6; // 1 NƯỚC: bi kế KẸT từ chỗ dừng
+    else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.5-cutNb)*3.5;var buried2=(nb2&&pickPocket(rnLeave(nb2,after2,felt),nb2,after2)<0)?2.5:0;look=frag1*0.4+thin+buried2;} // 2 NƯỚC (hình học)
+    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look,look:look};};
+   var bestC=evalP(pockets[0].pk,pockets[0].frag);
+   if((!bestC||bestC.look>=2.0)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 dính bẫy 2-nước → thử lỗ-2 (đường điều khác)
+   if(bestC){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:tgt1,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
+  if(done)continue;
+  var cm=rnCarom(cue,ball,others,felt,nb,after); // KẸT → GÃI (carom, ăn CHÍNH bi mục tiêu)
+  if(cm){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'carom',comboB:cm.B,comboBn:seq.indexOf(cm.B)+1,caromX:cm.X,pk:cm.pk,pocket:cm.pocket,path:cm.path,bx:cm.bx,by:cm.by,speed:cm.speed,landing:cm.cueRest,last:false});cue=cm.cueRest.slice();potted[i]=true;continue;}
+  var cb=rnCombo(cue,ball,others,felt); // rồi COMBO (đẩy bi chắn B vào lỗ, dọn chắn; bi mục tiêu Ở LẠI, dời tới ~chạm, bắn tiếp)
+  if(cb){var gB=seq.indexOf(cb.B);steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'combo',comboB:cb.B,comboBn:gB+1,comboGhost:cb.Bghost,pk:cb.pk,pocket:cb.pocket,path:cb.path,bx:cb.bx,by:cb.by,speed:cb.speed,landing:cb.cueRest,last:false});potted[gB]=true;seq[i]=cb.Bghost.slice();cue=cb.cueRest.slice();continue;}
+  steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,potFail:true,reason:'kẹt (bi chắn/góc>77°) — cần safety'});break;
+ }
  return steps;}
 /*DIEUBI-ENGINE-END*/
 self.onmessage=function(e){var d=e.data;try{var res=d.type==='runout'?runoutRoute(d.layout,d.felt):solveFast(d.cue,d.nine,d.pocket,d.target,{felt:d.felt,others:d.others,ten:d.ten});self.postMessage({gen:d.gen,res:res});}catch(err){self.postMessage({gen:d.gen,res:d.type==='runout'?[]:{potFail:true,err:String(err&&err.message||err)}});}};
@@ -2986,15 +3013,18 @@ function rnDia(layout, steps, ov){
     if(overview){ const ar=[]; for(let i=0;i<layout.balls.length-1;i++){ const a=layout.balls[i],b=layout.balls[i+1]; ar.push([a.x,a.y,b.x,b.y]); } dia.arrows=ar; }
     return dia;
   }
-  const s=steps[ov], cueA=rnS2A(s.cue), tb=layout.balls[ov];
+  const s=steps[ov], cueA=rnS2A(s.cue), tb=rnS2A(s.ballPos);        // bi mục tiêu Ở VỊ TRÍ CỦA CÚ NÀY (có thể đã dời do combo)
   const balls=[{x:cueA.x,y:cueA.y,cue:true}];                       // bi cái ở VỊ TRÍ CHUỖI của cú này (req: cue theo từng cú)
-  for(let i=ov;i<layout.balls.length;i++){ const b=layout.balls[i], n=i+1; balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); } // chỉ bi còn trên bàn (bi đã bắn = mất)
-  const dia={balls, targetHi:tb?[tb.x,tb.y]:null};
+  (s.remain||[]).forEach(b=>{ const n=b.n, pa=rnS2A(b.p); balls.push(n<=8?{x:pa.x,y:pa.y,num:n,solid:POOL[n]}:{x:pa.x,y:pa.y,num:n,stripe:POOL[n]}); }); // bi CÒN trên bàn của cú này (engine tự mang, đúng cả khi combo đảo thứ tự)
+  const dia={balls, targetHi:[tb.x,tb.y]};
   if(!s.potFail){
-    if(tb) dia.line=[cueA.x,cueA.y,tb.x,tb.y];                      // ngắm cue→bi mục tiêu
+    dia.line=[cueA.x,cueA.y,tb.x,tb.y];                             // ngắm cue→bi mục tiêu
     if(s.path&&s.path.length>1) dia.path=s.path.map(rnS2A);         // đường bi cái thật (engine)
-    if(s.isCombo && s.caromX){ const Xp=rnS2A(s.caromX), Bp=rnS2A(s.comboB), pkA=rnS2A(s.pocket); dia.comboLine=[tb.x,tb.y,Xp.x,Xp.y]; dia.potLine=[Xp.x,Xp.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; dia.comboHi=[Bp.x,Bp.y]; } // GÃI BI: bi mục tiêu → điểm gãi (chạm B) → lỗ; highlight bi cushion B
-    else if(s.pocket&&tb){ const pkA=rnS2A(s.pocket); dia.potLine=[tb.x,tb.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; } // bi mục tiêu → lỗ nào
+    if(s.isCombo){ const pkA=rnS2A(s.pocket);
+      if(s.comboMode==='combo' && s.comboB){ const Bp=rnS2A(s.comboB); dia.comboLine=[tb.x,tb.y,Bp.x,Bp.y]; dia.potLine=[Bp.x,Bp.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; dia.comboHi=[Bp.x,Bp.y]; } // COMBO dọn chắn: bi mục tiêu → bi B → lỗ (ăn B)
+      else if(s.caromX){ const Xp=rnS2A(s.caromX), Bp=rnS2A(s.comboB); dia.comboLine=[tb.x,tb.y,Xp.x,Xp.y]; dia.potLine=[Xp.x,Xp.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; dia.comboHi=[Bp.x,Bp.y]; } // GÃI (carom): bi mục tiêu → điểm gãi (chạm B) → lỗ
+    }
+    else if(s.pocket){ const pkA=rnS2A(s.pocket); dia.potLine=[tb.x,tb.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; } // bi mục tiêu → lỗ nào
     if(!s.last && s.landing){ const L=rnS2A(s.landing); dia.zone=[L.x,L.y,2.0]; } // điểm bi cái dừng = cue cú kế
   }
   return dia;
@@ -3079,7 +3109,7 @@ function RunoutCoach(){
                 {s.isCombo ? <TipFace tip={{x:s.bx,y:-s.by}}/> : <TipFace tip={s.last?null:{x:s.bx,y:-s.by}}/>}
                 <div style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.4}}>
                   {s.isCombo
-                    ? <><b>🎯 Bi {s.n} gãi bi {s.comboBn} → lỗ {RN_PK[s.pk]}</b> · đầu cơ {tipLabel({x:s.bx,y:-s.by})}<br/><span className="muted">bi {s.n} kẹt → gãi (carom) để ăn · lực {s.speed<2.3?'vừa':'chắc'}{s.last?'':' · ra bi cho bi '+(s.n+1)}</span></>
+                    ? <><b>🎯 Bi {s.n} {s.comboMode==='combo'?'combo bi '+s.comboBn:'gãi bi '+s.comboBn} → lỗ {RN_PK[s.pk]}</b> · đầu cơ {tipLabel({x:s.bx,y:-s.by})}<br/><span className="muted">{s.comboMode==='combo'?'kẹt → đẩy bi '+s.comboBn+' vào lỗ (dọn chắn), bi '+s.n+' bắn tiếp':'kẹt → gãi (carom) ăn bi '+s.n} · lực {s.speed<2.3?'vừa':'chắc'}</span></>
                     : s.last
                     ? <b>Bi {s.n} (cuối) → lỗ {RN_PK[s.pk]}. Bắn vào là xong ván.</b>
                     : <><b>Bi {s.n} → lỗ {RN_PK[s.pk]}</b> · đầu cơ {tipLabel({x:s.bx,y:-s.by})}<br/><span className="muted">lực {s.speed<1.3?'nhẹ':s.speed<2.3?'vừa':'chắc'}{s.rails>0?' · '+s.rails+' băng':''} · ra bi cho bi {s.n+1}</span></>}
@@ -3141,9 +3171,11 @@ function RunoutCoach(){
                       {!steps[shot].last && <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={78}/>}
                       {steps[shot].last && steps[shot].isCombo && <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={78}/>}
                       <div className="rncurinfo">
-                        <div className="rncurhead"><span className="rnnum">{steps[shot].n}</span><b>{steps[shot].isCombo?('🎯 Bi '+steps[shot].n+' gãi bi '+steps[shot].comboBn+' → lỗ '+RN_PK[steps[shot].pk]):('Bi '+steps[shot].n+' → lỗ '+RN_PK[steps[shot].pk])}</b></div>
+                        <div className="rncurhead"><span className="rnnum">{steps[shot].n}</span><b>{steps[shot].isCombo?('🎯 Bi '+steps[shot].n+(steps[shot].comboMode==='combo'?' combo bi ':' gãi bi ')+steps[shot].comboBn+' → lỗ '+RN_PK[steps[shot].pk]):('Bi '+steps[shot].n+' → lỗ '+RN_PK[steps[shot].pk])}</b></div>
                         {steps[shot].isCombo
-                          ? <div style={{marginTop:3}}><b>Gãi bi (carom)</b>: bi {steps[shot].n} gãi vào bi {steps[shot].comboBn} rồi lăn vào lỗ {RN_PK[steps[shot].pk]} · đầu cơ <b>{tipLabel({x:steps[shot].bx,y:-steps[shot].by})}</b> · lực {steps[shot].speed<2.3?'vừa':'chắc'}<br/><span className="muted">bi {steps[shot].n} kẹt (không lỗ trực tiếp) → gãi để ăn{steps[shot].last?'':' + ra bi cho bi '+(steps[shot].n+1)}</span></div>
+                          ? (steps[shot].comboMode==='combo'
+                            ? <div style={{marginTop:3}}><b>Combo dọn chắn</b>: bi {steps[shot].comboBn} đang cản — đánh bi {steps[shot].n} đẩy bi {steps[shot].comboBn} vào lỗ {RN_PK[steps[shot].pk]} · đầu cơ <b>{tipLabel({x:steps[shot].bx,y:-steps[shot].by})}</b> · lực {steps[shot].speed<2.3?'vừa':'chắc'}<br/><span className="muted">hợp lệ (chạm bi {steps[shot].n} trước) · dọn xong bi {steps[shot].n} thông → bắn tiếp</span></div>
+                            : <div style={{marginTop:3}}><b>Gãi bi (carom)</b>: bi {steps[shot].n} gãi vào bi {steps[shot].comboBn} rồi lăn vào lỗ {RN_PK[steps[shot].pk]} · đầu cơ <b>{tipLabel({x:steps[shot].bx,y:-steps[shot].by})}</b> · lực {steps[shot].speed<2.3?'vừa':'chắc'}<br/><span className="muted">bi {steps[shot].n} kẹt (không lỗ trực tiếp) → gãi để ăn{steps[shot].last?'':' + ra bi cho bi kế'}</span></div>)
                           : steps[shot].last
                           ? <div className="muted" style={{marginTop:3}}>Bi cuối — bắn vào là xong ván.</div>
                           : <div style={{marginTop:3}}>đầu cơ <b>{tipLabel({x:steps[shot].bx,y:-steps[shot].by})}</b> · lực {steps[shot].speed<1.3?'nhẹ':steps[shot].speed<2.3?'vừa':'chắc'}{steps[shot].rails>0?' · '+steps[shot].rails+' băng':''}<br/><span className="muted">ra bi cho bi {steps[shot].n+1}</span></div>}
@@ -3169,7 +3201,7 @@ function RunoutCoach(){
         {shot>=0 && steps[shot] && steps[shot].isCombo &&
           <div className="rntipfs" onClick={e=>e.stopPropagation()}>
             <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={132}/>
-            <div className="rntiplbl">🎯 Gãi bi<br/>Bi {steps[shot].n} gãi bi {steps[shot].comboBn} → lỗ {RN_PK[steps[shot].pk]}<br/>đầu cơ {tipLabel({x:steps[shot].bx,y:-steps[shot].by})}<br/><small>lực {steps[shot].speed<2.3?'vừa':'chắc'} · gãi để ăn bi kẹt</small></div>
+            <div className="rntiplbl">🎯 {steps[shot].comboMode==='combo'?'Combo dọn chắn':'Gãi bi'}<br/>Bi {steps[shot].n} {steps[shot].comboMode==='combo'?'combo bi '+steps[shot].comboBn:'gãi bi '+steps[shot].comboBn} → lỗ {RN_PK[steps[shot].pk]}<br/>đầu cơ {tipLabel({x:steps[shot].bx,y:-steps[shot].by})}<br/><small>lực {steps[shot].speed<2.3?'vừa':'chắc'} · {steps[shot].comboMode==='combo'?'dọn chắn, bắn tiếp':'ăn bi kẹt'}</small></div>
           </div>}
         <div className="rnfullinner" onClick={e=>e.stopPropagation()}>
           <CoachTable dia={mainDia} photo={photo} cls="rnfulltable"/>
