@@ -303,6 +303,11 @@ body{
 .rnfullov{position:fixed;inset:0;z-index:80;background:rgba(8,10,12,.93);display:flex;align-items:center;justify-content:center;padding:12px}
 .rnfullinner{width:100%;max-width:min(97vw,calc(92vh*1.667))}
 .rnfulltable{width:100%;display:block;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.55)}
+.rntipfs{position:absolute;left:calc(10px + env(safe-area-inset-left));top:50%;transform:translateY(-50%);z-index:2;
+  background:rgba(16,20,22,.86);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 12px 10px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;max-width:118px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.rntipfs .rntiplbl{font-size:12.5px;color:#eaf1ec;line-height:1.4;font-weight:800}
+.rntipfs .rntiplbl small{color:#a2b5ac;font-weight:600}
 .ghostform{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px}
 .dot.W{background:var(--ok)} .dot.L{background:var(--danger)}
@@ -2931,9 +2936,9 @@ function rnDia(layout, steps, ov){
   }
   return dia;
 }
-function TipFace({tip}){
-  const Rr=13,cx=16,cy=16,k=Rr*0.7, bx=tip?tip.x:0, by=tip?tip.y:0;
-  return (<svg viewBox="0 0 32 32" width="34" height="34" style={{flex:'none'}}>
+function TipFace({tip,size}){
+  const S=size||34, Rr=13,cx=16,cy=16,k=Rr*0.7, bx=tip?tip.x:0, by=tip?tip.y:0;
+  return (<svg viewBox="0 0 32 32" width={S} height={S} style={{flex:'none'}}>
     <circle cx={cx} cy={cy} r={Rr} fill="#f4f1e6" stroke="#b9b3a2" strokeWidth="1"/>
     <line x1={cx} y1={cy-Rr} x2={cx} y2={cy+Rr} stroke="#d9d3c4" strokeWidth=".7"/>
     <line x1={cx-Rr} y1={cy} x2={cx+Rr} y2={cy} stroke="#d9d3c4" strokeWidth=".7"/>
@@ -3076,6 +3081,11 @@ function RunoutCoach(){
                 </>}
           </>}
       {full && <div className="rnfullov" onClick={()=>setFull(false)}>
+        {shot>=0 && steps[shot] && !steps[shot].potFail && !steps[shot].last &&
+          <div className="rntipfs" onClick={e=>e.stopPropagation()}>
+            <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={66}/>
+            <div className="rntiplbl">Bi {steps[shot].n} → lỗ {RN_PK[steps[shot].pk]}<br/>đầu cơ {tipLabel({x:steps[shot].bx,y:-steps[shot].by})}<br/><small>lực {steps[shot].speed<1.3?'nhẹ':steps[shot].speed<2.3?'vừa':'chắc'}{steps[shot].rails>0?' · '+steps[shot].rails+' băng':''}</small></div>
+          </div>}
         <div className="rnfullinner" onClick={e=>e.stopPropagation()}>
           <CoachTable dia={mainDia} photo={photo} cls="rnfulltable"/>
           <div className="presets" style={{justifyContent:'center',marginTop:8}}>
