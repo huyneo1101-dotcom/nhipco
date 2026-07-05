@@ -2148,12 +2148,12 @@ function DieuBiAdvisor(){
           {DB_SIP.map((sp,i)=>{const a=s2a(sp);return <circle key={'pk'+i} cx={a.x} cy={a.y} r="3.6" fill="none"
             stroke={i===pk?'var(--gold)':'transparent'} strokeWidth="1.7" style={{cursor:'pointer'}}
             onMouseDown={(e)=>{e.stopPropagation();setPk(i);}} onTouchStart={(e)=>{e.stopPropagation();setPk(i);}}/>;})}
-          {opts.map((op,i)=> i===sel?null:<polyline key={'p'+i} points={ptsOf(op.path)} fill="none" stroke={DB_COL[i%3]} strokeWidth="1" strokeDasharray="3 2" opacity="0.5" strokeLinejoin="round" pointerEvents="none"/>)}
-          {o && <polyline points={ptsOf(o.path)} fill="none" stroke={DB_COL[sel%3]} strokeWidth="1.9" strokeLinejoin="round" strokeLinecap="round" pointerEvents="none"/>}
-          <circle cx={tgt.x} cy={tgt.y} r="3.4" fill="none" stroke="#efe9d8" strokeWidth="1.6" strokeDasharray="2.4 2"/>
-          <Ball x={ten.x} y={ten.y} b={{num:10,stripe:'#2f6fd6'}}/>
-          <Ball x={nine.x} y={nine.y} b={{num:9,stripe:'#e8c020'}}/>
-          <Ball x={cue.x} y={cue.y} b={{cue:true}}/>
+          {opts.map((op,i)=> i===sel?null:<polyline key={'p'+i} points={ptsOf(op.path)} fill="none" stroke={DB_COL[i%3]} strokeWidth=".6" strokeDasharray="2 1.6" opacity="0.5" strokeLinejoin="round" pointerEvents="none"/>)}
+          {o && <polyline points={ptsOf(o.path)} fill="none" stroke={DB_COL[sel%3]} strokeWidth="1.05" strokeLinejoin="round" strokeLinecap="round" pointerEvents="none"/>}
+          <circle cx={tgt.x} cy={tgt.y} r="1.8" fill="none" stroke="#efe9d8" strokeWidth=".8" strokeDasharray="1.4 1.2"/>
+          <Ball x={ten.x} y={ten.y} r={1.1} b={{num:10,stripe:'#2f6fd6'}}/>
+          <Ball x={nine.x} y={nine.y} r={1.1} b={{num:9,stripe:'#e8c020'}}/>
+          <Ball x={cue.x} y={cue.y} r={1.1} b={{cue:true}}/>
         </svg>
         {busy && <div className="dbspin-wrap"><div className="ncspin"/></div>}
       </div>
@@ -2943,7 +2943,7 @@ function rnDia(layout, steps, ov){
     if(tb) dia.line=[cueA.x,cueA.y,tb.x,tb.y];                      // ngắm cue→bi mục tiêu
     if(s.path&&s.path.length>1) dia.path=s.path.map(rnS2A);         // đường bi cái thật (engine)
     if(s.pocket&&tb){ const pkA=rnS2A(s.pocket); dia.potLine=[tb.x,tb.y,pkA.x,pkA.y]; dia.pocketHi=[pkA.x,pkA.y]; } // bi mục tiêu → lỗ nào
-    if(!s.last && s.landing){ const L=rnS2A(s.landing); dia.zone=[L.x,L.y,3.4]; } // điểm bi cái dừng = cue cú kế
+    if(!s.last && s.landing){ const L=rnS2A(s.landing); dia.zone=[L.x,L.y,2.0]; } // điểm bi cái dừng = cue cú kế
   }
   return dia;
 }
@@ -2961,14 +2961,14 @@ function CoachTable({dia,photo,onClick,cls}){
     <defs><marker id="rnAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto"><path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/></marker></defs>
     <TableFrame/>
     {photo && <image href={photo} x="10" y="10" width="80" height="40" preserveAspectRatio="xMidYMid slice" opacity="0.72"/>}
-    {dia.line && <line x1={dia.line[0]} y1={dia.line[1]} x2={dia.line[2]} y2={dia.line[3]} stroke="#fff" strokeOpacity=".6" strokeWidth=".7" strokeDasharray="2 2"/>}
-    {(dia.arrows||[]).map((a,i)=><line key={'a'+i} x1={a[0]} y1={a[1]} x2={a[2]} y2={a[3]} stroke="#ffd166" strokeWidth="1" strokeOpacity=".85" markerEnd="url(#rnAh)"/>)}
-    {dia.potLine && <line x1={dia.potLine[0]} y1={dia.potLine[1]} x2={dia.potLine[2]} y2={dia.potLine[3]} stroke="#ffd166" strokeWidth="1.1" strokeOpacity=".9" strokeDasharray="1.6 1.4" markerEnd="url(#rnAh)"/>}
-    {dia.pocketHi && <circle cx={dia.pocketHi[0]} cy={dia.pocketHi[1]} r="3.7" fill="none" stroke="#ffd166" strokeWidth="1.5"/>}
-    {dia.path&&dia.path.length>1 && <polyline points={dia.path.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>}
-    {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="rgba(95,182,255,.16)" stroke="#5fb6ff" strokeWidth="1" strokeDasharray="2.2 1.6"/>}
-    {dia.targetHi && <circle cx={dia.targetHi[0]} cy={dia.targetHi[1]} r="3.5" fill="none" stroke="#fff" strokeOpacity=".85" strokeWidth="1.1"/>}
-    {dia.balls.map((b,i)=><Ball key={'b'+i} x={b.x} y={b.y} r={b.r} b={b}/>)}
+    {dia.line && <line x1={dia.line[0]} y1={dia.line[1]} x2={dia.line[2]} y2={dia.line[3]} stroke="#fff" strokeOpacity=".55" strokeWidth=".45" strokeDasharray="1.4 1.4"/>}
+    {(dia.arrows||[]).map((a,i)=><line key={'a'+i} x1={a[0]} y1={a[1]} x2={a[2]} y2={a[3]} stroke="#ffd166" strokeWidth=".7" strokeOpacity=".85" markerEnd="url(#rnAh)"/>)}
+    {dia.potLine && <line x1={dia.potLine[0]} y1={dia.potLine[1]} x2={dia.potLine[2]} y2={dia.potLine[3]} stroke="#ffd166" strokeWidth=".7" strokeOpacity=".9" strokeDasharray="1.4 1.2" markerEnd="url(#rnAh)"/>}
+    {dia.pocketHi && <circle cx={dia.pocketHi[0]} cy={dia.pocketHi[1]} r="3.4" fill="none" stroke="#ffd166" strokeWidth="1.1"/>}
+    {dia.path&&dia.path.length>1 && <polyline points={dia.path.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth=".95" strokeLinejoin="round" strokeLinecap="round"/>}
+    {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="rgba(95,182,255,.16)" stroke="#5fb6ff" strokeWidth=".7" strokeDasharray="1.6 1.2"/>}
+    {dia.targetHi && <circle cx={dia.targetHi[0]} cy={dia.targetHi[1]} r="1.7" fill="none" stroke="#fff" strokeOpacity=".9" strokeWidth=".7"/>}
+    {dia.balls.map((b,i)=><Ball key={'b'+i} x={b.x} y={b.y} r={b.r||1.1} b={b}/>)}
   </svg>);
 }
 function RunoutCoach(){
