@@ -502,7 +502,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||nu
   if(others&&minTR<0.11)pen+=(0.11-minTR)*2.0; // bi cái dừng SÁT bi khác = cò tay / khó bắc cầu → phạt (né vị trí bí)
   if(tgtPk>0.20){if(minD>=0.06&&minD<0.15)pen+=(0.15-minD)*3.5;if(minR>=0.07&&minR<0.17)pen+=(0.17-minR)*2.5;} // soft "keep off the pocket" only when the user did NOT deliberately park near a pocket
   if(felt&&tgtRail>0.16){var rr=Math.min(rest[0]-felt[0],felt[1]-rest[0],rest[1]-felt[2],felt[3]-rest[1]);if(rr<0.10)pen+=(0.10-rr)*2.2;} // #4: bi cái dừng SÁT BĂNG = khó bắc cầu cú sau (chỉ phạt khi đích không cố ý sát băng)
-  if(others&&minT<2.2*R)pen+=3.0;return pen;} // never touch any other ball on the table
+  if(others){if(minT<2.2*R)pen+=30;if(minT<3*R)pen+=(3*R-minT)/R*6;}return pen;} // TRAFFIC NẶNG: đường bi cái CHẠM bi khác (nảy, <2.2R) → +30 = LOẠI THẲNG; đi trong ~1R bề mặt bi khác (<3R) → phạt nặng tăng dần
  var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
  function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
  function score(e){ if(!e) return Infinity; return ln(sb(e.cueRest,Tt)) // ĐÍCH là chính; các phạt dưới đây NHẸ (chỉ nghiêng chọn, không lấn độ chính xác)
@@ -546,11 +546,11 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||nu
 function distSeg(p,a,b){var ab=sb(b,a),d2=dt2(ab,ab)||1e-9,t=Math.max(0,Math.min(1,dt2(sb(p,a),ab)/d2));return ln(sb(p,ad(a,ml(ab,t))));}
 function potFragility(dOP,dCO,cutCos){return dOP*(0.45+0.4*dCO)/Math.max(0.28,cutCos);} // DUNG SAI PHA POT: xa lỗ × xa cue / độ dày cắt (cutCos~1=thẳng dễ, ~0=mỏng khó). Nhỏ = pot dễ/tha lỗi.
 function pickPocket(cue,ball,others){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],best=-1,bs=Infinity;
- if(cue){for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.05*R)return -1;} // #6: bi khác chắn đường CUE→BI → không ngắm được (kẹt)
+ if(cue){for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return -1;} // #6: bi khác trong ~1R đường CUE→BI → không ngắm sạch được (kẹt)
  var dCO=cue?ln(sb(ball,cue)):0.6;
  for(var k=0;k<6;k++){var toP=nm(sb(POCK[k],ball)),cc=1;
   if(cue){cc=dt2(nm(sb(ball,cue)),toP);if(cc<0.22)continue;} // cut > ~77° → bỏ lỗ này
-  var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,POCK[k])<2.05*R){blk=true;break;} // bi khác chắn đường bi→lỗ
+  var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,POCK[k])<2.9*R){blk=true;break;} // bi khác trong ~1R đường bi→lỗ (pot-line) → bỏ lỗ này
   if(blk)continue;var frag=potFragility(ln(sb(POCK[k],ball)),dCO,cc);
   if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));} // #2: LỖ GIỮA khó hơn lỗ góc (miệng hẹp), và RẤT khó nếu bi vào chếch (app=|thành phần vuông rail|; vào thẳng app~1, chếch app nhỏ → phạt mạnh)
   if(frag<bs){bs=frag;best=k;}} // chọn lỗ có PHA POT dễ nhất → ưu tiên lỗ GÓC
