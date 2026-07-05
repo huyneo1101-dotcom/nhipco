@@ -2055,41 +2055,47 @@ const DB_COL=['#e0a92e','#3f7fd6','#8e5bc7'];              // màu 3 phương á
 const DB_SIP=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]]; // lỗ (SI): 4 góc + 2 giữa
 const DB_FELT_SI=[0,2.54,0,1.27];
 function useSolver(){ // tạo 1 Worker từ Blob (engine ở <script id="dieubi-engine">), latest-wins theo gen
-  const wref=useRef(null), gen=useRef(0), cb=useRef(null);
-  const [busy,setBusy]=useState(false);
-  useEffect(()=>{ let w=null;
-    try{ const src=document.getElementById('dieubi-engine').textContent;
-      w=new Worker(URL.createObjectURL(new Blob([src],{type:'application/javascript'})));
+  const wref=useRef(null), fnRef=useRef(null), gen=useRef(0), cb=useRef(null), last=useRef(null), busyRef=useRef(false);
+  const [busy,setB]=useState(false); const setBusy=(v)=>{ busyRef.current=v; setB(v); };
+  const fallback=useCallback((payload,g)=>{ setTimeout(()=>{ if(g!==gen.current) return; let res; // chạy engine trên main-thread (đơ ~1s, có spinner)
+    try{ res=fnRef.current?fnRef.current(payload.cue,payload.nine,payload.pocket,payload.target,{felt:payload.felt,ten:payload.ten}):{potFail:true}; }catch(e){ res={potFail:true}; }
+    setBusy(false); if(cb.current) cb.current(res); },20); },[]);
+  useEffect(()=>{ let w=null; const src=document.getElementById('dieubi-engine').textContent;
+    try{ fnRef.current=new Function(src+'\n;return (typeof solveFast!=="undefined")?solveFast:null;')(); }catch(e){ fnRef.current=null; } // engine cho main-thread (dự phòng)
+    try{ w=new Worker(URL.createObjectURL(new Blob([src],{type:'application/javascript'})));
       w.onmessage=(e)=>{ if(e.data.gen!==gen.current) return; setBusy(false); if(cb.current) cb.current(e.data.res); };
+      w.onerror=()=>{ wref.current=null; if(busyRef.current&&last.current) fallback(last.current,gen.current); }; // Worker bị chặn (vd mở bằng file://) → tự chuyển sang main-thread
       wref.current=w;
-    }catch(err){ wref.current=null; }
+    }catch(e){ wref.current=null; }
     return ()=>{ if(w) w.terminate(); };
-  },[]);
-  const solve=useCallback((payload,onDone)=>{ if(!wref.current) return; gen.current++; cb.current=onDone; setBusy(true); wref.current.postMessage({...payload,gen:gen.current}); },[]);
+  },[fallback]);
+  const solve=useCallback((payload,onDone)=>{ gen.current++; const g=gen.current; cb.current=onDone; last.current=payload; setBusy(true);
+    if(wref.current){ try{ wref.current.postMessage({...payload,gen:g}); }catch(e){ wref.current=null; fallback(payload,g); } }
+    else fallback(payload,g); },[fallback]);
   return {solve,busy};
 }
 function DieuBiAdvisor(){
   const K=80/2.54;                                          // app-units / mét (bàn app FELT=[10,90,10,50])
   const s2a=(p)=>({x:10+p[0]*K, y:10+p[1]*K});              // SI → toạ độ bàn app
   const a2s=(p)=>[(p.x-10)/K, (p.y-10)/K];                  // bàn app → SI
-  const [cue,setCue]=useState({x:24,y:36});
-  const [nine,setNine]=useState({x:54,y:24});
-  const [ten,setTen]=useState({x:78,y:41});
-  const [tgt,setTgt]=useState({x:38,y:44});
+  const [cue,setCue]=useState({x:35,y:23});   // thế mẫu sạch: bắn 9 vào lỗ góc phải-dưới, điều bi cái lên góc phải-trên
+  const [nine,setNine]=useState({x:60,y:31});
+  const [ten,setTen]=useState({x:82,y:42});
+  const [tgt,setTgt]=useState({x:82,y:17});
   const [pk,setPk]=useState(3);
   const [res,setRes]=useState(null);
   const [sel,setSel]=useState(0);
   const {solve,busy}=useSolver();
   const svgRef=useRef(null), drag=useRef(null);
   const P={cue,nine,ten,tgt}, S={cue:setCue,nine:setNine,ten:setTen,tgt:setTgt};
-  const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
+  const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect(); if(!r.width||!r.height) return null;
     const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
-    return {x:Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100)),
-            y:Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*60))}; };
+    const x=(cx-r.left)/r.width*100, y=(cy-r.top)/r.height*60; if(!isFinite(x)||!isFinite(y)) return null; // guard: tránh NaN làm hỏng state
+    return {x:Math.max(FELT[0],Math.min(FELT[1],x)), y:Math.max(FELT[2],Math.min(FELT[3],y))}; };
   const run=()=>solve({cue:a2s(cue),nine:a2s(nine),ten:a2s(ten),pocket:DB_SIP[pk],target:a2s(tgt),felt:DB_FELT_SI},(r)=>{ setRes(r); setSel(0); });
   useEffect(()=>{ const id=setTimeout(run,150); return ()=>clearTimeout(id); },[cue,nine,ten,tgt,pk]); // warm-start: giải lại (debounce) khi đổi bi/đích/lỗ
-  const down=(e)=>{ const p=toSvg(e); let best='cue',bd=1e9; ['cue','nine','ten','tgt'].forEach(k=>{const d=Math.hypot(p.x-P[k].x,p.y-P[k].y); if(d<bd){bd=d;best=k;}}); drag.current=best; S[best](p); };
-  const move=(e)=>{ if(!drag.current) return; e.preventDefault(); if(res) setRes(null); S[drag.current](toSvg(e)); }; // xoá đường cũ khi bắt đầu kéo
+  const down=(e)=>{ const p=toSvg(e); if(!p) return; let best='cue',bd=1e9; ['cue','nine','ten','tgt'].forEach(k=>{const d=Math.hypot(p.x-P[k].x,p.y-P[k].y); if(d<bd){bd=d;best=k;}}); drag.current=best; S[best](p); };
+  const move=(e)=>{ if(!drag.current) return; e.preventDefault(); const p=toSvg(e); if(!p) return; if(res) setRes(null); S[drag.current](p); }; // xoá đường cũ khi bắt đầu kéo
   const up=()=>{ drag.current=null; };
   const opts=(res&&res.options)?res.options:[]; const o=opts[sel];
   const ptsOf=(path)=>path.map(p=>{const a=s2a(p);return a.x.toFixed(1)+','+a.y.toFixed(1);}).join(' ');
