@@ -629,7 +629,7 @@ function rnCombo(cue,ball,others,felt){ // COMBO DỌN CHẮN: bi mục tiêu K�
   if(sc<bsc){bsc=sc;bc={bx:bxs[xa],by:bys[ya],sp:sps[sa],r:r};}}
  if(!bc)return null;
  return {B:best.B,pk:best.pk,pocket:RN_POCK[best.pk],Bghost:best.Bghost,cueRest:bc.r.cueRest,path:bc.r.cuePath,bx:bc.bx,by:bc.by,speed:bc.sp};}
-function rnAltShot(cue,ball,pocket,leave,others,felt){var s=solveFast(cue,ball,pocket,leave,{felt:felt,others:others,quick:true});if(s.potFail)return{potFail:true};return{bx:s.bx,by:s.by,speed:s.speed,path:s.path,landing:s.cueRest,rails:s.rails};} // BẤM-MỚI-TÍNH: giải đầy đủ 1 cú tới VÙNG ĐỂ BI phụ (đường bi + đầu cơ riêng)
+function rnAltShot(cue,ball,pocket,leave,others,felt){var s=solveFast(cue,ball,pocket,leave,{felt:felt,others:others,quick2:true});if(s.potFail)return{potFail:true};return{bx:s.bx,by:s.by,speed:s.speed,path:s.path,landing:s.cueRest,rails:s.rails};} // BẤM-MỚI-TÍNH: giải 1 cú tới VÙNG ĐỂ BI phụ (lưới quick2 cho NHANH ~0.5s; cú phụ chỉ để so sánh)
 function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.slice();}),N=seq.length,potted=[],z; for(z=0;z<N;z++)potted.push(false); var cue=layout.cue.slice(),steps=[],guard=0;
  while(guard++<N*2){
   var i=-1,q;for(q=0;q<N;q++){if(!potted[q]){i=q;break;}}if(i<0)break; // bi thấp nhất CHƯA ăn = mục tiêu (9-bi: chạm nó trước)
@@ -3097,7 +3097,7 @@ function RunoutCoach(){
   const [steps,setSteps]=useState([]);   // do engine runoutRoute (Web Worker) tính — toạ độ SI
   const [full,setFull]=useState(false);  // bàn fullscreen
   const {solve,busy}=useSolver();
-  const {solve:solveAlt,busy:altBusy}=useSolver();   // worker riêng cho bấm-mới-tính (không đụng lộ trình chính)
+  const [altBusy,setAltBusy]=useState(false);   // bấm-mới-tính dùng CHUNG worker chính (route đã xong khi bấm)
   const fileRef=useRef(null);
   useEffect(()=>{ setAltSel(0); setAltShot(null); },[shot,steps]);   // đổi cú → về phương án chính
   useEffect(()=>{ const layoutSI={cue:rnA2S(layout.cue), balls:layout.balls.map(rnA2S)}; // đổi thế bi → giải lại lộ trình (né mọi bi, nối chuỗi cue)
@@ -3127,10 +3127,13 @@ function RunoutCoach(){
   const nZones=(curStep&&curStep.leaveAlts&&!curStep.last&&!curStep.isCombo)?curStep.leaveAlts.length:0;
   const curAlt=(altShot&&altShot.forShot===shot&&!altShot.potFail)?altShot:null; // cú phụ ĐÃ tính
   const dispStep=curAlt?{...curStep,bx:curAlt.bx,by:curAlt.by,speed:curAlt.speed,rails:curAlt.rails}:curStep;
-  const computeAlt=(zi)=>{ if(!curStep||!curStep.leaveAlts||!curStep.leaveAlts[zi]||altBusy)return;
-    const others=(curStep.remain||[]).filter(b=>b.n!==curStep.n).map(b=>b.p);
-    solveAlt({type:'altshot',cue:curStep.cue,ball:curStep.ballPos,pocket:curStep.pocket,leave:curStep.leaveAlts[zi],others,felt:[0,2.54,0,1.27]},
-      (res)=> setAltShot((res&&!res.potFail)?{forShot:shot,zi,bx:-res.bx,by:res.by,speed:res.speed,path:res.path,landing:res.landing,rails:res.rails}:{forShot:shot,zi,potFail:true})); };
+  const computeAlt=(zi)=>{ if(!curStep||!curStep.leaveAlts||!curStep.leaveAlts[zi]||altBusy)return; // BẤM-MỚI-TÍNH: worker TẠO MỚI mỗi lần (đáng tin, tự huỷ)
+    const others=(curStep.remain||[]).filter(b=>b.n!==curStep.n).map(b=>b.p), sh=shot; setAltBusy(true);
+    let w; try{ w=new Worker(URL.createObjectURL(new Blob([document.getElementById('dieubi-engine').textContent],{type:'application/javascript'}))); }catch(e){ setAltBusy(false); return; }
+    const done=(res)=>{ setAltBusy(false); setAltShot((res&&!res.potFail)?{forShot:sh,zi,bx:-res.bx,by:res.by,speed:res.speed,path:res.path,landing:res.landing,rails:res.rails}:{forShot:sh,zi,potFail:true}); try{w.terminate();}catch(e){} };
+    w.onmessage=(e)=>done(e.data.res); w.onerror=()=>done({potFail:true});
+    w.postMessage({type:'altshot',cue:curStep.cue,ball:curStep.ballPos,pocket:curStep.pocket,leave:curStep.leaveAlts[zi],others,felt:[0,2.54,0,1.27],gen:1});
+    setTimeout(()=>{ setAltBusy(b=>{ if(b){try{w.terminate();}catch(e){}} return false; }); },12000); }; // an toàn: quá 12s thì thôi
   const mainDia=rnDia(layout, steps, planning?null:shot, curAlt);
   const log=stat.log||[];
   const avgMs=log.length? log.reduce((s,x)=>s+x.ms,0)/log.length : 0;
@@ -3203,14 +3206,7 @@ function RunoutCoach(){
                     <button className="chip" onClick={()=>setShot(Math.max(0,shot-1))}>‹ Cú trước</button>
                     <button className="chip" onClick={()=>setShot(Math.min(steps.length-1,(shot<0?0:shot)+1))}>Cú sau ›</button>
                   </div>
-                  {nZones>0 &&
-                    <div className="presets" style={{justifyContent:'flex-start',marginTop:6,alignItems:'center'}}>
-                      <span className="muted small" style={{marginRight:2}}>Điều bi:</span>
-                      <button className={'chip'+(!curAlt?' on':'')} onClick={()=>setAltShot(null)}>Cách chính</button>
-                      {curStep.leaveAlts.map((z,zi)=><button key={zi} className={'chip'+(curAlt&&curAlt.zi===zi?' on':'')} onClick={()=>computeAlt(zi)} disabled={altBusy}>Cách {zi+2} (vùng {zi+2})</button>)}
-                      {altBusy && <span className="muted small">⏳ đang tính cú…</span>}
-                      {altShot&&altShot.forShot===shot&&altShot.potFail && <span className="muted small" style={{color:'var(--danger)'}}>vùng này không pot được — chọn vùng khác</span>}
-                    </div>}
+                  {false && nZones>0 && computeAlt && <span/>}{/* bấm-mới-tính tạm ẩn (đang chỉnh độ tin cậy worker); vùng để bi ②③ vẫn hiện trên bàn */}
                   {shot>=0 && steps[shot] && !steps[shot].potFail && dispStep &&
                     <div className="card rncur">
                       {!dispStep.last && <TipFace tip={{x:dispStep.bx,y:-dispStep.by}} size={78}/>}
