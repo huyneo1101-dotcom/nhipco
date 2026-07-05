@@ -563,13 +563,18 @@ function rnMakeable(cue,ball,others){var out=[],dCO=cue?ln(sb(ball,cue)):0.6; //
   var frag=potFragility(ln(sb(RN_POCK[k],ball)),dCO,cc);if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));}
   out.push({pk:k,frag:frag});}
  out.sort(function(a,b){return a.frag-b.frag;});return out;}
-function rnLeave(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?RN_POCK[npk]:[1.27,0.635]; // chỗ để bi (cueTarget) dựng cú cho `nb`: góc đẹp, thoáng bi
- var back=nm(sb(nb,npos)),perp=[-back[1],back[0]],toC=nm(sb([1.27,0.635],nb)),cs0=(dt2(perp,toC)>=0)?1:-1;
- var mk=function(a,sd,D){var cs=Math.cos(a),sn=Math.sin(a),d=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];return[Math.max(felt[0]+R,Math.min(felt[1]-R,nb[0]+d[0]*D)),Math.max(felt[2]+R,Math.min(felt[3]-R,nb[1]+d[1]*D))];};
+function rnLeave(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?RN_POCK[npk]:[1.27,0.635],C=[1.27,0.635]; // chỗ để bi: AN TOÀN — ƯU TIÊN GIỮA BÀN, KHÔNG sát băng/lỗ (đui/cò/với), KHÔNG quá xa bi kế, góc đẹp
+ var back=nm(sb(nb,npos)),perp=[-back[1],back[0]];
+ var mk=function(a,sd,D){var cs=Math.cos(a),sn=Math.sin(a),d=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];return[Math.max(felt[0]+2*R,Math.min(felt[1]-2*R,nb[0]+d[0]*D)),Math.max(felt[2]+2*R,Math.min(felt[3]-2*R,nb[1]+d[1]*D))];};
  var clr=function(t){for(var q=0;q<after.length;q++){if(ln(sb(after[q],t))<3*R)return false;if(distSeg(after[q],t,nb)<2.9*R)return false;}return true;};
- var cand=[[0.24,cs0,0.34],[0.24,-cs0,0.34],[0.14,cs0,0.30],[0.14,-cs0,0.30],[0.24,cs0,0.24],[0.24,-cs0,0.24],[0,cs0,0.30]];
- for(var ci=0;ci<cand.length;ci++){var tt=mk(cand[ci][0],cand[ci][1],cand[ci][2]);if(clr(tt))return tt;}
- return mk(0.24,cs0,0.34);}
+ var angs=[0.16,0.26,0.36],dists=[0.3,0.42,0.55],best=null,bsc=Infinity;
+ for(var ai=0;ai<3;ai++)for(var sd=-1;sd<=1;sd+=2)for(var di=0;di<3;di++){var t=mk(angs[ai],sd,dists[di]);if(!clr(t))continue;
+  var sc=ln(sb(t,C))*1.5,k,dp; // ƯU TIÊN GIỮA BÀN
+  var rail=Math.min(t[0]-felt[0],felt[1]-t[0],t[1]-felt[2],felt[3]-t[1]);if(rail<0.18)sc+=(0.18-rail)*12; // sát băng → cò tay / với
+  var mp=Infinity;for(k=0;k<6;k++){dp=ln(sb(t,RN_POCK[k]));if(dp<mp)mp=dp;}if(mp<0.18)sc+=(0.18-mp)*16; // sát lỗ → đui
+  var dnb=ln(sb(t,nb));if(dnb>0.62)sc+=(dnb-0.62)*4;if(dnb<0.26)sc+=(0.26-dnb)*5; // quá xa/gần bi kế
+  if(sc<bsc){bsc=sc;best=t;}}
+ return best||mk(0.26,1,0.42);}
 function circInt(c1,r1,c2,r2){var dx=c2[0]-c1[0],dy=c2[1]-c1[1],D=Math.hypot(dx,dy); // giao 2 đường tròn → 2 điểm (hoặc null)
  if(D>r1+r2||D<Math.abs(r1-r2)||D<1e-9)return null;var a=(r1*r1-r2*r2+D*D)/(2*D),h2=r1*r1-a*a;if(h2<0)return null;var h=Math.sqrt(h2);
  var xm=c1[0]+a*dx/D,ym=c1[1]+a*dy/D;return[[xm+h*dy/D,ym-h*dx/D],[xm-h*dy/D,ym+h*dx/D]];}
@@ -639,7 +644,9 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
     var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
     if(pk1<0)look=6; // 1 NƯỚC: bi kế KẸT từ chỗ dừng
     else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.5-cutNb)*3.5;var buried2=(nb2&&pickPocket(rnLeave(nb2,after2,felt),nb2,after2)<0)?2.5:0;look=frag1*0.4+thin+buried2;} // 2 NƯỚC (hình học)
-    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look,look:look};};
+    var ctr=ln(sb(L1,[1.27,0.635]))*0.7; // ƯU TIÊN landing GIỮA BÀN (dễ bắn, không với)
+    var cutThis=dt2(nm(sb(ball,cue)),nm(sb(RN_POCK[P],ball))),thinNow=Math.max(0,0.5-cutThis)*2.2; // cắt bi HIỆN TẠI mỏng → khó hãm/kiểm soát cue (mạo hiểm, sai kỳ vọng)
+    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+thinNow,look:look};};
    var bestC=evalP(pockets[0].pk,pockets[0].frag);
    if((!bestC||bestC.look>=2.0)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 dính bẫy 2-nước → thử lỗ-2 (đường điều khác)
    if(bestC){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:tgt1,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
@@ -3072,7 +3079,7 @@ function RunoutCoach(){
   const {solve,busy}=useSolver();
   const fileRef=useRef(null);
   useEffect(()=>{ const layoutSI={cue:rnA2S(layout.cue), balls:layout.balls.map(rnA2S)}; // đổi thế bi → giải lại lộ trình (né mọi bi, nối chuỗi cue)
-    solve({type:'runout', layout:layoutSI, felt:[0,2.54,0,1.27]}, (res)=>setSteps(Array.isArray(res)?res:[])); },[layout]);
+    solve({type:'runout', layout:layoutSI, felt:[0,2.54,0,1.27]}, (res)=>setSteps(Array.isArray(res)?res.map(s=>(typeof s.bx==='number'?{...s,bx:-s.bx}:s)):[])); },[layout]); // ĐỔI english trái↔phải khi hiển thị (theo yêu cầu chủ); path vẫn là physics gốc
   const newRack=(n)=>{ setEdit(false); setPhoto(null); setLayout(genRack(n)); setShot(0); if(mode==='quiz'){ setPhase('plan'); setT0(Date.now()); } };
   const startEdit=()=>{ setPhoto(null); setPcue(null); setPballs([]); setEdit(true); };
   const onFile=(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ setPhoto(rd.result); setPcue(null); setPballs([]); setEdit(true); }; rd.readAsDataURL(f); e.target.value=''; };
