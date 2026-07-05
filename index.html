@@ -126,6 +126,10 @@ body{
 .musicRow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
 .musicLink{flex:1;min-width:0;color:var(--text);text-decoration:none;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .xbtn{background:transparent;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:2px 6px;flex:none}
+.archbtn{border:none;background:transparent;color:var(--muted);padding:6px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;line-height:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+.archbtn:hover{color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent)}
+.archbtn:active{transform:scale(.88)}
+.archbtn svg{width:18px;height:18px;display:block}
 .poslegend{display:flex;gap:14px;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0;flex-wrap:wrap}
 .posdot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.35)}
 
@@ -277,6 +281,9 @@ body{
 .scNum.pulse{animation:scpulse .5s steps(1) infinite}
 .mtable{width:100%;max-width:380px;align-self:center;border-radius:7px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
 .cueball{width:148px;height:148px;align-self:center;touch-action:none;cursor:pointer;margin-top:6px}
+.dbspin-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.ncspin{width:28px;height:28px;border:3px solid rgba(0,0,0,.18);border-top-color:var(--gold);border-radius:50%;animation:ncspin .8s linear infinite}
+@keyframes ncspin{to{transform:rotate(360deg)}}
 .ghostform{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px}
 .dot.W{background:var(--ok)} .dot.L{background:var(--danger)}
@@ -395,6 +402,104 @@ body{
     }
   },4000);
 })();
+</script>
+<!-- Engine Điều bi (SI) cho Web Worker inline; nội dung inject từ DieuBi/engine_inline.js bằng inject-dieubi.js -->
+<script type="text/js-worker" id="dieubi-engine">
+/*DIEUBI-ENGINE-START*/
+// Self-contained engine + solver (no require/module) for embedding in the widget. SI units.
+var R=0.028575, Mm=0.163, gg=9.81, MU_SLIDE=0.20, MU_ROLL=0.010, MU_SPIN=0.022, E_BALL=0.96, E_RAIL=0.80, MU_RAIL=0.20, Iw=0.4*Mm*R*R;
+function muBall(v){ return 0.06+0.05*Math.exp(-v/0.6); }
+function ad(a,b){return[a[0]+b[0],a[1]+b[1]];} function sb(a,b){return[a[0]-b[0],a[1]-b[1]];}
+function ml(a,s){return[a[0]*s,a[1]*s];} function dt2(a,b){return a[0]*b[0]+a[1]*b[1];}
+function ln(a){return Math.hypot(a[0],a[1]);} function nm(a){var l=ln(a)||1;return[a[0]/l,a[1]/l];}
+function pp(a){return[-a[1],a[0]];} var DEG=180/Math.PI;
+function launchSpin(speed,dir,bx,by){var u=nm(dir),k=2.5*by*speed/R;return{p:null,v:ml(u,speed),w:[k*(-u[1]),k*(u[0]),2.5*bx*speed/R]};}
+function slip(b){return[b.v[0]-R*b.w[1], b.v[1]+R*b.w[0]];}
+function clothStep(b,dt){var s=slip(b),sl=ln(s);
+ if(sl>1e-4){var fd=ml(s,-1/sl),a=MU_SLIDE*gg;b.v=ad(b.v,ml(fd,a*dt));var Fx=Mm*a*fd[0],Fy=Mm*a*fd[1];b.w[0]+=(R*Fy)/Iw*dt;b.w[1]+=(-R*Fx)/Iw*dt;}
+ else{var v=ln(b.v);if(v>1e-4){var vd=nm(b.v),a=MU_ROLL*gg,nv=Math.max(0,v-a*dt);b.v=ml(vd,nv);}else b.v=[0,0];b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;}
+ if(Math.abs(b.w[2])>1e-3){var dz=(MU_SPIN*gg/R)*dt*2.5;b.w[2]-=Math.sign(b.w[2])*Math.min(Math.abs(b.w[2]),dz);}
+ b.p=ad(b.p,ml(b.v,dt));}
+function atRest(b){return ln(b.v)<4e-3 && ln(slip(b))<0.03;}
+function ballCollide(cue,obj){var n=nm(sb(obj.p,cue.p)),t=pp(n),vn=dt2(cue.v,n),vt=dt2(cue.v,t);
+ var cueN=(1-E_BALL)/2*vn,objN=(1+E_BALL)/2*vn,wc=cue.w;
+ var surf=[-wc[2]*R*n[1],wc[2]*R*n[0]],csv=[cue.v[0]+surf[0],cue.v[1]+surf[1]],slipT=dt2(csv,t),vs=Math.abs(slipT);
+ var mub=muBall(vs),Jn=objN,cap=mub*Math.abs(Jn)+1e-9,throwV=Math.sign(slipT)*cap*Math.tanh((vs/2)/cap);
+ obj.v=ad(ml(n,objN),ml(t,throwV));obj.w=[0,0,0];cue.v=ad(ml(n,cueN),ml(t,vt-throwV));}
+function cushionCollide(b,rt){var n;if(rt=='x0')n=[1,0];else if(rt=='x1')n=[-1,0];else if(rt=='y0')n=[0,1];else n=[0,-1];
+ var t=pp(n),vn=dt2(b.v,n),vt=dt2(b.v,t);if(vn>=0)return;vt+=MU_RAIL*(b.w[2]*R);vn=-E_RAIL*vn;vt=vt*0.95;b.v=ad(ml(n,vn),ml(t,vt));
+ b.w[2]*=0.7;b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;} // re-establish natural roll after bank (un-reflected topspin would otherwise create a large artificial slip → unnatural curve back toward rail)
+function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,cush=!!opts.cushions,noPath=!!opts.noPath,dt=opts.dt||1e-4,maxT=opts.maxT||12,ten=opts.tenBall||null;
+ var cue=launchSpin(speed,dir,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]};
+ var path=noPath?null:[cue.p.slice()],t=0,collided=false,tenHit=false,rails=0;
+ while(t<maxT){
+  if(!collided){if(ln(sb(cue.p,obj.p))<=2*R){ballCollide(cue,obj);collided=true;}}
+  if(ten&&!tenHit&&ln(sb(cue.p,ten))<=2*R){ballCollide(cue,{p:ten.slice(),v:[0,0],w:[0,0,0]});tenHit=true;} // 10-ball is a physical obstacle: cue bounces off it (never drawn passing through)
+  var inside=!f||(cue.p[0]>f[0]+R-1e-6&&cue.p[0]<f[1]-R+1e-6&&cue.p[1]>f[2]+R-1e-6&&cue.p[1]<f[3]-R+1e-6);
+  if(inside&&ln(slip(cue))<0.03&&ln(cue.v)>2e-3){var s=ln(cue.v),d=nm(cue.v),a=MU_ROLL*gg,D=s*s/(2*a),L=Infinity;
+   if(!collided){var rel=sb(cue.p,O),b1=dt2(rel,d),c1=dt2(rel,rel)-4*R*R,disc=b1*b1-c1;if(disc>=0){var tt=-b1-Math.sqrt(disc);if(tt>1e-6)L=tt;}}
+   if(ten&&!tenHit){var rl2=sb(cue.p,ten),b2=dt2(rl2,d),c2=dt2(rl2,rl2)-4*R*R,ds2=b2*b2-c2;if(ds2>=0){var t2=-b2-Math.sqrt(ds2);if(t2>1e-6&&t2<L)L=t2;}} // stop analytic roll at the 10 so the step-collision above can fire
+   if(f){var cd=[];if(d[0]>1e-9)cd.push((f[1]-R-cue.p[0])/d[0]);if(d[0]<-1e-9)cd.push((f[0]+R-cue.p[0])/d[0]);if(d[1]>1e-9)cd.push((f[3]-R-cue.p[1])/d[1]);if(d[1]<-1e-9)cd.push((f[2]+R-cue.p[1])/d[1]);for(var i=0;i<cd.length;i++)if(cd[i]>1e-6&&cd[i]<L)L=cd[i];}
+   if(D<=L){var rest=ad(cue.p,ml(d,D));if(!f||(rest[0]>=f[0]+R-1e-3&&rest[0]<=f[1]-R+1e-3&&rest[1]>=f[2]+R-1e-3&&rest[1]<=f[3]-R+1e-3)){cue.p=rest;cue.v=[0,0];cue.w=[0,0,0];break;}}
+   var jmp=Math.max(0,L-1e-4),s2=Math.sqrt(Math.max(0,s*s-2*a*jmp));cue.p=ad(cue.p,ml(d,jmp));cue.v=ml(d,s2);cue.w[0]=-cue.v[1]/R;cue.w[1]=cue.v[0]/R;cue.w[2]*=Math.exp(-jmp*1.5);if(path&&path.length<4000)path.push(cue.p.slice());}
+  clothStep(cue,dt);if(collided)clothStep(obj,dt);
+  if(cush&&f){if(cue.p[0]<f[0]+R){cue.p[0]=f[0]+R;cushionCollide(cue,'x0');rails++;}if(cue.p[0]>f[1]-R){cue.p[0]=f[1]-R;cushionCollide(cue,'x1');rails++;}if(cue.p[1]<f[2]+R){cue.p[1]=f[2]+R;cushionCollide(cue,'y0');rails++;}if(cue.p[1]>f[3]-R){cue.p[1]=f[3]-R;cushionCollide(cue,'y1');rails++;}}
+  if(path&&t>0&&path.length<4000&&ln(sb(cue.p,path[path.length-1]))>0.008)path.push(cue.p.slice());
+  t+=dt;if(atRest(cue))break;}
+ if(path&&(path.length===0||ln(sb(path[path.length-1],cue.p))>1e-4))path.push(cue.p.slice()); // ensure path ends exactly at rest (analytic roll-to-rest jump didn't record its endpoint)
+ return{cueRest:cue.p.slice(),cuePath:path,rails:rails};}
+// ---- solver ----
+function ghostBall(O,pk){return sb(O,ml(nm(sb(pk,O)),2*R));}
+function signedAng(a,b){var A=nm(a),B=nm(b);return Math.atan2(A[0]*B[1]-A[1]*B[0],A[0]*B[0]+A[1]*B[1]);}
+function collideOnly(A,speed,aim,bx,by,O){var cue=launchSpin(speed,aim,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]},dt=5e-4,dmin=Infinity,side=0,prev=Infinity;
+ for(var t=0;t<3;t+=dt){var rel=sb(obj.p,cue.p),d=ln(rel);if(d<=2*R){ballCollide(cue,obj);return{objDir:nm(obj.v),ok:true};}
+  if(d<dmin){dmin=d;var dir=nm(cue.v);side=Math.sign(dir[0]*rel[1]-dir[1]*rel[0]);}
+  if(d>prev+1e-9)break;prev=d;clothStep(cue,dt);if(ln(cue.v)<4e-3)break;} // path (by=0) is ~straight → once receding from the 9, closest approach is behind us: stop (don't roll the whole table)
+ return{objDir:null,ok:false,side:side,missDist:dmin};}
+function aimToPot(A,O,pocket,bx,speed){var G=ghostBall(O,pocket),des=nm(sb(pocket,O)),base=Math.atan2(sb(G,A)[1],sb(G,A)[0]),eb=null;
+ function cost(th){var c=collideOnly(A,speed,[Math.cos(th),Math.sin(th)],bx,0,O);if(c.ok){var e=signedAng(c.objDir,des);if(!eb||Math.abs(e)<Math.abs(eb.err))eb={aim:[Math.cos(th),Math.sin(th)],err:e};return Math.abs(e);}return 3+20*Math.max(0,(c.missDist||0.2)-2*R);}
+ var lo=base-0.30,hi=base+0.30,gr=0.6180339887,c1=hi-gr*(hi-lo),c2=lo+gr*(hi-lo),f1=cost(c1),f2=cost(c2);
+ for(var it=0;it<13;it++){if(f1<f2){hi=c2;c2=c1;f2=f1;c1=hi-gr*(hi-lo);f1=cost(c1);}else{lo=c1;c1=c2;f1=f2;c2=lo+gr*(hi-lo);f2=cost(c2);}if(hi-lo<1e-3)break;}
+ cost((lo+hi)/2);return eb;}
+function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};var felt=opts.felt||null,ten=opts.ten||null,dt=1e-4;
+ var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]];
+ var bxG=[-0.3,-0.12,0,0.12,0.3],byG=[-0.45,-0.28,-0.12,0,0.12,0.28,0.45],spG=[0.7,1.1,1.6,2.1,2.6,3.2];
+ function cl(v,a,b){return Math.max(a,Math.min(b,v));}
+ var tgtPk=Infinity;for(var q=0;q<6;q++){var dq=ln(sb(Tt,POCK[q]));if(dq<tgtPk)tgtPk=dq;} // nearest pocket to the user's target
+ function hazardPen(path,rest){var minD=Infinity,minR=Infinity,minT=Infinity,i,k;for(i=0;i<path.length;i++){for(k=0;k<6;k++){var d=ln(sb(path[i],POCK[k]));if(d<minD)minD=d;}if(ten){var dtt=ln(sb(path[i],ten));if(dtt<minT)minT=dtt;}}for(k=0;k<6;k++){var d2=ln(sb(rest,POCK[k]));if(d2<minR)minR=d2;}
+  var pen=0;if(minD<0.06)pen+=2.5;if(minR<0.07)pen+=2.2; // real scratch (path over pocket mouth / cue resting in the jaw) — ALWAYS forbidden
+  if(tgtPk>0.20){if(minD>=0.06&&minD<0.15)pen+=(0.15-minD)*3.5;if(minR>=0.07&&minR<0.17)pen+=(0.17-minR)*2.5;} // soft "keep off the pocket" only when the user did NOT deliberately park near a pocket
+  if(ten&&minT<2.2*R)pen+=3.0;return pen;} // never touch the 10
+ var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
+ function evalC(bx,by,sp){var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,tenBall:ten});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,scr:hazardPen(r.cuePath,r.cueRest)};}
+ function score(e){return e?ln(sb(e.cueRest,Tt))+0.05*Math.abs(e.bx)+0.07*Math.max(0,e.sp-2.5)+e.scr:Infinity;} // distance to target + gentle english/power/scratch penalties
+ function techKey(e){return (e.by>0.14?'F':e.by<-0.14?'D':'S')+(e.bx>0.12?'R':e.bx<-0.12?'L':'C');} // Follow/Stun/Draw × Right/Center/Left
+ function refineFrom(seed){var cur=seed,curD=score(seed),sBx=0.12,sBy=0.15,sSp=0.5;
+  for(var it=0;it<8;it++){var imp=false,tr=[[sBx,0,0],[-sBx,0,0],[0,sBy,0],[0,-sBy,0],[0,0,sSp],[0,0,-sSp]];
+   for(var m=0;m<tr.length;m++){var bx=cl(cur.bx+tr[m][0],-0.48,0.48),by=cl(cur.by+tr[m][1],-0.5,0.5),sp=cl(cur.sp+tr[m][2],0.5,3.3),e=evalC(bx,by,sp),d=score(e);if(e&&d<curD-1e-4){curD=d;cur=e;imp=true;}}
+   if(!imp){sBx*=0.5;sBy*=0.5;sSp*=0.5;if(sBx<0.02)break;}}
+  return cur;}
+ // grid → collect every candidate that pots the 9
+ var pool=[];
+ for(var i=0;i<bxG.length;i++)for(var j=0;j<spG.length;j++){var a=getAim(bxG[i],spG[j]);if(!a||Math.abs(a.err)>0.03)continue;for(var k=0;k<byG.length;k++){var e=evalC(bxG[i],byG[k],spG[j]);if(e)pool.push(e);}}
+ if(!pool.length)return{potFail:true};
+ pool.sort(function(a,b){return score(a)-score(b);});
+ // refine the best representative of up to 4 distinct techniques → diverse options
+ var seeds=[],seen={};for(var p=0;p<pool.length&&seeds.length<4;p++){var kk=techKey(pool[p]);if(seen[kk])continue;seen[kk]=1;seeds.push(pool[p]);}
+ var refined=seeds.map(refineFrom);
+ function finalize(e){var probes=[];for(var a2 of[-0.06,0.06])for(var s2 of[-0.25,0.25]){var pe=evalC(cl(e.bx+a2,-0.48,0.48),e.by,cl(e.sp+s2,0.5,3.3));if(pe)probes.push(ln(sb(pe.cueRest,e.cueRest)));}
+  e.sensitivity=probes.length?probes.reduce(function(a,b){return a+b;},0)/probes.length:0;
+  e.missBy=ln(sb(e.cueRest,Tt));e.onTarget=e.missBy<2*R;e.reachable=e.missBy<5*R;e.potted=Math.abs(e.potErr)<0.03;e.speed=e.sp;
+  var v=e.by>0.14?'lê':e.by<-0.14?'rút':'stun',s=e.bx>0.12?' phải':e.bx<-0.12?' trái':'',pw=e.sp<1.3?'nhẹ':e.sp<2.3?'vừa':'chắc';e.label=v+s+' · '+pw;return e;}
+ refined.forEach(finalize);refined.sort(function(a,b){return score(a)-score(b);});
+ // dedup options that share technique AND land in the same spot; keep reachable alternatives (primary always kept)
+ var opts=[];for(var r2=0;r2<refined.length;r2++){var o=refined[r2],dup=false;for(var z=0;z<opts.length;z++)if(techKey(opts[z])===techKey(o)){dup=true;break;}if(!dup)opts.push(o);} // one option per distinct technique (best-scoring of each)
+ var REACH=5*R;var kept=opts.filter(function(o,idx){return idx===0||o.missBy<REACH;}).slice(0,3); // primary always kept; alternatives only if they genuinely reach near the target
+ var b=kept[0];
+ return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,rails:b.rails,path:b.path,scr:b.scr,
+  options:kept.map(function(o){return{bx:o.bx,by:o.by,speed:o.speed,aim:o.aim,cueRest:o.cueRest,missBy:o.missBy,onTarget:o.onTarget,sensitivity:o.sensitivity,rails:o.rails,path:o.path,scr:o.scr,label:o.label};})};}
+/*DIEUBI-ENGINE-END*/
+self.onmessage=function(e){var d=e.data;try{var res=solveFast(d.cue,d.nine,d.pocket,d.target,{felt:d.felt,ten:d.ten});self.postMessage({gen:d.gen,res:res});}catch(err){self.postMessage({gen:d.gen,res:{potFail:true,err:String(err&&err.message||err)}});}};
 </script>
 <script type="text/babel" data-presets="react">
 const {useState,useEffect,useRef,useCallback} = React;
@@ -1945,6 +2050,120 @@ function MistakesView(){
     </div>
   );
 }
+/* ===== Điều bi: CỐ VẤN VẬT LÝ (engine SI chạy trong Web Worker) ===== */
+const DB_COL=['#e0a92e','#3f7fd6','#8e5bc7'];              // màu 3 phương án (chip ↔ đường khớp nhau)
+const DB_SIP=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]]; // lỗ (SI): 4 góc + 2 giữa
+const DB_FELT_SI=[0,2.54,0,1.27];
+function useSolver(){ // tạo 1 Worker từ Blob (engine ở <script id="dieubi-engine">), latest-wins theo gen
+  const wref=useRef(null), gen=useRef(0), cb=useRef(null);
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{ let w=null;
+    try{ const src=document.getElementById('dieubi-engine').textContent;
+      w=new Worker(URL.createObjectURL(new Blob([src],{type:'application/javascript'})));
+      w.onmessage=(e)=>{ if(e.data.gen!==gen.current) return; setBusy(false); if(cb.current) cb.current(e.data.res); };
+      wref.current=w;
+    }catch(err){ wref.current=null; }
+    return ()=>{ if(w) w.terminate(); };
+  },[]);
+  const solve=useCallback((payload,onDone)=>{ if(!wref.current) return; gen.current++; cb.current=onDone; setBusy(true); wref.current.postMessage({...payload,gen:gen.current}); },[]);
+  return {solve,busy};
+}
+function DieuBiAdvisor(){
+  const K=80/2.54;                                          // app-units / mét (bàn app FELT=[10,90,10,50])
+  const s2a=(p)=>({x:10+p[0]*K, y:10+p[1]*K});              // SI → toạ độ bàn app
+  const a2s=(p)=>[(p.x-10)/K, (p.y-10)/K];                  // bàn app → SI
+  const [cue,setCue]=useState({x:24,y:36});
+  const [nine,setNine]=useState({x:54,y:24});
+  const [ten,setTen]=useState({x:78,y:41});
+  const [tgt,setTgt]=useState({x:38,y:44});
+  const [pk,setPk]=useState(3);
+  const [res,setRes]=useState(null);
+  const [sel,setSel]=useState(0);
+  const {solve,busy}=useSolver();
+  const svgRef=useRef(null), drag=useRef(null);
+  const P={cue,nine,ten,tgt}, S={cue:setCue,nine:setNine,ten:setTen,tgt:setTgt};
+  const toSvg=(e)=>{ const r=svgRef.current.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    return {x:Math.max(FELT[0],Math.min(FELT[1],(cx-r.left)/r.width*100)),
+            y:Math.max(FELT[2],Math.min(FELT[3],(cy-r.top)/r.height*60))}; };
+  const run=()=>solve({cue:a2s(cue),nine:a2s(nine),ten:a2s(ten),pocket:DB_SIP[pk],target:a2s(tgt),felt:DB_FELT_SI},(r)=>{ setRes(r); setSel(0); });
+  useEffect(()=>{ const id=setTimeout(run,150); return ()=>clearTimeout(id); },[cue,nine,ten,tgt,pk]); // warm-start: giải lại (debounce) khi đổi bi/đích/lỗ
+  const down=(e)=>{ const p=toSvg(e); let best='cue',bd=1e9; ['cue','nine','ten','tgt'].forEach(k=>{const d=Math.hypot(p.x-P[k].x,p.y-P[k].y); if(d<bd){bd=d;best=k;}}); drag.current=best; S[best](p); };
+  const move=(e)=>{ if(!drag.current) return; e.preventDefault(); if(res) setRes(null); S[drag.current](toSvg(e)); }; // xoá đường cũ khi bắt đầu kéo
+  const up=()=>{ drag.current=null; };
+  const opts=(res&&res.options)?res.options:[]; const o=opts[sel];
+  const ptsOf=(path)=>path.map(p=>{const a=s2a(p);return a.x.toFixed(1)+','+a.y.toFixed(1);}).join(' ');
+  const appTip=o?{x:Math.max(-1,Math.min(1,o.bx)),y:Math.max(-1,Math.min(1,-o.by))}:{x:0,y:0}; // engine by>0=lê ⇒ app tip.y<0 (cao)
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Cố vấn điều bi</div>
+      <div className="tsub">Đặt bi cái / 9 / 10, chạm <b>lỗ</b> để chọn lỗ bắn con 9, rồi <b>kéo điểm đích ◌</b> tới chỗ muốn bi cái dừng. App tính đầu cơ · lực · đường bi.</div>
+      <div style={{position:'relative'}}>
+        <svg ref={svgRef} className="mtable" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet"
+          style={{width:'100%',maxWidth:'none',touchAction:'none'}}
+          onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
+          onTouchStart={down} onTouchMove={move} onTouchEnd={up}>
+          <TableFrame/>
+          {DB_SIP.map((sp,i)=>{const a=s2a(sp);return <circle key={'pk'+i} cx={a.x} cy={a.y} r="3.6" fill="none"
+            stroke={i===pk?'var(--gold)':'transparent'} strokeWidth="1.7" style={{cursor:'pointer'}}
+            onMouseDown={(e)=>{e.stopPropagation();setPk(i);}} onTouchStart={(e)=>{e.stopPropagation();setPk(i);}}/>;})}
+          {opts.map((op,i)=> i===sel?null:<polyline key={'p'+i} points={ptsOf(op.path)} fill="none" stroke={DB_COL[i%3]} strokeWidth="1" strokeDasharray="3 2" opacity="0.5" strokeLinejoin="round" pointerEvents="none"/>)}
+          {o && <polyline points={ptsOf(o.path)} fill="none" stroke={DB_COL[sel%3]} strokeWidth="1.9" strokeLinejoin="round" strokeLinecap="round" pointerEvents="none"/>}
+          <circle cx={tgt.x} cy={tgt.y} r="3.4" fill="none" stroke="#efe9d8" strokeWidth="1.6" strokeDasharray="2.4 2"/>
+          <Ball x={ten.x} y={ten.y} b={{num:10,stripe:'#2f6fd6'}}/>
+          <Ball x={nine.x} y={nine.y} b={{num:9,stripe:'#e8c020'}}/>
+          <Ball x={cue.x} y={cue.y} b={{cue:true}}/>
+        </svg>
+        {busy && <div className="dbspin-wrap"><div className="ncspin"/></div>}
+      </div>
+      <div className="poslegend">
+        <span><i className="posdot" style={{background:'#f4f1e6'}}/>Bi cái</span>
+        <span><i className="posdot" style={{background:'#e8c020'}}/>Bi 9</span>
+        <span><i className="posdot" style={{background:'#2f6fd6'}}/>Bi 10</span>
+        <span><i className="posdot" style={{background:'#efe9d8',boxShadow:'0 0 0 1px #999 inset'}}/>Đích</span>
+      </div>
+      {!res ? <div className="tsub" style={{marginTop:10}}>Đang tính…</div>
+       : res.potFail ? <div className="card" style={{padding:12,marginTop:10}}><b style={{color:'var(--danger)'}}>Không bắn con 9 vào lỗ này được</b><div className="muted small" style={{marginTop:4}}>Bi cái sai phía / góc cắt &gt; 90°. Chọn lỗ khác hoặc dời bi.</div></div>
+       : <div className="card" style={{padding:12,marginTop:10}}>
+          <div className="modeseg" style={{margin:'0 0 10px',flexWrap:'wrap',justifyContent:'flex-start'}}>
+            {opts.map((op,i)=><button key={i} className={i===sel?'on':''} onClick={()=>setSel(i)} style={i===sel?{borderColor:DB_COL[i%3]}:null}>
+              <span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:DB_COL[i%3],marginRight:6,verticalAlign:'middle'}}/>
+              {op.label} · {Math.round(op.missBy*100)}cm</button>)}
+          </div>
+          <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
+            <svg viewBox="0 0 100 100" style={{width:66,height:66,flex:'none'}}>
+              <circle cx="50" cy="50" r="46" fill="#f4f1e6" stroke="var(--line)" strokeWidth="2"/>
+              <line x1="50" y1="8" x2="50" y2="92" stroke="#000" strokeOpacity=".12"/>
+              <line x1="8" y1="50" x2="92" y2="50" stroke="#000" strokeOpacity=".12"/>
+              <circle cx={50+appTip.x*40} cy={50+appTip.y*40} r="9" fill="var(--accent)" stroke="#04231a" strokeWidth="1.5"/>
+            </svg>
+            <div style={{flex:1,minWidth:150}}>
+              <div><b>{tipLabel(appTip)}</b> <span className="muted small">— đầu cơ</span></div>
+              <div className="muted small" style={{marginTop:2}}>Lực <b>{o.speed<1.3?'nhẹ':o.speed<2.3?'vừa':'chắc'}</b> · {o.speed.toFixed(1)} m/s</div>
+              <div style={{marginTop:6}}>
+                {o.onTarget?<span className="chip on">✓ tới đích ({(o.missBy*100).toFixed(1)}cm)</span>:<span className="chip">gần nhất {Math.round(o.missBy*100)}cm</span>}
+                {o.rails>0?<span className="chip">{o.rails} băng</span>:null}
+                {o.sensitivity*100>25?<span className="chip">nhạy {Math.round(o.sensitivity*100)}cm</span>:null}
+                {o.scr>0.5?<span className="chip">⚠ rủi ro lỗ/bi10</span>:null}
+              </div>
+            </div>
+          </div>
+        </div>}
+    </div>
+  );
+}
+function DieuBiSeg(){
+  const [m,setM]=useState('advisor');
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="modeseg" style={{alignSelf:'center',margin:'6px 0 2px'}}>
+        <button className={m==='advisor'?'on':''} onClick={()=>setM('advisor')}>🎯 Cố vấn</button>
+        <button className={m==='journal'?'on':''} onClick={()=>setM('journal')}>📓 Nhật ký</button>
+      </div>
+      {m==='advisor'?<DieuBiAdvisor/>:<PositionsView/>}
+    </div>
+  );
+}
 function PositionsView(){
   const [positions,savePos]=usePersist('nc.positions',[]);
   const [pform,setPform]=useState(null);
@@ -2950,7 +3169,7 @@ function AtTable(){
       {seg==='anchor' && <FocusAnchor/>}
       {seg==='cue' && <Cue/>}
       {seg==='live' && <LiveTally onEnd={endLive}/>}
-      {seg==='positions' && <PositionsView/>}
+      {seg==='positions' && <DieuBiSeg/>}
       {seg==='routine' && <Routine/>}
     </div>
   );
@@ -3416,13 +3635,15 @@ const KNOWLEDGE=[
       {h:'Lưu ý', p:'Nhẹ nhàng, đều đặn quan trọng hơn nặng. ĐỪNG tập tay quá nặng ngay trước hôm thi đấu — mỏi cơ làm hỏng cảm giác tay.'},
     ]},
 ];
+const IconArchive=()=>(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="4" rx="1.6"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>);
+const IconUnarchive=()=>(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14l-4-4l4-4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg>);
 function KnowCard({a,defaultOpen,onArchive,archived}){
   const [open,setOpen]=useState(!!defaultOpen);
   return (
     <div className="card drillC">
       <div className="drillH" onClick={()=>setOpen(o=>!o)}>
         <div className="dn" style={{flex:1,minWidth:0}}><b>{a.title}</b><small>{open?'thu gọn':'đọc'}</small></div>
-        {onArchive && <button className="chip" title={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} onClick={(e)=>{e.stopPropagation();onArchive();}} style={{marginLeft:6,flex:'none'}}>{archived?'↩︎':'🗄'}</button>}
+        {onArchive && <button className="archbtn" title={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} aria-label={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} onClick={(e)=>{e.stopPropagation();onArchive();}} style={{marginLeft:2}}>{archived?<IconUnarchive/>:<IconArchive/>}</button>}
         <span className="muted" style={{fontSize:16}}>{open?'▾':'▸'}</span>
       </div>
       {open &&
@@ -3454,7 +3675,7 @@ function KnowledgeView(){
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Kiến thức bi-a</div>
-      <div className="tsub">Phân theo mục — chạm để mở/đóng từng bài. Bài ít quan tâm bấm 🗄 để lưu trữ.</div>
+      <div className="tsub">Phân theo mục — chạm để mở/đóng từng bài. Bài ít quan tâm có thể lưu trữ cho gọn.</div>
       {KNOW_CATS.map(c=>{
         const arts=KNOWLEDGE.filter(a=>a.tag===c.tag && !isArch(a.key));
         if(!arts.length) return null;
