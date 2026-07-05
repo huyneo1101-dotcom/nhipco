@@ -132,6 +132,9 @@ body{
 .archbtn svg{width:18px;height:18px;display:block}
 .archbtn.on{color:var(--gold)}
 .kacts{display:flex;align-items:center;gap:1px;flex:none}
+.rnnum{width:21px;height:21px;border-radius:50%;background:var(--gold);color:var(--on-gold);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.rnstep{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-top:6px;cursor:pointer}
+.rnstep.on{border-color:var(--gold)}
 .poslegend{display:flex;gap:14px;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0;flex-wrap:wrap}
 .posdot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.35)}
 
@@ -527,7 +530,7 @@ const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.cuevotes','nc.customcues',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
-  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan','nc.knowarchive','nc.knowpin','nc.knowfav'];
+  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan','nc.knowarchive','nc.knowpin','nc.knowfav','nc.readtable'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
 // DATA = dữ liệu người dùng (trận, thế bi, lỗi, tập luyện...) + vài key ngày-cục-bộ không đồng bộ.
 const PREF_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
@@ -660,6 +663,10 @@ const CUES=[
   {tag:'Đường rẻ',  t:'Đứng bi → cu lê nhẹ → trô ngắn. Xoáy mạnh, nhiều băng là lựa chọn cuối.'},
   {tag:'Quyết nhanh',t:'Cái làm bạn mệt không phải cú khó — là đứng phân vân quá lâu.'},
   {tag:'Lạnh & lì', t:'Ít nói. Ít phản ứng. Quyết rõ. Ra ngọn dứt khoát. Đánh xong buông.'},
+  {tag:'Bản đồ',    t:'Chưa thấy đường chạy tới bi cuối thì CHƯA cúi xuống.'},
+  {tag:'Đọc trước', t:'Lập xong thứ tự cả bàn + đường bi cái, rồi mới chạm bi.'},
+  {tag:'Nghĩ ngược',t:'Bắt đầu từ bi cuối: cần đứng đâu để ăn nó? Lần ngược về hiện tại.'},
+  {tag:'Ra zone',   t:'Điều bi cái về VÙNG đánh được bi kế — không cần đúng một điểm.'},
 ];
 
 const GAMES=['9-bi','10-bi'];
@@ -979,6 +986,12 @@ const DRILLS=[
     why:'Đường ít biến số (ít xoáy, ít băng, lực nhỏ) là đường ít sai số và ít tốn não. Tập cho ưu tiên này thành phản xạ.',
     fixes:['Mất vị trí bi cái','Không tính đường ra bi','Lực quá mạnh'],
     dia:{balls:[{x:20,y:32,c:W},{x:40,y:24,c:R},{x:58,y:34,c:R},{x:76,y:20,c:R}],arrows:[[23,31,37,25]]}},
+  {key:'mapfirst',cat:'pos',name:'Lập bản đồ trước khi bắn',max:10,target:'≥8/10',
+    setup:'Xếp 6–8 bi ngẫu nhiên. Trước khi chạm bi nào, PHẢI đọc xong thứ tự chạy cả bàn + hình dung đường bi cái tới từng viên — nói to bản đồ rồi mới bắn. 10 ván. (Hoặc dùng tab 🗺️ Run-out → Luyện để tự chấm thời gian lập map.)',
+    scoring:'Số ván bạn lập ĐỦ bản đồ trước khi chạm bi (dù có chạy hết hay không), trên 10',
+    why:'Điểm yếu phổ biến: bắn khi bản đồ chưa đủ trong đầu. Bài này ép "map trước — bắn sau" thành phản xạ, và rèn tốc độ đọc bàn.',
+    fixes:['Không tính đường ra bi','Mất vị trí bi cái','Nóng vội','Đọc bàn sai'],
+    dia:{balls:[{x:24,y:22,c:W},{x:38,y:34,c:R},{x:52,y:20,c:R},{x:64,y:38,c:R},{x:74,y:26,c:R},{x:46,y:44,c:R}]}},
 ];
 const drillByKey=(k)=>DRILLS.find(d=>d.key===k);
 
@@ -1129,7 +1142,7 @@ function Seg({val,set,opts}){
 /* Các nhóm mục con (segment) cho phép đổi thứ tự */
 const SEG_DEFS={
   table:{lab:'Thi đấu',   items:[['breathe','🫁 Nhịp thở'],['anchor','🎯 Neo mắt'],['cue','🔔 Nhắc nhở'],['live','🔴 Đang đấu'],['positions','🎱 Điều bi'],['routine','✓ Routine']]},
-  train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['mistakes','⚠️ Lỗi'],['drills','🎯 Bài tập'],['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
+  train:{lab:'Rèn luyện', items:[['summary','📊 Tổng hợp'],['drills','🎯 Bài tập'],['runout','🗺️ Run-out'],['clock','⏱ Đồng hồ'],['metro','🎵 Nhịp']]},
   log:  {lab:'Nhật ký',   items:[['log','Lịch sử'],['opps','Đối thủ']]},
   know: {lab:'Kiến thức', items:[['read','📖 Đọc'],['review','🎴 Ôn luyện']]},
 };
@@ -1884,7 +1897,7 @@ function MatchLog(){
           {analysis.fresh.length>0 && <div className="small" style={{marginTop:6}}>🆕 <b>Lỗi mới:</b> {analysis.fresh.join(', ')}</div>}
           {analysis.heavy.length>0 && <div className="small" style={{marginTop:6}}>⚠️ <b>Lặp nhiều — nên tập:</b> {analysis.heavy.join(', ')}</div>}
           {analysis.detected&&analysis.detected.length>0 && <div className="small" style={{marginTop:6}}>🔎 <b>Tự nhận ra từ ghi chú:</b> {analysis.detected.join(', ')}</div>}
-          <div className="muted small" style={{marginTop:6}}>Mở tab <b>Rèn luyện → Tổng hợp / Lỗi / Điều bi</b> để xem bài tập gợi ý và dựng thế bi khó.</div>
+          <div className="muted small" style={{marginTop:6}}>Mở tab <b>Rèn luyện → Tổng hợp</b> để xem lỗi và bài tập gợi ý; dựng thế bi khó ở <b>Thi đấu → Điều bi</b>.</div>
         </div>}
 
       {view2==='log' && list.length===0 &&
@@ -1991,64 +2004,9 @@ function MatchLog(){
             </>}
       </>}
 
-      {/* Lỗi & Điều bi giờ nằm trong tab Tập luyện (MistakesView / PositionsView) */}
+      {/* Điều bi giờ nằm trong tab Thi đấu (PositionsView). Lỗi được rút thẳng từ Nhật ký vào Rèn luyện → Tổng hợp (SummaryView). */}
 
       {form && <MatchForm init={form} names={oppNames} lastHc={lastHc} onSave={upsert} onDel={del} close={()=>setForm(null)}/>}
-    </div>
-  );
-}
-function MistakesView(){
-  const matches=store.get('nc.matches',[]);
-  const [extra,saveExtra]=usePersist('nc.mistakes',[]);
-  const [mform,setMform]=useState(false);
-  const addExtra=(rec)=>{ saveExtra([{...rec,id:uid('x'),date:todayStr()},...extra]); setMform(false); };
-  const delExtra=(id)=>saveExtra(extra.filter(x=>x.id!==id));
-  const allMis=aggMistakes(matches, extra);
-  const misTotal=Object.values(allMis).reduce((s,c)=>s+c,0);
-  const misMax=Math.max(1,...Object.values(allMis));
-  const catOrder=MISTAKE_CATS.map(c=>c.t).concat('Khác');
-  const catAgg={};
-  Object.entries(allMis).forEach(([mis,c])=>{ const k=mistakeCat(mis); (catAgg[k]=catAgg[k]||{total:0,items:[]}); catAgg[k].total+=c; catAgg[k].items.push([mis,c]); });
-  const catList=catOrder.filter(k=>catAgg[k]).map(k=>({cat:k,total:catAgg[k].total,items:catAgg[k].items.sort((a,b)=>b[1]-a[1])})).sort((a,b)=>b.total-a.total);
-  return (
-    <div style={{display:'flex',flexDirection:'column',flex:1}}>
-      <div className="h">Tổng hợp lỗi</div>
-      <button className="btn acc wide" style={{margin:'8px 0 4px'}} onClick={()=>setMform(true)}>＋ Ghi lỗi nhớ ra (không cần trận)</button>
-      <div className="tsub">Gom mọi lỗi (từ trận đấu + ghi chú + lỗi bạn tự ghi) thành nhóm.</div>
-      {misTotal===0
-        ? <Empty ico="🧠" t="Chưa có lỗi nào" s="Ghi lỗi trong trận đấu, hoặc bấm nút trên để ghi nhanh lỗi bạn nhớ ra."/>
-        : <>
-          <div className="statstrip">
-            <div className="stat"><b>{misTotal}</b><small>lượt lỗi</small></div>
-            <div className="stat"><b style={{color:'var(--gold)'}}>{catList.length}</b><small>nhóm lỗi</small></div>
-            <div className="stat"><b style={{fontSize:14,marginTop:5,display:'block'}}>{catList[0]?catList[0].cat:'—'}</b><small>cần sửa nhất</small></div>
-          </div>
-          <div className="list">
-            {catList.map(c=>(
-              <div key={c.cat} className="card" style={{padding:'12px 14px'}}>
-                <div className="drow" style={{marginBottom:8}}><b style={{fontSize:15}}>{c.cat}</b><span className="muted small">{c.total} lượt</span></div>
-                {c.items.map(([mis,n])=>(
-                  <Bar key={mis} label={mis} right={n+'×'} val={n} max={misMax}/>))}
-              </div>))}
-          </div>
-          {extra.length>0 && <>
-            <div className="h2">📝 Lỗi tự ghi gần đây</div>
-            <div className="list">
-              {extra.slice(0,12).map(e=>(
-                <div key={e.id} className="card" style={{padding:'11px 13px'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
-                    <div style={{flex:1}}>
-                      <div className="tags">{(e.tags||[]).map(x=><span key={x} className="tag2">{x}</span>)}</div>
-                      {e.note&&<div className="muted preline" style={{fontSize:13,marginTop:5}}>“{e.note}”</div>}
-                      <div className="muted small" style={{marginTop:4}}>{fmtDate(e.date)}</div>
-                    </div>
-                    <button className="xbtn" onClick={()=>delExtra(e.id)}>✕</button>
-                  </div>
-                </div>))}
-            </div>
-          </>}
-        </>}
-      {mform && <MistakeForm onSave={addExtra} close={()=>setMform(false)}/>}
     </div>
   );
 }
@@ -2315,30 +2273,6 @@ function CustomMisAdd({onAdd}){
       <input value={v} onChange={e=>setV(e.target.value)} placeholder="Lỗi khác (tự ghi)…" style={{flex:1,minWidth:0}}
         onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } }}/>
       <button type="button" className="btn ghost" style={{padding:'0 14px',flex:'none'}} onClick={add}>＋ Thêm</button>
-    </div>
-  );
-}
-function MistakeForm({onSave,close}){
-  const [tags,setTags]=useState([]);
-  const [note,setNote]=useState('');
-  const [customMis,setCustomMis]=useState(getCustomMistakes);
-  const toggle=(x)=>setTags(t=>t.includes(x)?t.filter(y=>y!==x):[...t,x]);
-  const onAddCustom=(name)=>{ setCustomMis(getCustomMistakes()); setTags(t=>t.includes(name)?t:[...t,name]); };
-  return (
-    <div className="scrim" onClick={close}>
-      <div className="sheet" onClick={e=>e.stopPropagation()}>
-        <h3>Ghi lỗi nhớ ra</h3>
-        <div className="muted small" style={{margin:'-8px 0 10px'}}>Lỗi bạn nhận ra (dù không gắn với trận cụ thể) — sẽ được gom vào tổng hợp lỗi.</div>
-        <div className="field"><label>Chọn lỗi</label>
-          <div className="presets" style={{justifyContent:'flex-start'}}>
-            {[...MISTAKES,...customMis].map(x=><button key={x} type="button" className={'chip'+(tags.includes(x)?' on':'')} onClick={()=>toggle(x)}>{x}</button>)}
-          </div>
-          <CustomMisAdd onAdd={onAddCustom}/></div>
-        <div className="field"><label>Ghi chú (tuỳ chọn)</label>
-          <textarea rows="3" value={note} onChange={e=>setNote(e.target.value)} placeholder="Bối cảnh, cách khắc phục bạn nghĩ ra..."/></div>
-        <button className="btn wide" disabled={tags.length===0&&!note.trim()}
-          onClick={()=>{ if(tags.length===0&&!note.trim()) return; onSave({tags,note:note.trim()}); }}>Lưu lỗi</button>
-      </div>
     </div>
   );
 }
@@ -2872,6 +2806,178 @@ function ProblemBuilder({init,onSave,close}){
     </div>
   );
 }
+/* ===== Hướng dẫn run-out (tự tạo/ tự đặt/ ảnh + gợi ý đầu cơ từng viên) ===== */
+const RN_MINX=15, RN_MAXX=85, RN_MINY=15, RN_MAXY=45, RN_SPOT={x:70,y:30};
+const rnClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function rnInFelt(p){ if(p.x<RN_MINX||p.x>RN_MAXX||p.y<RN_MINY||p.y>RN_MAXY) return false; return POCKETS.every(q=>Math.hypot(p.x-q[0],p.y-q[1])>6); }
+function genRack(n){
+  const all=[{x:RN_SPOT.x,y:RN_SPOT.y}], others=[]; let g=0;
+  while(others.length<n-1 && g<4000){ g++; const p={x:RN_MINX+(RN_MAXX-RN_MINX)*Math.random(), y:RN_MINY+(RN_MAXY-RN_MINY)*Math.random()};
+    if(!rnInFelt(p)) continue; if(all.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<6.2)) continue; others.push(p); all.push(p); }
+  let cue=null; g=0;
+  while(!cue && g<4000){ g++; const p={x:RN_MINX+(RN_MAXX-RN_MINX)*Math.random(), y:RN_MINY+(RN_MAXY-RN_MINY)*Math.random()};
+    if(rnInFelt(p) && all.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>7)) cue=p; }
+  if(!cue) cue={x:24,y:30};
+  return {cue, balls:[...others, {x:RN_SPOT.x,y:RN_SPOT.y}], game:n};
+}
+function rnForce(d){ return d<16?'nhẹ':(d<36?'vừa':'chắc'); }
+function rnFollow(tip){ if(!tip) return ''; return tip.y<-0.28?'lê tới (đánh cao)':(tip.y>0.28?'rút về (đánh thấp)':'dừng bi (stun)'); }
+function runoutGuide(layout){
+  const seq=layout.balls, steps=[], cue0={x:layout.cue.x,y:layout.cue.y};
+  for(let i=0;i<seq.length;i++){
+    const obj=seq[i], nxt=seq[i+1]; let cuePos;
+    if(i===0) cuePos=cue0;
+    else { const pv=seq[i-1], dx=obj.x-pv.x, dy=obj.y-pv.y, dl=Math.hypot(dx,dy)||1; cuePos={x:rnClamp(obj.x-dx/dl*9,RN_MINX,RN_MAXX), y:rnClamp(obj.y-dy/dl*9,RN_MINY,RN_MAXY)}; }
+    const dObj=Math.hypot(obj.x-cuePos.x,obj.y-cuePos.y);
+    let tip=null,path=null,zone=null,force;
+    if(nxt){ tip=suggestTip(cuePos,obj,nxt); const cp=cuePath(cuePos,obj,tip,0.42); path=cp.pts;
+      const zx=nxt.x-obj.x, zy=nxt.y-obj.y, zl=Math.hypot(zx,zy)||1; zone={x:rnClamp(nxt.x-zx/zl*11,RN_MINX-3,RN_MAXX+3), y:rnClamp(nxt.y-zy/zl*11,RN_MINY-3,RN_MAXY+3), r:8}; force=rnForce(dObj+zl*0.4); }
+    else force=rnForce(dObj);
+    steps.push({n:i+1,obj,cuePos,tip,path,zone,force,last:!nxt});
+  }
+  return steps;
+}
+function rnDia(layout, steps, ov){
+  const balls=[{x:layout.cue.x,y:layout.cue.y,cue:true}];
+  layout.balls.forEach((b,i)=>{ const n=i+1; balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); });
+  const dia={balls};
+  if(ov===-1){ const ar=[]; for(let i=0;i<layout.balls.length-1;i++){ const a=layout.balls[i],b=layout.balls[i+1]; ar.push([a.x,a.y,b.x,b.y]); } dia.arrows=ar; }
+  else if(ov!=null && ov>=0 && steps[ov]){ const s=steps[ov]; dia.line=[s.cuePos.x,s.cuePos.y,s.obj.x,s.obj.y]; if(s.path&&s.path.length>1) dia.path=s.path.map(p=>({x:p.x,y:p.y})); if(s.zone) dia.zone=[s.zone.x,s.zone.y,s.zone.r]; }
+  return dia;
+}
+function TipFace({tip}){
+  const Rr=13,cx=16,cy=16,k=Rr*0.7, bx=tip?tip.x:0, by=tip?tip.y:0;
+  return (<svg viewBox="0 0 32 32" width="34" height="34" style={{flex:'none'}}>
+    <circle cx={cx} cy={cy} r={Rr} fill="#f4f1e6" stroke="#b9b3a2" strokeWidth="1"/>
+    <line x1={cx} y1={cy-Rr} x2={cx} y2={cy+Rr} stroke="#d9d3c4" strokeWidth=".7"/>
+    <line x1={cx-Rr} y1={cy} x2={cx+Rr} y2={cy} stroke="#d9d3c4" strokeWidth=".7"/>
+    <circle cx={cx+bx*k} cy={cy+by*k} r="3.4" fill="#e0556b" stroke="#fff" strokeWidth="1.1"/>
+  </svg>);
+}
+function CoachTable({dia,photo,onClick}){
+  return (<svg className="mtable" viewBox="0 0 100 60" role="img" aria-label="Bàn bi-a" onClick={onClick} style={{cursor:onClick?'crosshair':'default'}}>
+    <defs><marker id="rnAh" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="4.6" refY="2.6" orient="auto"><path d="M0,0 L5.2,2.6 L0,5.2 Z" fill="#ffd166"/></marker></defs>
+    <TableFrame/>
+    {photo && <image href={photo} x="10" y="10" width="80" height="40" preserveAspectRatio="xMidYMid slice" opacity="0.72"/>}
+    {dia.line && <line x1={dia.line[0]} y1={dia.line[1]} x2={dia.line[2]} y2={dia.line[3]} stroke="#fff" strokeOpacity=".6" strokeWidth=".7" strokeDasharray="2 2"/>}
+    {(dia.arrows||[]).map((a,i)=><line key={'a'+i} x1={a[0]} y1={a[1]} x2={a[2]} y2={a[3]} stroke="#ffd166" strokeWidth="1" strokeOpacity=".85" markerEnd="url(#rnAh)"/>)}
+    {dia.path&&dia.path.length>1 && <polyline points={dia.path.map(p=>p.x+','+p.y).join(' ')} fill="none" stroke="#5fb6ff" strokeWidth="1.3" strokeLinejoin="round" strokeDasharray="3 2"/>}
+    {dia.zone && <circle cx={dia.zone[0]} cy={dia.zone[1]} r={dia.zone[2]} fill="rgba(255,209,102,.13)" stroke="#ffd166" strokeWidth=".8" strokeDasharray="2.2 1.6"/>}
+    {dia.balls.map((b,i)=><Ball key={'b'+i} x={b.x} y={b.y} r={b.r} b={b}/>)}
+  </svg>);
+}
+function RunoutCoach(){
+  const [layout,setLayout]=useState(()=>genRack(9));
+  const [mode,setMode]=useState('guide');
+  const [shot,setShot]=useState(0);
+  const [edit,setEdit]=useState(false);
+  const [pcue,setPcue]=useState(null);
+  const [pballs,setPballs]=useState([]);
+  const [photo,setPhoto]=useState(null);
+  const [phase,setPhase]=useState('plan');
+  const [t0,setT0]=useState(0);
+  const [planMs,setPlanMs]=useState(0);
+  const [stat,setStat]=usePersist('nc.readtable',{log:[]});
+  const fileRef=useRef(null);
+  const steps=runoutGuide(layout);
+  const newRack=(n)=>{ setEdit(false); setPhoto(null); setLayout(genRack(n)); setShot(0); if(mode==='quiz'){ setPhase('plan'); setT0(Date.now()); } };
+  const startEdit=()=>{ setPhoto(null); setPcue(null); setPballs([]); setEdit(true); };
+  const onFile=(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ setPhoto(rd.result); setPcue(null); setPballs([]); setEdit(true); }; rd.readAsDataURL(f); e.target.value=''; };
+  const svgXY=(e)=>{ const s=e.currentTarget, r=s.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width*100, y:(e.clientY-r.top)/r.height*60}; };
+  const onPlace=(e)=>{ const p=svgXY(e);
+    if(pcue && Math.hypot(pcue.x-p.x,pcue.y-p.y)<3.2){ setPcue(null); return; }
+    const bi=pballs.findIndex(b=>Math.hypot(b.x-p.x,b.y-p.y)<3.2);
+    if(bi>=0){ setPballs(pballs.filter((_,i)=>i!==bi)); return; }
+    if(!rnInFelt(p)) return;
+    if(!pcue){ setPcue(p); return; }
+    if(pballs.length>=10) return;
+    setPballs([...pballs,p]);
+  };
+  const finishEdit=()=>{ if(!(pcue&&pballs.length>=2)) return; setLayout({cue:pcue,balls:pballs,game:pballs.length}); setEdit(false); setShot(0); if(mode==='quiz'){ setPhase('plan'); setT0(Date.now()); } };
+  const startQuiz=()=>{ setMode('quiz'); setPhase('plan'); setT0(Date.now()); setShot(0); };
+  const reveal=()=>{ setPlanMs(Date.now()-t0); setPhase('reveal'); };
+  const score=(ok)=>{ const log=[{ms:planMs,ok},...(stat.log||[])].slice(0,40); setStat({log}); newRack(layout.game); };
+  const editDia={balls:[]};
+  if(pcue) editDia.balls.push({x:pcue.x,y:pcue.y,cue:true});
+  pballs.forEach((b,i)=>{ const n=i+1; editDia.balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); });
+  const planning=(mode==='quiz'&&phase==='plan');
+  const mainDia=rnDia(layout, steps, planning?null:shot);
+  const log=stat.log||[];
+  const avgMs=log.length? log.reduce((s,x)=>s+x.ms,0)/log.length : 0;
+  const okRate=log.length? Math.round(log.filter(x=>x.ok).length/log.length*100) : 0;
+  const StepList=()=> (
+    <div>
+      {steps.map((s,i)=>(
+        <div key={i} className={'card rnstep'+(i===shot?' on':'')} onClick={()=>setShot(i)}>
+          <div className="rnnum">{s.n}</div>
+          <TipFace tip={s.tip}/>
+          <div style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.4}}>
+            {s.last
+              ? <b>Bi cuối — bắn thẳng vào lỗ, không cần điều.</b>
+              : <><b>Đầu cơ {tipLabel(s.tip)}</b> · {rnFollow(s.tip)}<br/><span className="muted">lực {s.force} · ra bi cho bi {s.n+1}</span></>}
+          </div>
+        </div>))}
+    </div>
+  );
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1}}>
+      <div className="h">Hướng dẫn run-out</div>
+      <div className="tsub">Tự tạo thế 9/10-bi hoặc tự đặt bi → app chỉ thứ tự dọn bàn, đầu cơ, lực &amp; vùng ra bi cho từng viên. Dạy tư duy điều bi.</div>
+      <div className="presets" style={{justifyContent:'flex-start'}}>
+        <button className="chip" onClick={()=>newRack(9)}>🎲 9-bi</button>
+        <button className="chip" onClick={()=>newRack(10)}>🎲 10-bi</button>
+        <button className="chip" onClick={startEdit}>✍️ Tự đặt</button>
+        <button className="chip" onClick={()=>fileRef.current&&fileRef.current.click()}>📷 Từ ảnh</button>
+        <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={onFile}/>
+      </div>
+      {edit
+        ? <div className="card" style={{padding:12,marginTop:8}}>
+            <div className="tsub" style={{marginTop:0}}>Chạm bàn để đặt <b>bi cái</b> trước, rồi lần lượt <b>bi 1 → N</b>. Chạm vào bi để xoá.{photo?' (đang có ảnh nền)':''}</div>
+            <CoachTable dia={editDia} photo={photo} onClick={onPlace}/>
+            <div className="presets" style={{justifyContent:'flex-start',marginTop:8}}>
+              <button className="btn acc sm" onClick={finishEdit}>✅ Dùng thế này</button>
+              <button className="chip" onClick={()=>{setPcue(null);setPballs([]);}}>Xoá hết</button>
+              <button className="chip" onClick={()=>{setEdit(false);setPhoto(null);}}>Huỷ</button>
+            </div>
+            <div className="muted small" style={{marginTop:4}}>Đã đặt: {pcue?'bi cái':'chưa có bi cái'} · {pballs.length} bi {pballs.length<2?'(cần ≥2)':''}</div>
+          </div>
+        : <>
+            <div className="presets" style={{justifyContent:'flex-start',marginTop:2}}>
+              <button className={'chip'+(mode==='guide'?' on':'')} onClick={()=>setMode('guide')}>📖 Hướng dẫn</button>
+              <button className={'chip'+(mode==='quiz'?' on':'')} onClick={startQuiz}>🎯 Luyện</button>
+            </div>
+            {planning
+              ? <>
+                  <CoachTable dia={mainDia} photo={photo}/>
+                  <div className="tsub">Nhìn thế bi, lập bản đồ dọn cả bàn trong đầu (thứ tự + đầu cơ từng viên). Xong thì bấm.</div>
+                  <button className="btn acc wide" style={{marginTop:6}} onClick={reveal}>✅ Đã có bản đồ</button>
+                </>
+              : <>
+                  {mode==='quiz' &&
+                    <div className="statstrip" style={{marginTop:6}}>
+                      <div className="stat"><b style={{color:'var(--gold)'}}>{(planMs/1000).toFixed(1)}s</b><small>lập map lần này</small></div>
+                      {log.length>0 && <div className="stat"><b>{(avgMs/1000).toFixed(1)}s</b><small>TB {log.length} lần</small></div>}
+                      {log.length>0 && <div className="stat"><b>{okRate}%</b><small>khớp</small></div>}
+                    </div>}
+                  <CoachTable dia={mainDia} photo={photo}/>
+                  <div className="presets" style={{justifyContent:'flex-start',marginTop:6}}>
+                    <button className={'chip'+(shot===-1?' on':'')} onClick={()=>setShot(-1)}>🗺️ Tổng quan</button>
+                    <button className="chip" onClick={()=>setShot(Math.max(0,shot-1))}>‹ Cú trước</button>
+                    <button className="chip" onClick={()=>setShot(Math.min(steps.length-1,(shot<0?0:shot)+1))}>Cú sau ›</button>
+                  </div>
+                  <div className="tsub" style={{marginTop:6}}>{mode==='quiz'?'Đối chiếu với bản đồ của bạn — chạm từng cú để xem trên bàn:':'Chạm từng cú để xem đường bi trên bàn:'}</div>
+                  <StepList/>
+                  {mode==='quiz' &&
+                    <div className="presets" style={{justifyContent:'flex-start',marginTop:8}}>
+                      <button className="btn acc sm" onClick={()=>score(true)}>👍 Khớp</button>
+                      <button className="chip" onClick={()=>score(false)}>👎 Chưa khớp</button>
+                      <button className="chip" onClick={()=>newRack(layout.game)}>Thế khác →</button>
+                    </div>}
+                </>}
+          </>}
+    </div>
+  );
+}
 function Training(){
   const matches=store.get('nc.matches',[]);
   const [recs,setRecs]=useState(()=>store.get('nc.training',[]));     // {id,date,drill,score,max,note}
@@ -2964,7 +3070,7 @@ function Training(){
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <Seg val={tseg} set={setTseg} opts={orderedOpts('train')}/>
       {tseg==='summary' && <SummaryView/>}
-      {tseg==='mistakes' && <MistakesView/>}
+      {tseg==='runout' && <RunoutCoach/>}
       {tseg==='clock' && <ShotClock/>}
       {tseg==='metro' && <Metronome/>}
       {tseg==='drills' && <>
@@ -3378,6 +3484,18 @@ const KNOWLEDGE=[
       {h:'Phá & mở ván cũng là xác suất', p:'Chọn cú phá KIỂM SOÁT được (giữ bi cái, có bi vào hoặc để lại thế) thay vì phá thật mạnh cầu may. Đầu ván đặt mình vào thế % cao thì cả ván nhẹ nhàng hơn.'},
       {h:'Luyện tư duy này thế nào', p:'Sau mỗi ván, xem lại: cú nào mình chọn theo cảm hứng thay vì theo %? Ghi vào Nhật ký. Dần dần "máy tính xác suất" trong đầu sẽ tự bật lên trước mỗi cú, và bạn ngừng tặng ván cho đối thủ.'},
     ]},
+  {key:'tac_readfast', tag:'Chiến thuật', title:'Đọc bàn nhanh hơn — thấy bản đồ tức thì',
+    intro:'Biết CÁCH đọc bàn (nghĩ ngược, bi mồi, chia chặng) là một chuyện; đọc bàn NHANH tới mức bản đồ tự hiện ra khi vừa nhìn bàn lại là chuyện khác. Điểm yếu hay gặp: bắn khi bản đồ chưa đủ trong đầu, vì lập map còn chậm nên sốt ruột cúi xuống. Tốc độ đọc bàn RÈN được — đây là cách.',
+    body:[
+      {h:'Vì sao lúc đầu map chậm', p:'Người mới phải tính TỪNG cú một cách thủ công nên đọc cả ván rất tốn sức và chậm — đến giữa chừng thì nản, cúi xuống bắn khi mới thấy 2–3 bi đầu. Người giỏi không tính nhanh hơn, họ NHẬN RA MẪU: nhìn cụm bi là thấy ngay "hình này chạy kiểu kia". Tốc độ đến từ mẫu đã gặp nhiều lần, không từ tính nhẩm nhanh.'},
+      {h:'Luật vàng: chưa đủ map thì CHƯA cúi', p:'Đặt một luật cứng: chỉ vào bộ khi đã thấy đường chạy TỚI BI CUỐI (ít nhất 2–3 bi tiếp + đường bi cái). Chưa thấy thì đứng thêm vài giây, hoặc nếu bí thì đánh an toàn — TUYỆT ĐỐI không bắn "hy vọng rồi tính tiếp". Dấu hiệu map chưa đủ: còn phân vân thứ tự, chưa biết bi cái đi đâu sau cú này, mắt nhảy loạn giữa các bi.'},
+      {h:'Tập KHÔNG tính giờ trước', p:'Đừng ép nhanh khi chưa đọc đúng. Giai đoạn 1: mỗi ván cứ đứng đọc THẬT KỸ, đủ lâu, cho tới khi lập được bản đồ ĐÚNG và đầy đủ — kể cả mất 1–2 phút. Đọc đúng nhiều lần thì não mới gom thành mẫu. Nhanh mà sai thì tập mãi vẫn sai.'},
+      {h:'Rồi mới ép nhanh dần', p:'Khi đã đọc đúng ổn định, giảm dần thời gian cho phép: thoải mái → 30 giây → 15 giây → "nhìn phát thấy luôn". Dùng tab 🗺️ Run-out (chế độ Luyện): app đo thời gian bạn lập map và cho đối chiếu — theo dõi thời gian tụt dần qua các buổi.'},
+      {h:'Drill chụp ảnh (photograph)', p:'Liếc bàn ~5 giây rồi QUAY ĐI (hoặc nhắm mắt), đọc lại trong đầu: thứ tự dọn + bi cái đi đâu ở 3 cú đầu. Quay lại bàn kiểm xem có khớp không. Bài này ép mắt "chụp" cả bàn một lần thay vì quét từng bi — lên tốc độ đọc rất nhanh.'},
+      {h:'Reverse drill', p:'Trước mỗi ván, việc ĐẦU TIÊN: xác định bi cuối và BI MỒI (đứng đâu để ăn bi cuối). Có hai mỏ neo đó thì phần giữa tự nối. Tập riêng thói quen "tìm bi mồi trước" giúp bản đồ hiện ra nhanh vì bạn có đích để lần ngược. (Xem "Đọc bàn & chạy hình cả ván".)'},
+      {h:'Progressive run-out', p:'Tăng dần độ phức tạp: đọc & chạy sạch 3 bi → chỉ khi được mới lên 4 → 5 → cả rack. Đừng nhảy vào 9 bi khi 4 bi còn đọc chưa xong. Bản đồ nhanh là nhiều bản đồ NHỎ đã tự động hoá rồi ghép lại — xây từ chuỗi ngắn lên.'},
+      {h:'Xem và đoán trước', p:'Xem cơ thủ giỏi đánh: trước mỗi cú, TẠM DỪNG và tự đoán họ sẽ đưa bi cái đâu, đánh bi nào tiếp. So với thực tế. Đây là cách "mượn" kho mẫu của người giỏi — nạp mẫu càng nhiều, bản đồ của bạn hiện càng nhanh.'},
+    ]},
   {key:'energy', tag:'Chiến thuật', title:'Đánh tiết kiệm năng lượng',
     intro:'Đánh tiết kiệm năng lượng KHÔNG phải là đánh chậm hay đánh lười — mà là ÍT QUYẾT ĐỊNH, ÍT CHỈNH, ÍT CĂNG CƠ, NHỊP ỔN ĐỊNH. Người tốn sức nhất trên bàn không phải người đánh nhiều cú khó, mà là người đứng phân vân lâu, ép mình điều bi hoàn hảo và dùng xoáy/lực thừa. Chơi "rẻ năng lượng" giúp bạn giữ được sự sắc bén tới tận cuối trận.',
     body:[
@@ -3391,6 +3509,83 @@ const KNOWLEDGE=[
       {h:'Công thức 4 câu trước mỗi cú', p:'Chỉ hỏi đúng 4 câu: "Lỗ nào? Bi cái về vùng nào? Lực mấy? Đánh xong đứng yên nhìn đường bi." — Không thêm.\nĐừng sa vào chuỗi "hay trô nhỉ? hay cu lê? lỡ non thì sao? lỡ quá thì sao?" — hỏi nhiều là mất năng lượng. Quyết xong thì đánh.'},
       {h:'Bi khó: chọn phương án ÍT THIỆT HẠI', p:'Bi khó không nhất thiết phải cố công. Hỏi: "Nếu tôi đánh hỏng, bi cái và bi mục tiêu sẽ nằm ở đâu?" Nếu công vào rủi ro cao, chọn cú vừa công vừa thủ hoặc chạy đạn — bạn không phải đặt áp lực "phải vào" lên một cú xác suất thấp. Đỡ mệt đầu hơn rất nhiều. (Xem thêm "Chơi theo xác suất".)'},
       {h:'Bài tập 45 phút', p:'• 15 phút: chỉ đánh bi đơn, yêu cầu NHỊP giống hệt nhau mỗi cú.\n• 15 phút: chạy 3 bi liên tiếp, CHỈ được dùng đứng bi / cu lê nhẹ / trô ngắn.\n• 15 phút: xếp 6 bi — mục tiêu không phải dọn đẹp, mà là KHÔNG cú nào suy nghĩ quá 7 giây sau khi đã chọn phương án.\nĐích của bài: tạo cảm giác "tôi đánh được mà không cần căng não".\nCâu khoá: "QUYẾT trước khi vào bộ — vào bộ chỉ RA NGỌN."'},
+    ]},
+  {key:'tac_readtable', tag:'Chiến thuật', title:'Đọc bàn & chạy hình cả ván (pattern play)',
+    intro:'Người mới nhìn từng cú; người giỏi nhìn cả VÁN. Trước khi cúi xuống cú đầu tiên, họ đã "vẽ" trong đầu thứ tự dọn bi và đường bi cái nối các cú lại với nhau. Đọc bàn (pattern play) biến một đống bi rời rạc thành một chuỗi cú nối nhau mượt — và là ranh giới lớn nhất giữa người chơi khá và người chơi hay.',
+    body:[
+      {h:'Nhìn cả ván, không nhìn từng cú', p:'Trước khi đánh, đứng lùi và hỏi: dọn theo thứ tự nào thì bi cái đi ÍT nhất và luôn có cú tiếp? Một cú vào lỗ mà bỏ mặc cú sau là cú nửa vời. Lập "bản đồ" cả ván trước trong đầu, rồi mới cúi xuống cú số một.'},
+      {h:'Đọc NGƯỢC từ bi cuối', p:'Cách lập kế hoạch tốt nhất là đi ngược: bi cuối (bi 8/9) muốn đánh từ đâu? → bi áp chót phải để bi cái tới đó → cứ lùi dần về hiện tại. Nghĩ xuôi dễ dọn 4 bi đầu rồi kẹt bi thứ 5; nghĩ ngược bảo đảm cả chuỗi thông suốt tới cuối ván.'},
+      {h:'Xác định bi VẤN ĐỀ sớm', p:'Bi khó, bi sát băng, cụm bi, bi gần lỗ đối thủ… là những "chướng ngại" cần giải quyết ĐÚNG LÚC — khi có bi cái thuận nhất — chứ không để tới cuối mới lo. Lên kế hoạch xoay cả ván quanh việc xử lý bi vấn đề. (Xem "Bi khó: bi sát băng, bi kê, bi dính".)'},
+      {h:'Nghĩ theo bi MỒI (key ball)', p:'Bi áp chót đưa bạn vào bi quyết định gọi là bi mồi — đây là bi quan trọng cần "để dành" một vị trí ngon. Cả kế hoạch nên hướng tới việc tới bi mồi ở đúng góc để kết ván nhẹ nhàng và an toàn, thay vì tính đẹp mấy bi đầu rồi bí ở khúc cuối.'},
+      {h:'Chia ván thành từng chặng', p:'Đừng nhồi cả ván vào đầu một lúc. Nghĩ theo cụm 2–3 bi: dọn xong chặng này thì bi cái phải ở đâu để mở chặng sau. Có kế hoạch lớn nhưng xử lý theo từng chặng dễ hơn nhiều so với cố tính hoàn hảo 8 cú liền một mạch.'},
+      {h:'Ưu tiên GÓC và đường ra bi tự nhiên', p:'Chọn thứ tự sao cho mỗi cú để lại GÓC (không phải bi thẳng) và bi cái đi đường ngắn, tự nhiên tới bi sau. Kế hoạch tốt là kế hoạch dùng lực nhỏ, ít băng. (Xem "Điều bi tối giản — ưu tiên đường ngắn, ít băng".)'},
+      {h:'Kế hoạch phải MỀM', p:'Bàn không chạy đúng ý 100%. Sau mỗi cú, nhìn lại bi cái nằm đâu và cập nhật kế hoạch, đừng bám cứng bản đồ ban đầu. Đọc bàn là quá trình liên tục suốt ván, không phải quyết một lần rồi thôi. (Xem "Kế hoạch B — khi điều bi lệch".)'},
+      {h:'Bi cầm tay: đặt để mở cả loạt', p:'Khi được bi cầm tay (ball-in-hand), đừng chỉ đặt cho một cú dễ trước mắt — đặt để bắt đầu một chuỗi thông suốt và xử lý luôn bi vấn đề. Một lần cầm bi đặt khôn ngoan có thể mở đường dọn sạch cả bàn.'},
+      {h:'Tập đọc bàn', p:'Thói quen dễ rèn: trước mỗi ván, tự nói ra (hoặc ghi vào Nhật ký) thứ tự dọn và đường bi cái dự kiến; đánh xong so lại xem chệch ở đâu. Xem cơ thủ giỏi và đoán trước họ đi bi thế nào. Dần dần "bản đồ ván" tự hiện ra trong đầu ngay khi bạn nhìn bàn.'},
+    ]},
+  {key:'tac_position_simple', tag:'Chiến thuật', title:'Điều bi tối giản — ưu tiên đường ngắn, ít băng',
+    intro:'Điều bi giỏi KHÔNG phải điều bi cầu kỳ. Người mới thích cú bi cái chạy 3 băng về đúng chấm; người giỏi tìm cách để bi cái đi ÍT nhất mà vẫn có cú sau. Mỗi băng, mỗi vòng xoáy, mỗi centimet bi cái lăn thêm đều là một cơ hội sai số. Điều bi tối giản = chọn đường "rẻ" nhất về sai số.',
+    body:[
+      {h:'Bi cái đi càng xa, sai số càng lớn', p:'Mọi thứ — lực, xoáy, mặt bàn, băng — cộng dồn sai theo quãng đường. Đưa bi cái 20cm tới góc dễ hơn nhiều so với bắt nó chạy 2 mét qua 2 băng về đúng điểm. Nguyên tắc số một: để bi cái nghỉ GẦN, đừng bắt nó đi xa.'},
+      {h:'Nghĩ theo VÙNG, không theo điểm', p:'Đừng ép bi cái về đúng một chấm; chỉ cần về VÙNG còn đánh được bi sau. Ngắm vùng cho bạn biên độ sai an toàn; ngắm điểm biến mỗi cú thành bài kiểm tra dễ trượt. (Xem "Đánh tiết kiệm năng lượng".)'},
+      {h:'Thang ưu tiên đường "rẻ"', p:'Chọn theo thứ tự tăng dần độ khó: đứng bi / đè tâm → theo (cu lê) nhẹ → rút (trô) ngắn → áp phê nhẹ → cuối cùng mới tới trô dài / nhiều băng / áp phê mạnh. Nếu đứng bi hay theo nhẹ mà vẫn có bi sau — chọn ngay, đừng phô diễn.'},
+      {h:'Lực nhỏ, kiểm soát cao', p:'Lực mạnh khuếch đại mọi sai số và bắt bạn siết tay. Rất nhiều cú chỉ cần 50–70% lực. Không cần phá cụm, không cần nhiều băng → giảm lực. Điều bi lên trình là môn của lực NHỎ chính xác, không phải lực lớn.'},
+      {h:'Dùng góc tự nhiên thay vì xoáy', p:'Nếu bi cái tự lăn tới vùng cần nhờ đường tiếp tuyến hoặc theo/rút đơn giản, đừng thêm áp phê cho "chắc". Xoáy càng nhiều, biến số càng nhiều (điểm chạm băng đổi, độ trượt đổi). Để vật lý tự nhiên làm việc trước; xoáy chỉ là phương án cuối.'},
+      {h:'Một băng hơn hai băng', p:'Mỗi lần chạm băng là một lần nhân sai số — góc ra bị xoáy, tốc độ và độ bám nỉ làm lệch. Ưu tiên phương án 0 hoặc 1 băng. Nếu buộc phải đi nhiều băng, đó thường là dấu hiệu nên xem lại THỨ TỰ dọn bi từ trước. (Xem "Đọc bàn & chạy hình cả ván".)'},
+      {h:'Tránh để bi cái dính băng', p:'Bi cái dừng sát băng làm cú sau khó cầm cơ và mất nhiều lựa chọn (không hạ tay đánh thấp được). Điều bi tối giản không chỉ NGẮN, mà còn cố để bi cái ở khu thoáng, dễ đánh cú tiếp — ưu tiên "chỗ đứng đẹp" hơn "đúng điểm".'},
+      {h:'Ít quyết định = ít mệt = ít sai', p:'Mỗi lựa chọn cầu kỳ (xoáy gì, mấy băng, lực bao nhiêu) đều đốt năng lượng và mở đường cho sai lầm. Đường đơn giản vừa chính xác hơn vừa giữ đầu bạn tỉnh táo cho cú then chốt. (Xem "Đánh tiết kiệm năng lượng".)'},
+      {h:'Khi nào ĐƯỢC phép cầu kỳ', p:'Tối giản không có nghĩa không bao giờ đi băng hay xoáy. Khi thế bàn BẮT BUỘC (bi vấn đề, cần né bi chắn), cứ dùng — nhưng như một lựa chọn có chủ đích, không phải thói quen. Quy tắc: chỉ trả giá bằng độ phức tạp khi thật sự cần thiết.'},
+    ]},
+  {key:'tac_planb', tag:'Chiến thuật', title:'Kế hoạch B — khi điều bi lệch',
+    intro:'Bàn bi hiếm khi chạy đúng 100% ý bạn: bi cái về hơi quá, hơi non, bị vướng, hay nằm trớ — chuyện thường ngày. Điều tách người bình tĩnh với người sụp đổ không phải điều bi hoàn hảo, mà là cách xử lý khi điều bi LỆCH. Kế hoạch B là kỹ năng đọc lại thế bàn và cứu ván thay vì cố đấm một cú xấu.',
+    body:[
+      {h:'Chấp nhận: lệch là bình thường', p:'Đặt kỳ vọng đúng ngay từ đầu — bi cái sẽ không luôn về đúng chấm. Bực bội vì "sao không về đúng ý" chỉ làm hỏng cú sau. Coi việc bi cái lệch là một phần của trò chơi; việc của bạn là xử lý thế bàn TRƯỚC MẶT cho tốt nhất. (Xem "Chấp nhận may rủi & cú xui".)'},
+      {h:'ĐỨNG LÊN đọc lại', p:'Sai lầm lớn nhất khi điều bi lệch: vẫn cúi xuống đánh theo kế hoạch cũ vì "đã định thế rồi". Bi cái ở chỗ mới = thế bàn mới. Lùi lại, đọc lại: cú nào GIỜ là cú tốt nhất? Đừng để quán tính của kế hoạch cũ ép bạn vào một cú xấu.'},
+      {h:'Ba câu khi bi cái nằm trớ', p:'(1) Còn cú công nào ăn CHẮC không? (2) Nếu công, trượt thì để lại gì cho đối thủ? (3) Nếu không có cú chắc, cú THỦ nào tốt? Trả lời gọn ba câu này thay cho việc ngồi tiếc kế hoạch vừa hỏng. (Xem "Chơi theo xác suất".)'},
+      {h:'Đừng "gồng" cứu kế hoạch bằng cú khó', p:'Khi lệch, cám dỗ lớn là cố một cú % thấp để "về lại đường cũ" — thường đó là cú tặng ván. Hạ tham vọng: đôi khi kế hoạch B chỉ là một cú an toàn đơn giản để giữ lượt hoặc giữ thế, không phải cố dọn tiếp cho bằng được.'},
+      {h:'Bi cái quá/non — đổi lỗ hoặc đổi bi', p:'Nếu bi cái đi quá đà, có khi cú tiếp không còn nhưng một bi KHÁC lại thành cú ngon. Kế hoạch B thường là ĐỔI thứ tự dọn, không phải ép bi ban đầu. Linh hoạt đổi bi mục tiêu là cách cứu ván hay bị bỏ quên nhất.'},
+      {h:'Bị vướng / mất đường — nghĩ thủ hoặc chạy đạn', p:'Nếu bi cái bị bi khác chắn hoặc góc quá tệ, đừng cố công vào. Chọn safety, hoặc cú "hai đường" (vừa thử công vừa để lại thế). Ép một cú không có đường là cách nhanh nhất để mất ván. (Xem "Safety / phòng thủ — khi nào & đánh thế nào".)'},
+      {h:'Một cú hỏng không phải mất ván', p:'Điều bi lệch chỉ tốn của bạn một chút lợi thế — KHÔNG phải cả ván, trừ khi bạn hoảng rồi đánh ẩu tiếp. Giữ đầu lạnh, xử lý gọn thế mới, và ván vẫn có thể thắng. (Xem "Sau lỗi & kiểm soát cảm xúc".)'},
+      {h:'Học từ cú lệch', p:'Sau ván, xem lại: bi cái lệch vì ĐỌC sai (chọn sai đường, sai lực) hay vì THỰC HIỆN sai (đánh non/quá)? Đọc sai thì sửa tư duy điều bi; thực hiện sai thì luyện cảm giác lực. Ghi vào Nhật ký để lần sau lệch ít hơn.'},
+    ]},
+  {key:'tac_riskreward', tag:'Chiến thuật', title:'Khi nào tấn công, khi nào bỏ (risk/reward)',
+    intro:'Mỗi lượt bạn đứng trước một quyết định: CÔNG (cố vào bi và dọn tiếp) hay THỦ (đánh an toàn, nhường lượt để ép đối thủ). Chọn sai — công lúc nên thủ, hoặc thủ lúc nên công — âm thầm làm thua nhiều ván hơn cả đánh trượt. Đây là khung tư duy để quyết đúng.',
+    body:[
+      {h:'Ba câu trước mỗi lượt', p:'Trước khi chọn công hay thủ, hỏi: (1) Cú công này mình vào bao nhiêu %? (2) Vào rồi có RA BI cho cú sau không? (3) Nếu TRƯỢT, mình để lại gì cho đối thủ? Ba con số này quyết định, không phải cảm hứng. (Nền tảng: xem "Chơi theo xác suất".)'},
+      {h:'Công khi: % cao VÀ trượt vẫn an toàn', p:'Trường hợp dễ nhất: cú vào cao, mà lỡ trượt bi cũng không mở bàn cho đối thủ. Cứ công — rủi ro thấp, phần thưởng cao, không cần đắn đo. Nhận ra nhanh nhóm cú này để khỏi tốn não.'},
+      {h:'Thủ khi: % thấp VÀ trượt là tặng bàn', p:'Ngược lại: cú khó, mà trượt thì đối thủ có bàn ngon dọn sạch. Đây là lúc thủ gần như luôn đúng, dù cú công "nhìn có vẻ được". Đừng cược cả ván vào một cú % thấp chỉ vì ngại đánh thủ.'},
+      {h:'Vùng xám: cân THẾ TRẬN', p:'Khi cú công tầm trung (50–70%), quyết định phụ thuộc: đối thủ mạnh hay yếu (đối thủ giỏi thì đừng cho họ bàn), phần bàn còn lại (khó thì thủ giữ, dễ thì công), và tỉ số. Không có luật cứng — nhưng có khung để cân nhắc thay vì đoán mò.'},
+      {h:'Thủ KHÔNG phải là yếu', p:'Nhiều người coi thủ là "nhát" — sai. Safety là nước đi TẤN CÔNG bằng cách khác: ép đối thủ đánh cú khó, tự phạm lỗi, tặng lại bi cầm tay. Thắng nhờ đối thủ hỏng cũng là thắng. (Xem "Safety / phòng thủ — khi nào & đánh thế nào".)'},
+      {h:'Điều chỉnh theo TỈ SỐ', p:'Đang dẫn đậm: nghiêng về chắc/thủ, ép đối thủ tự hỏng, giảm rủi ro. Đang bị dẫn sắp thua: chấp nhận cú % thấp hơn để tạo đột biến. Cùng một thế bàn, quyết định đúng đổi theo tình thế ván. (Xem "Tâm lý khi bị dẫn điểm".)'},
+      {h:'Bỏ cái tôi — chọn cú xấu mà thắng', p:'Cú thủ hay cú đi vòng "nhìn không ngầu" nhưng thắng ván nhiều hơn thì vẫn là cú ĐÚNG. Người chơi để thắng, không phải để biểu diễn. Cái tôi thích cú đẹp là kẻ thù của quyết định risk/reward tỉnh táo. (Xem "Tâm lý phải trình diễn" trong "Áp lực & khoảnh khắc căng".)'},
+      {h:'Cú "hai đường" khi lưỡng lự', p:'Khi không rõ nên công hay thủ, tìm cú vừa thử vào bi VỪA để lại thế thủ nếu trượt. Không phải lúc nào cũng có, nhưng khi có thì nó xoá luôn thế lưỡng nan. Ưu tiên tìm phương án hai-trong-một trước khi ép mình chọn hẳn một bên.'},
+      {h:'Sai lầm phổ biến: công theo quán tính', p:'Nhiều người mặc định "tới lượt là phải công", chưa từng cân nhắc thủ. Chỉ cần bắt đầu HỎI "cú chắc nhất lúc này là gì, kể cả thủ?" là bạn đã giảm hẳn số ván tự tặng. Tập dừng lại một nhịp để hỏi trước mỗi lượt.'},
+    ]},
+  {key:'tac_safety', tag:'Chiến thuật', title:'Safety / phòng thủ — khi nào & đánh thế nào',
+    intro:'Safety (đánh an toàn / thủ) là nửa bị bỏ quên của bi-a. Người mới chỉ biết công; người giỏi biết rằng nhường lượt ĐÚNG CÁCH — để lại thế bàn khó cho đối thủ — thường "ghi điểm" nhiều như đánh vào bi. Bạn không cần dọn sạch bàn để thắng; bạn chỉ cần ép đối thủ hỏng trước.',
+    body:[
+      {h:'Safety là tấn công bằng cách khác', p:'Mục tiêu của thủ không phải "bỏ lượt", mà là buộc đối thủ vào thế: không có cú công, dễ phạm lỗi, phải trả lại lượt hoặc tặng bi cầm tay. Một cú thủ hay đặt bạn vào thế chủ động dù không cầm cơ. Đổi tư duy: thủ là một nước GHI ĐIỂM.'},
+      {h:'Khi nào chọn thủ', p:'(1) Không có cú công nào ăn chắc. (2) Cú công có nhưng trượt là tặng bàn. (3) Muốn ép đối thủ đang căng/đang tuột đà tự hỏng thêm. (4) Đầu ván hoặc thế bí, giữ an toàn tốt hơn liều. Không có cú vừa dễ vào vừa ra bi tốt? Nghĩ ngay tới thủ. (Xem "Khi nào tấn công, khi nào bỏ".)'},
+      {h:'Nguyên tắc 1: giấu bi cái (snooker)', p:'Cú thủ tốt nhất khiến đối thủ KHÔNG nhìn thẳng được bi mục tiêu: nấp sau bi khác, nép sát băng. Đối thủ phải đi băng để chạm bi → dễ trượt, dễ phạm lỗi. Che tầm nhìn của họ là vũ khí mạnh nhất của thủ.'},
+      {h:'Nguyên tắc 2: kéo XA hai bi', p:'Để bi cái và bi mục tiêu càng xa nhau càng tốt. Khoảng cách lớn làm mọi cú của đối thủ khó hơn: khó ngắm, khó canh lực, khó điều bi. Thủ = tạo khoảng cách + góc xấu cho người kế tiếp cầm cơ.'},
+      {h:'Nguyên tắc 3: bỏ lại thế KHÓ, không tặng thế dễ', p:'Cú thủ hỏng tệ nhất là để bi mục tiêu ngay gần lỗ hoặc bi cái giữa bàn thoáng. Trước khi đánh thủ, hình dung đối thủ sẽ THẤY gì: nếu họ có cú dễ thì cú thủ của bạn thất bại. Luôn nghĩ từ GÓC NHÌN của đối thủ.'},
+      {h:'Kiểm soát lực là chìa khoá', p:'Hầu hết safety hỏng vì lực: quá mạnh thì bi văng ra thế thoáng, quá nhẹ thì phạm lỗi (không chạm đủ băng theo luật). Thủ đòi cảm giác lực tinh tế hơn cả cú công. Luyện cú lực nhỏ, dừng bi đúng chỗ. (Xem "Điều bi tối giản".)'},
+      {h:'An toàn hai chiều & chừa đường cho mình', p:'Cú "two-way": vừa nhằm chạm bi kiểu có thể lọt lỗ, vừa để lại thế thủ nếu không lọt. Và luôn chừa cho MÌNH một đường: đừng đánh thủ mà tự nhốt bi cái vào thế lần sau chính mình cũng khó. Thủ phải an toàn cho cả ván sau của bạn.'},
+      {h:'Đọc luật bi cầm tay', p:'Giá trị của thủ phụ thuộc luật: nếu phạm lỗi = đối thủ được bi cầm tay (như 9 bi), thủ càng lợi vì ép lỗi là ép tặng cả bàn. Biết luật để tính — đôi khi ép một cú snooker đáng giá hơn cố công. (Khác nhau theo thể thức 8/9/10 bi.)'},
+      {h:'Tập thủ như tập công', p:'Dân nghiệp dư gần như không tập thủ, nên đây là nơi lên trình nhanh nhất. Bài tập: dựng thế, đặt mục tiêu đưa bi cái + bi mục tiêu về hai vùng định trước, hoặc giấu được bi cái sau bi chắn. Ghi lại tỉ lệ thủ thành công. Thủ giỏi khiến đối thủ ức chế hơn cả bị dọn bàn.'},
+    ]},
+  {key:'tac_hardballs', tag:'Chiến thuật', title:'Bi khó: bi sát băng, bi kê, bi dính',
+    intro:'Có những viên bi tự thân đã khó: bi nằm sát băng, bi kê/chắn nhau, bi cái dính sát bi mục tiêu. Người mới gặp là đánh đại rồi hỏng; người giỏi có cách xử lý riêng cho từng loại — và quan trọng hơn, biết khi nào KHÔNG cố công mà chọn phương án ít thiệt hại.',
+    body:[
+      {h:'Nguyên tắc chung: ít thiệt hại hơn cố ăn', p:'Bi khó không bắt buộc phải công. Trước tiên hỏi: "nếu đánh hỏng, bi cái và bi mục tiêu nằm đâu?" Nếu công rủi ro cao, chọn cú vừa công vừa thủ, hoặc thủ hẳn, hoặc để dành xử lý bi khó khi có bi cái THUẬN nhất. Đừng đặt áp lực "phải vào" lên một cú xác suất thấp. (Xem "Chơi theo xác suất".)'},
+      {h:'Bi mục tiêu sát băng — ngắm & lực', p:'Bi nằm sát băng có biên vào lỗ hẹp hơn và dễ "chạy băng". Ngắm điểm chạm hơi mỏng về phía lỗ, tránh lực quá mạnh làm bi bám băng rồi văng ra. Với bi chạy dọc băng về lỗ, đánh vừa lực để bi men theo băng, đừng thúc mạnh.'},
+      {h:'Bi CÁI sát băng — cầm cơ đúng', p:'Khi bi cái dính băng, bạn mất chỗ hạ tay và không đánh thấp được (dễ nảy cơ, trượt). Chấp nhận đánh tâm hoặc hơi cao, chọn cú đơn giản, lực vừa; đừng cố rút/áp phê mạnh từ thế sát băng. Ưu tiên đưa bi cái ra thế thoáng cho cú sau.'},
+      {h:'Bi kê / bi chắn đường', p:'Khi có bi khác chắn giữa bi cái và bi mục tiêu, cân nhắc: (1) đánh vòng qua (đường cong nhẹ nếu gần), (2) đi một băng để lách, hoặc (3) nếu quá rủi ro thì THỦ, đẩy bi về thế an toàn. Đừng cố "ép" bi cái qua khe hẹp khi không chắc — chạm bi chắn thành phạm lỗi.'},
+      {h:'Bi cái DÍNH bi mục tiêu', p:'Khi hai bi chạm nhau, luật thường cấm đẩy (push). Đánh vào bi cái theo hướng đường nối hai tâm thì bi mục tiêu sẽ đi thẳng theo hướng đó — dùng điều này để tính đường. Nếu hướng đó không lọt lỗ, đánh sao cho bi mục tiêu về thế khó cho đối thủ. Nắm trước luật chạm bi của thể thức đang chơi.'},
+      {h:'Cụm bi — phá đúng lúc', p:'Với cụm bi dính, đừng phá bừa. Phá khi có bi cái tới với GÓC và LỰC kiểm soát được, lý tưởng là vừa phá vừa có một bi vào hoặc để lại thế. Chừa bi bảo hiểm (một bi dễ ở nơi khác) TRƯỚC khi phá, để nếu phá không đẹp vẫn còn đường. Phá cụm là canh bạc — giảm rủi ro bằng thời điểm và lực.'},
+      {h:'Bi gần lỗ nhưng góc xấu', p:'Bi sát lỗ chưa chắc dễ nếu bi cái ở góc tệ hoặc bị bi chắn — đừng chủ quan. Đôi khi tốt hơn là để dành bi đó làm bi bảo hiểm / bi mồi và dọn bi khác trước, quay lại nó khi có góc thuận. (Xem "Đọc bàn & chạy hình cả ván".)'},
+      {h:'Giảm kỳ vọng, giữ bình tĩnh', p:'Bi khó dễ làm bực và siết tay. Chấp nhận không phải bi nào cũng vào đẹp; mục tiêu là XỬ LÝ gọn — vào được thì tốt, không thì để lại thế khó cho đối thủ — chứ không phải cú xuất thần. Bình tĩnh chọn phương án ít thiệt hại thắng cú liều hoa mỹ. (Xem "Áp lực & khoảnh khắc căng".)'},
+      {h:'Tập riêng bi khó', p:'Dựng lại các thế khó hay gặp (bi sát băng, bi kê, bi dính) và luyện nhiều trong môi trường không áp lực, để lúc thật không hoảng. Biết trước "loại bi này mình xử thế nào" khiến bi khó bớt đáng sợ. Ghi lại cách xử hiệu quả vào Nhật ký.'},
     ]},
   {key:'serious', tag:'Tâm lý', title:'Chơi 100% công lực — không cú nào hời hợt',
     intro:'Muốn luôn chơi với 100% công lực và sự nghiêm túc, phải hiểu đúng một điểm: KHÔNG phải cú nào cũng căng 100% não — mà là cú nào cũng làm 100% QUY TRÌNH. Cố "gồng" từ đầu tới cuối thì sẽ mệt, đuối, rồi tới bi quyết định lại sựng. Cơ thủ bản lĩnh không phải lúc nào cũng căng — họ LẠNH, ĐỀU và CÓ KỶ LUẬT.',
@@ -3631,6 +3826,123 @@ const KNOWLEDGE=[
       {h:'Dùng áp lực làm tập trung', p:'Có cược khiến bạn buộc phải tập trung hơn — tận dụng theo hướng lành: coi nó là lý do để làm đủ routine, chọn cú chắc, kiên nhẫn hơn thường ngày. Áp lực biến thành sự nghiêm túc thay vì nỗi sợ khi bạn hướng nó vào QUÁ TRÌNH. (Xem "Áp lực & khoảnh khắc căng".)'},
       {h:'Giữ tỉnh táo và chừng mực', p:'Áp lực tiền dễ kéo theo rượu bia, cay cú, chơi thâu đêm — tất cả đều phá cả phong độ lẫn quyết định. Giữ đầu lạnh, chơi trong khả năng, coi trọng việc rèn kỹ năng và sự bình tĩnh hơn ăn thua một buổi. Cái đầu biết dừng đúng lúc giá trị hơn mọi cú xuất thần.'},
     ]},
+  {key:'psy_slowstart', tag:'Tâm lý', title:'Vào trận chậm — nóng máy muộn (slow starter)',
+    intro:'Có kiểu người 2–3 ván đầu luôn đánh dưới sức: tay lạnh, cảm giác lực chưa có, đầu còn ở ngoài trận — tới lúc "nóng máy" thì đã bị dẫn. Vấn đề thường không phải kỹ năng, mà là bạn chưa CHUYỂN TRẠNG THÁI kịp trước khi cú đầu tiên diễn ra. Đây là thứ rèn được.',
+    body:[
+      {h:'Vì sao mình luôn khởi đầu chậm', p:'Ba thứ nguội cùng lúc: CƠ (chưa làm nóng, cú đầu run, chưa có cảm giác lực), HỆ THẦN KINH (chưa chuyển sang "chế độ thi đấu"), và ĐẦU (còn vướng chuyện ngoài — công việc, đường đi tới, điện thoại). Bạn bước vào bàn nhưng chưa thật sự vào trận, nên vài ván đầu như đang khởi động.'},
+      {h:'Cái giá của khởi đầu chậm', p:'Trong nhiều thể thức, ván đầu đáng giá y như ván cuối. Bị dẫn 0–2 vì "chưa nóng" là tự đào hố rồi phải leo. Ở trận ngắn (race to 4–5) gần như không có thời gian sửa — nóng máy tới ván 4 thì trận đã gần xong. Khởi đầu chậm không "vô hại", nó thường quyết định trận.'},
+      {h:'Khởi động THÂN trước khi vào trận', p:'Đừng để trận đấu chính là lúc làm nóng. Trước giờ: làm nóng cổ tay–vai, đánh vài cú thẳng và vài cú lực để lấy cảm giác tay và cảm nhận tốc độ nỉ/băng hôm nay. Vào trận với tay đã ấm thì cú đầu không còn là cú "dò đường". (Xem tab Tâm & Thân → khởi động; và "Chuẩn bị tâm lý trước trận".)'},
+      {h:'Khởi động ĐẦU: vào trận trước khi vào trận', p:'Vài phút trước giờ đấu: gác chuyện ngoài, vài hơi thở dài để hạ nhiễu, "diễn tập trong đầu" cảnh mình chơi bình tĩnh, và đặt ý định quá trình cho trận. Bước tới bàn với cái đầu đã ở TRONG trận, không mang theo dòng suy nghĩ dở dang từ bên ngoài.'},
+      {h:'Ép mình nghiêm túc từ cú ĐẦU TIÊN', p:'Nhiều người vô thức "đợi tới lúc quan trọng mới tập trung" — nên đầu trận đánh lơ là. Đảo lại: coi ván đầu là ván quyết định, làm đủ pre-shot routine ngay cú một. Nếu chỉ nghiêm túc khi bị dồn, bạn sẽ mãi khởi đầu chậm. (Xem "Chơi 100% công lực".)'},
+      {h:'Đơn giản hoá vài ván đầu', p:'Khi tay còn lạnh, chưa có cảm giác lực — chọn cú CHẮC, lực vừa, bỏ cú hoa mỹ và cú % thấp. Ghi điểm bằng cú đơn giản để "mồi" sự tự tin và đánh thức cảm giác tay, thay vì thử cú khó lúc chưa nóng rồi trượt và tụt tinh thần ngay từ đầu.'},
+      {h:'Biến ván "nguội" thành ván trinh sát', p:'Nếu chưa nóng máy được ngay, ít nhất dùng những ván đầu để THU THẬP dữ liệu: tốc độ bàn, băng nảy ra sao, đối thủ mạnh/yếu cú nào, hay đánh kiểu gì. Vậy là ngay cả khi tay chưa vào, cái đầu đã làm việc có ích và bạn không "mất trắng" giai đoạn đầu.'},
+      {h:'Một nghi thức chuyển trạng thái', p:'Có một tín hiệu cố định báo cho cơ thể "giờ vào trận rồi": buộc lại phấn, một hơi thở ra thật dài, một câu neo ("bắt đầu — cú này như bao cú"). Lặp y hệt mỗi lần để não học đường chuyển từ "nguội" sang "chiến". Nghi thức quen thuộc trấn an hệ thần kinh nhanh hơn ý chí.'},
+      {h:'Tập riêng "cú đầu tiên"', p:'Trong buổi tập, thỉnh thoảng dừng lâu (đứng dậy, đi vài vòng) rồi bắt mình đánh CHUẨN ngay cú đầu sau khi nghỉ — mô phỏng cảm giác vào trận lạnh. Quen với "lạnh mà vẫn đánh đúng routine" thì cái tật khởi đầu chậm mờ dần, vì cơ thể học được cách vào việc không cần khởi động dài.'},
+    ]},
+  {key:'psy_closeout', tag:'Tâm lý', title:'Dứt điểm — bản năng sát thủ khi đang dẫn',
+    intro:'Ngược với "sợ thua": khi đang dẫn hoặc sắp thắng, rất nhiều người tự nhiên "nhả ga" — chuyển sang giữ, đánh rén, và cho đối thủ đường sống. Dứt điểm (closing out) là một kỹ năng riêng: kết liễu nhanh gọn khi cơ hội tới, không rề rà để trận vuột khỏi tay lúc đã cầm chắc.',
+    body:[
+      {h:'Vì sao càng gần thắng càng khó đánh', p:'Gần đích, đầu chuyển ngầm từ "tấn công để THẮNG" sang "phòng thủ để KHỎI THUA". Nó bắt đầu tính hậu quả nếu để tuột, đổ một ít adrenaline, và tay rén lại đúng lúc cần dứt khoát. Bạn không yếu bản lĩnh — đây là phản ứng ai cũng có; biết nó để không bị nó dắt.'},
+      {h:'Giữ NGUYÊN lối chơi đã đưa bạn tới đây', p:'Cái làm bạn dẫn điểm là sự dứt khoát và lối chơi tấn công. Bỏ nó đi để "giữ của" lúc sắp thắng là tự cởi vũ khí. Đánh ván hill như đánh ván đầu — cùng tốc độ, cùng cách chọn cú. Đổi sang đánh rón rén thường là lúc trận bắt đầu tuột.'},
+      {h:'Thu mục tiêu về "cú này"', p:'Nghĩ "còn 2 ván nữa là vô địch" là nghĩ về tương lai và tạo áp lực ngay hiện tại. Kéo chú ý về cú trước mặt: chỉ cần thắng CÚ này, rồi ván này. Áp lực dứt điểm tan khi mục tiêu nhỏ lại thành thứ đang nằm trên bàn. (Xem "Tập trung & ở hiện tại".)'},
+      {h:'Đổi khung: dứt điểm là CƠ HỘI, không phải nghĩa vụ', p:'"Mình PHẢI không được hỏng" tạo sợ; "mình ĐƯỢC kết liễu bây giờ" tạo hưng phấn lành. Tâm thế săn mồi khác hẳn tâm thế giữ mạng. Cùng một cú, cách bạn gọi tên nó quyết định tay bạn mềm hay cứng.'},
+      {h:'Nhận diện khoảnh khắc kết liễu', p:'Khi đối thủ vừa hỏng để lại bàn ngon, hoặc bạn có loạt bi dọn được — DỒN tập trung cao nhất vào đúng lúc đó. Đây là lúc một loạt sạch đóng luôn trận. Đừng lơ là vì "coi như xong": trận chưa xong tới khi bi quyết định rơi. (Xem "Đà & động lượng trận đấu".)'},
+      {h:'Cú do dự gần như luôn trượt', p:'Lúc dứt điểm, cam kết đánh dứt khoát là bắt buộc. Ngắm cho kỹ khi còn ĐỨNG, xuống bộ thì tin và bắn — không "vừa nghĩ vừa đánh", không giảm lực nửa chừng vì sợ. Muốn thắng thì phải dám kết liễu. (Xem "Buông tay & tin cú đánh".)'},
+      {h:'Đừng cho đối thủ đường sống', p:'Mỗi cú rén, mỗi safety thừa lúc đáng lẽ dứt điểm là một nhịp cho đối thủ hồi tinh thần và bám lại. Người bị dẫn sống nhờ chính những khoảnh khắc bạn ngần ngừ. Có cú ăn chắc thì ăn; đưa họ về ghế càng nhanh, họ càng ít cơ hội lật.'},
+      {h:'Nếu bị gỡ — reset, đừng sụp', p:'Sắp thắng mà bị gỡ 1–2 ván là bình thường, đừng để nó thành hoảng loạn ("lại tuột nữa rồi"). Chạy reset, quay về cú chắc, giữ đầu lạnh. Trận chưa mất tới bi cuối — người giữ được bình tĩnh trong đoạn này thường vẫn về đích. (Xem "Sau lỗi & kiểm soát cảm xúc".)'},
+      {h:'Tập "đóng trận"', p:'Trong tập hoặc kèo nhẹ, tự dựng tình huống áp lực: "đang dẫn hill, phải dọn nốt cụm này". Tập kết liễu dưới sức ép để cảm giác về đích thành quen. Quen rồi thì lúc thật, tay không còn rén — dứt điểm trở thành phản xạ chứ không phải bài kiểm tra mỗi lần.'},
+    ]},
+  {key:'psy_handicap', tag:'Tâm lý', title:'Đánh kèo trên & kèo dưới (tâm lý chấp)',
+    intro:'Bi-a Việt Nam đầy kèo chấp. Mỗi vai có bẫy tâm lý riêng: cửa trên gánh áp lực "phải thắng, thua kẻ yếu hơn là mất mặt"; cửa dưới dễ tự ti "kiểu gì cũng thua". Biết bẫy của vai mình đang đứng — và cách lật nó thành lợi thế — quan trọng ngang kỹ thuật.',
+    body:[
+      {h:'Hai vai, hai áp lực khác nhau', p:'Cửa trên: sợ thua người bị coi là yếu hơn nên đánh "để khỏi mất mặt" thay vì để thắng. Cửa dưới: dễ buông xuôi, đánh cho có vì "đằng nào chả thua". Cùng một bàn bi nhưng cái đầu hai người mang gánh nặng ngược nhau. Gọi tên gánh nặng của vai mình là bước gỡ đầu tiên.'},
+      {h:'Cửa TRÊN: bỏ gánh "phải thắng"', p:'Áp lực của cửa trên đến từ KỲ VỌNG (của mình, của người xem), không từ đối thủ. Đổi mục tiêu sang quá trình: đánh đúng lối của mình, chọn cú chắc, kiên nhẫn. Bạn mạnh hơn thì cứ chơi bình thường là lợi thế tự hiện ra qua nhiều ván; cố "chứng minh đẳng cấp" bằng cú khó mới là tự phá.'},
+      {h:'Cửa TRÊN: đừng khinh địch', p:'Coi thường đối thủ yếu dẫn tới lơ là cú dễ, đánh ẩu, bỏ routine — và đó là lúc dễ trượt nhất. Tôn trọng mọi đối thủ, làm đủ quy trình cả cú dễ. Rất nhiều cửa trên thua không phải vì kém tay, mà vì tự mãn. (Xem "Chủ quan khi đang dẫn" trong bài "Tập trung & ở hiện tại".)'},
+      {h:'Cửa TRÊN: thua kèo chấp không phải "nhục"', p:'Về dài, cửa trên thắng nhiều hơn nhưng không phải 100% — chấp là để cân lại cơ hội. Một trận thua kèo chấp là bình thường về xác suất. Đừng để nó thành vết thương lòng khiến trận sau đánh trong sợ hãi, càng dễ thua tiếp. Tách kết quả một trận khỏi giá trị của mình.'},
+      {h:'Cửa DƯỚI: "không có gì để mất" là vũ khí', p:'Không ai kỳ vọng bạn thắng, nên bạn được chơi THẢ LỎNG, dám đánh, dám tấn công. Đây là trạng thái nhiều cơ thủ phải cố mới có được — bạn có sẵn. Tận dụng sự tự do đó thay vì tự trói mình bằng mặc cảm "mình yếu hơn nên chắc thua".'},
+      {h:'Cửa DƯỚI: điểm chấp là lợi thế thật — hãy dùng', p:'Điểm chấp không phải bố thí, nó là ưu thế có thật. Chơi kiên nhẫn, giữ cú chắc và safety, ép cửa trên phải thắng sòng phẳng từng ván. Đừng nôn nóng "phải đánh cho hay" để chứng tỏ — cứ bám điểm chắc chắn là cách khai thác lợi thế chấp tốt nhất.'},
+      {h:'Cửa DƯỚI: đừng thần thánh hoá đối thủ', p:'Người mạnh cũng mắc lỗi, cũng căng — nhất là khi bị cửa dưới bám sát, vì lúc đó HỌ mới là người "phải thắng". Đừng dựng hình ảnh "bất khả chiến bại" rồi tin vào nó. Tách khỏi con người đối thủ, chơi đúng lối của mình từng cú. (Xem "Bị đối thủ áp đảo tâm lý".)'},
+      {h:'Đảo áp lực về phía cửa trên', p:'Khi cửa dưới bám điểm, gánh nặng "sao mãi chưa dứt được người yếu hơn" đè lên cửa trên và họ tự căng. Chỉ cần bạn (cửa dưới) giữ mặt lạnh và bám sát, đối thủ sẽ nôn nóng và tự tạo khoảnh khắc cho bạn. Kiên nhẫn là đòn mạnh nhất của cửa dưới.'},
+      {h:'Chọn kèo trong ngưỡng lành mạnh', p:'Dù ở vai nào, chấp quá chênh khiến một bên chơi trong tuyệt vọng còn bên kia chủ quan — hỏng cả tính rèn luyện lẫn niềm vui. Kèo hay là kèo mà cả hai đều phải nghiêm túc từng cú. Giữ mức chấp và mức cược đủ để cái đầu còn tỉnh. (Xem "Áp lực khi đánh có cược".)'},
+    ]},
+  {key:'psy_pokerface', tag:'Tâm lý', title:'Poker face — giấu cảm xúc & đọc đối thủ',
+    intro:'Bi-a là trò chơi tâm lý hai chiều. Cảm xúc lộ ra mặt vừa tiếp thêm tự tin cho đối thủ, vừa tự khoét sâu trạng thái xấu của bạn. Ngược lại, đọc được dấu hiệu căng/nản của đối thủ cho bạn lợi thế chọn chiến thuật. Giữ mặt trung tính và quan sát tinh là một kỹ năng — và trước hết nó phục vụ chính bạn.',
+    body:[
+      {h:'Vì sao "mặt lạnh" là lợi thế', p:'Lộ cảm xúc làm hai việc xấu cùng lúc: (1) TIẾP NĂNG LƯỢNG cho đối thủ — thấy bạn nao núng, tiếc nuối, cáu là họ được cổ vũ; (2) KHUẾCH ĐẠI cảm xúc của chính bạn — biểu lộ ra ngoài khiến nó "thật" hơn và khó nguôi hơn. Giữ trung tính làm dịu cả hai.'},
+      {h:'Trung tính, không phải vô hồn', p:'Không cần diễn "lạnh như băng" hay che giấu gồng gượng — chỉ cần đừng phản ứng thái quá: không đấm tay ăn mừng khi vào cú đẹp, không lắc đầu than trời khi trượt. Một trạng thái đều đều khiến đối thủ không đọc được bạn đang dẫn tinh thần hay đang sụp.'},
+      {h:'Sau cú xấu: giấu, rồi buông', p:'Trượt cú dễ mà chửi thề, đập cơ, thở hắt bực bội là báo thẳng cho đối thủ biết bạn đang tilt. Nuốt phản ứng đó, chạy nghi thức reset, giữ mặt như không có gì xảy ra. Đối thủ mất một manh mối, còn bạn thì nguôi nhanh hơn vì không "diễn" lại cơn bực. (Xem "Sau lỗi & kiểm soát cảm xúc".)'},
+      {h:'Sau cú đẹp: đừng ăn mừng lộ liễu', p:'Hả hê quá sớm vừa xui (chưa thắng đã mừng) vừa cho đối thủ lý do "máu" hơn để lật lại. Một cái gật nhẹ rồi quay về routine là đủ. Sát thủ thật đáng sợ vì bình thản, không vì biểu diễn cảm xúc. (Xem "Dứt điểm — bản năng sát thủ khi đang dẫn".)'},
+      {h:'Đọc đối thủ: dấu hiệu CĂNG', p:'Quan sát: thở gấp hoặc nín thở trước cú, siết cơ, đánh vội cho xong, lặp đi lặp lại việc chỉnh cơ/chần chừ, ánh mắt liếc tỉ số hay khán giả, than thở lẩm bẩm. Đó là dấu họ đang vào vùng áp lực — lúc để bạn kiên nhẫn, chơi chắc và ép thêm cho họ tự hỏng.'},
+      {h:'Đọc đối thủ: dấu hiệu NẢN / tuột đà', p:'Buông vai, thở dài, đánh nhanh bất cần, thôi làm routine, lẩm bẩm "thôi xong". Khi thấy vậy, siết chặt lối chơi chắc và đừng cho họ một cú xui để bám lại. Một ván sạch lúc này thường dập tắt luôn hy vọng của họ. (Xem "Đà & động lượng trận đấu".)'},
+      {h:'Đọc để CHỌN chiến thuật, không để khinh địch', p:'Biết đối thủ đang căng thì đánh safety ép họ tự sai; biết họ yếu cú rút thì để lại thế buộc dùng đúng cú đó. Dùng thông tin để ra quyết định sắc hơn — nhưng đừng để nó sinh chủ quan. Đọc vị là để chơi khôn hơn, không phải để coi thường.'},
+      {h:'Đừng để bị đọc ngược', p:'Đối thủ cũng đang đọc bạn. Che những thói quen lộ tẩy: giữ nhịp đánh không đổi dù đang thắng hay thua, đừng nhìn chằm về nơi bạn định điều bi (lộ ý đồ safety), giữ ngôn ngữ cơ thể ổn định trước mọi tình huống. Bạn càng khó đoán, đối thủ càng phải tự đoán trong lo lắng. (Liên quan "Đối phó tiểu xảo tâm lý".)'},
+      {h:'Ưu tiên: mặt lạnh cho MÌNH trước', p:'Mục đích số một của poker face không phải lừa đối thủ, mà là giữ CHÍNH BẠN ổn định. Ngay cả khi tập một mình hay không ai xem, phản ứng trung tính sau mỗi cú vẫn giúp bạn nguôi nhanh và giữ đầu lạnh. Đọc được đối thủ chỉ là phần thưởng thêm — nền tảng vẫn là làm chủ cảm xúc của mình.'},
+    ]},
+  {key:'psy_breath', tag:'Tâm lý', title:'Hơi thở & điều tiết hưng phấn',
+    intro:'Hơi thở là cần gạt DUY NHẤT bạn điều khiển được trực tiếp để chỉnh trạng thái thần kinh. Gần như mọi bài tâm lý đều mượn nó — bài này đi sâu: hiểu "vùng vàng" của hưng phấn và dùng hơi thở kéo mình về đó, dù đang quá căng hay đang quá nguội.',
+    body:[
+      {h:'"Vùng vàng" của hưng phấn', p:'Có một mức kích thích tối ưu: THẤP quá thì uể oải, lơ đãng, thiếu sắc bén; CAO quá thì tim đập nhanh, cơ cứng, tầm nhìn hẹp, tay vội. Đánh hay nhất ở khoảng GIỮA. Việc của hơi thở là kéo bạn về khoảng giữa đó — từ cả hai phía, không chỉ để "bình tĩnh lại".'},
+      {h:'Vì sao thở RA dài là cái phanh', p:'Hít vào kích hoạt hệ "ga" (giao cảm, tăng nhịp tim); thở ra kích hoạt hệ "phanh" (phó giao cảm, hạ nhịp tim). Nên khi quá căng, kéo dài hơi THỞ RA. Quy tắc gọn: thở ra dài gấp đôi hít vào (hít 4 — thở ra 6–8). Chỉ 2–3 hơi là nhịp tim đã dịu rõ rệt.'},
+      {h:'Khi đang CĂNG (trên vùng vàng)', p:'Dấu hiệu: nín thở lúc ngắm, tim đập nhanh, tay siết cơ, đánh vội. Chữa: đứng thẳng, 2–3 hơi thở ra thật dài, buông vai – thả hàm – xoè rồi nắm lại tay cầm cho mềm — TRƯỚC khi cúi xuống. Đây chính là chuỗi của nút ⟳ Reset (thở) trong app.'},
+      {h:'Khi đang NGUỘI (dưới vùng vàng)', p:'Dấu hiệu: lơ đãng, đánh cho có, thiếu hứng — hay gặp lúc dẫn đậm, trận dài, hoặc cuối ngày. Chữa: vài hơi thở nhanh và mạnh hơn, đi lại, siết–thả bàn tay, một câu neo để "bật" lại sự sắc bén. Hơi thở kéo bạn LÊN chứ không chỉ kéo xuống — điều tiết là hai chiều.'},
+      {h:'Thở TRƯỚC khi cúi, không phải khi đã vào bộ', p:'Điều tiết trạng thái là việc làm lúc còn đứng sau bàn. Nếu đã vào bộ mà còn phải "trấn tĩnh" thì đã muộn — đứng dậy, thở, làm lại. Vào bộ chỉ để ngắm và bắn. Đặt hơi thở đúng chỗ trong quy trình mới có tác dụng.'},
+      {h:'Thở như một phần của routine', p:'Gắn MỘT hơi thở ra cố định vào pre-shot routine (vd: đứng sau bàn → một hơi thở ra dài → mới cúi). Lặp mỗi cú để nó thành mỏ neo tự động, thay vì thứ chỉ nhớ ra lúc đã khủng hoảng. Routine có hơi thở là routine tự trấn an. (Xem "Tập trung & ở hiện tại".)'},
+      {h:'Nhịp thở giữa các cú & giữa ván', p:'Đừng chỉ thở khi căng. Giữa các cú và giữa các ván, vài hơi thở đều giúp "sạc" lại tập trung và giữ nhịp tim ổn định suốt trận — tránh kiểu nín thở dồn căng thẳng cả trận rồi vỡ ở ván cuối. (Xem "Sức bền tâm lý cho trận dài".)'},
+      {h:'Tập thở NGOÀI bàn', p:'Luyện lúc không đánh để lúc đánh dùng được ngay: mỗi ngày vài phút thở 4–6 (hít 4, thở ra 6), hoặc thở hộp (4–4–4–4: hít 4 – giữ 4 – thở 4 – giữ 4). Hệ thần kinh quen rồi thì trong trận chỉ cần một hơi là về vùng vàng. (Kết hợp tab Nhịp và Tâm & Thân.)'},
+      {h:'Đừng biến hơi thở thành áp lực mới', p:'Mục đích là thả lỏng, không phải "phải thở cho đúng kỹ thuật". Nếu đếm nhịp làm bạn căng thêm thì bỏ đếm — chỉ cần một hơi thở ra dài và buông vai là đủ. Đơn giản mà làm ĐỀU quan trọng hơn cầu kỳ mà làm rối.'},
+    ]},
+  {key:'psy_selftalk', tag:'Tâm lý', title:'Lời tự nhủ & từ khoá neo (self-talk)',
+    intro:'Giọng nói trong đầu bạn là huấn luyện viên hoặc kẻ phá hoại — cả ngày nó bình luận từng cú. Bạn không tắt được nó, nhưng CHỌN được nó nói gì và nói thế nào. Xây một bộ "câu neo" của riêng mình là cách biến giọng nói đó thành đồng minh thay vì kẻ dìm bạn.',
+    body:[
+      {h:'Giọng nói trong đầu định hướng tay', p:'Lời tự nhủ không vô hại — nó lái chú ý và cả cơ thể. "Kiểu gì cũng trượt" khiến cơ thể ngầm chuẩn bị cho trượt. Đây là một công cụ mạnh nhưng hay bị bỏ mặc cho chạy tự phát; dùng nó có ý thức thì nó làm việc CHO bạn.'},
+      {h:'Não khó xử lý câu PHỦ ĐỊNH', p:'"Đừng đánh xuống lỗ" khiến tâm trí bám vào hình ảnh "xuống lỗ". Luôn đổi sang điều CẦN LÀM: "đánh tâm, dừng bi cái", "đưa cơ thẳng". Nói với bản thân cái bạn MUỐN xảy ra, không phải cái bạn sợ. (Xem thêm "Thấy cú thành công" trong "Hình dung & diễn tập trong đầu".)'},
+      {h:'Từ phán xét sang hướng dẫn', p:'"Sao ngu thế", "lại hỏng rồi" là phán xét — chỉ khoét sâu và làm cứng tay. Đổi sang hướng dẫn hành động: "chậm lại", "ngắm rõ điểm chạm", "một hơi thở". Huấn luyện viên giỏi chỉ ra việc cần làm tiếp theo, không đứng mắng học trò giữa trận.'},
+      {h:'Ngắn, hiện tại, cụ thể', p:'Lúc đánh không có chỗ cho diễn văn. Một–hai TỪ KHOÁ cho mỗi cú là đủ: "chạm", "thẳng", "giữ yên", "mượt". Từ khoá gọn dẫn dắt động tác mà không kéo cái đầu vào phân tích lan man — càng nói dài càng dễ "vừa nghĩ vừa bắn".'},
+      {h:'Xây bộ câu neo của RIÊNG bạn', p:'Mỗi người hợp một kiểu chữ khác nhau. Tự soạn vài câu cho các tình huống hay gặp:\n• Trước cú quan trọng: "chỉ là một cú như bao cú."\n• Khi tay run: "cầm lỏng, đưa mượt."\n• Sau lỗi: "xong rồi, cú tiếp theo."\n• Khi vội: "chậm lại — chắc chưa?"\n• Khi đang dẫn: "cú này như đang hoà."\nChọn chữ CỦA BẠN — câu nào bật lên mà thấy dịu ngay thì giữ.'},
+      {h:'Một từ khoá cho cú đánh (cue word)', p:'Chọn MỘT từ tóm cả cảm giác cú đánh tốt của bạn — "mượt", "xuyên", "nhẹ" — và nói thầm đúng nó ở nhịp cuối trước khi bắn. Nó gom sự chú ý vào một điểm và chặn cái đầu phân tích chen vào đúng khoảnh khắc thực hiện. (Xem "Buông tay & tin cú đánh".)'},
+      {h:'Tự nhủ bằng SỰ THẬT khi mất tự tin', p:'Chống lại "hôm nay tay mình hỏng rồi" bằng bằng chứng thật: "mình đã đánh cú này vào hàng trăm lần." Không phải hô khẩu hiệu sáo rỗng ("mình là số một") — mà nhắc lại điều CÓ THẬT để cân lại giọng nói tiêu cực. Sự thật đáng tin hơn lời động viên rỗng.'},
+      {h:'Gọi tên trạng thái để tháo ngòi', p:'Khi nhận ra mình đang tilt, đang mất tập trung, hay đang tính tỉ số — chỉ cần dán nhãn thầm: "đang tilt", "đang nghĩ tỉ số". Gọi tên được cảm xúc là đã giảm một nửa sức mạnh của nó và tự động kéo bạn về hiện tại. Cái gì gọi được tên thì bớt điều khiển được bạn.'},
+      {h:'Tập tới mức tự bật', p:'Viết bộ câu neo ra (ghi vào Nhật ký), đọc lại trước buổi tập, dùng có ý thức trong vài tuần. Dần dần đúng câu sẽ TỰ bật lên đúng lúc mà không cần cố nhớ — giọng nói bên trong đã được huấn luyện lại thành đồng minh. Như mọi kỹ năng, nó thành phản xạ nhờ lặp.'},
+    ]},
+  {key:'psy_slump', tag:'Tâm lý', title:'Thoát khỏi giai đoạn sa sút kéo dài (slump)',
+    intro:'Khác với vài cú trượt trong một trận, "slump" là chuỗi ngày, tuần, thậm chí tháng phong độ tụt không rõ lý do: cú từng dễ bỗng hỏng, mất tự tin, càng cố càng tệ. Ai chơi lâu cũng gặp. Đây là hiện tượng có quy luật và CÓ đường ra — hoảng loạn chỉ kéo dài nó.',
+    body:[
+      {h:'Slump là bình thường, không phải "hết thời"', p:'Mọi cơ thủ, kể cả đỉnh cao, đều có giai đoạn tụt. Nó thường là một phần của đường cong tiến bộ — cơ thể "sắp xếp lại" trước khi lên nấc mới nên tạm khựng. Diễn giải nó thành "mình xong rồi" mới chính là thứ biến một khựng tạm thời thành slump dài.'},
+      {h:'Chẩn đoán trước: THỂ CHẤT, KỸ THUẬT hay TÂM LÝ', p:'Trước khi sửa, tìm đúng bệnh. Có phải mệt, thiếu ngủ, stress cuộc sống đang kéo phong độ? Hay một lỗi kỹ thuật nhỏ mới nhiễm (tư thế, nhịp, grip)? Hay chỉ là mất niềm tin thuần tâm lý? Ba loại cần ba loại thuốc khác nhau — sửa nhầm chỗ càng làm rối thêm.'},
+      {h:'Vòng xoáy tự nuôi', p:'Trượt → lo → soi động tác quá mức → gồng, đánh gượng → trượt tiếp → "bằng chứng" củng cố nỗi lo. Bẫy lớn nhất của slump là bạn bắt đầu "sửa" cả những thứ vốn KHÔNG hỏng, làm hỏng luôn cái đang chạy tốt. Nhận ra vòng xoáy này đã là nửa đường thoát ra.'},
+      {h:'Về lại NỀN TẢNG', p:'Bỏ cú khó, bỏ tham vọng. Quay về những cú đơn giản nhất — cú thẳng ngắn, cú dừng — đánh vào để nghe lại cảm giác "bi rơi lỗ". Xây lại niềm tin bằng hàng loạt chiến thắng nhỏ, như đổ lại móng trước khi xây tiếp. Đừng cố đánh khó để "chứng minh mình chưa mất nghề".'},
+      {h:'Giảm kỳ vọng, đổi thước đo', p:'Trong slump, đừng chấm mình bằng thắng–thua hay tỉ lệ vào bi. Đổi sang mục tiêu quá trình kiểm soát được: "làm đủ routine mỗi cú", "cầm cơ lỏng", "một hơi thở trước cú". Bỏ được áp lực kết quả thường tự tháo phần lớn slump có gốc tâm lý. (Xem "Đặt mục tiêu đúng cách".)'},
+      {h:'Đừng đại tu toàn bộ', p:'Hoảng lên mà thay tư thế, thay cơ, thay grip, đổi tất cả cùng lúc là cách chắc chắn kéo dài slump — bạn mất luôn cả cái nền vốn ổn. Nếu nghi lỗi kỹ thuật, đổi MỘT thứ, cho nó thời gian, quan sát kết quả. Kiên nhẫn với một thay đổi hơn là loạn xạ nhiều thứ một lúc.'},
+      {h:'Bớt cường độ, đừng bỏ hẳn', p:'Nghỉ vài buổi cho đầu nhẹ thì tốt, nhưng nghỉ dài trong sợ hãi khiến lần trở lại càng nặng nề. Duy trì tập nhẹ, ít áp lực, và tìm lại NIỀM VUI đánh bi thay vì biến mỗi buổi thành một kỳ thi. Đổi thể thức, rủ bạn đánh vui, đổi quán cho mới mẻ cũng giúp phá vòng xoáy.'},
+      {h:'Nhờ con mắt ngoài', p:'Trong slump, bạn vừa khó tự nhìn ra lỗi thật, vừa dễ tưởng tượng ra lỗi không hề có. Nhờ người giỏi hơn xem, hoặc tự quay video: thường vấn đề nhỏ hơn bạn sợ rất nhiều. Một góc nhìn khách quan cắt được vòng xoáy tự soi mà bản thân bạn không tự cắt nổi.'},
+      {h:'Tin vào đường dài', p:'Slump nào rồi cũng qua nếu bạn không bỏ cuộc giữa chừng. Đồ thị phong độ đi lên theo bậc thang — luôn có đoạn phẳng và đoạn tụt trước mỗi nấc mới. Ghi lại quá trình (Nhật ký) để thấy mình từng qua slump trước và sẽ qua lần này. Kiên trì qua khúc xám chính là thứ tách người trụ lại khỏi người bỏ cuộc.'},
+    ]},
+  {key:'psy_goals', tag:'Tâm lý', title:'Đặt mục tiêu đúng cách',
+    intro:'Mục tiêu mơ hồ ("chơi giỏi hơn") không dẫn đường; mục tiêu sai loại ("phải lên hạng tháng này") chỉ tạo áp lực. Đặt mục tiêu đúng biến khát vọng thành lộ trình cụ thể, và biến áp lực kết quả thành động lực quá trình mà bạn kiểm soát được mỗi ngày.',
+    body:[
+      {h:'Ba tầng mục tiêu', p:'Phân biệt rõ:\n• Mục tiêu MƠ ƯỚC (dài hạn, truyền cảm hứng: "lên hạng A", "vô địch giải CLB").\n• Mục tiêu THÀNH TÍCH (trung hạn, đo được: "tỉ lệ vào bi 80%", "thắng 6/10 kèo").\n• Mục tiêu QUÁ TRÌNH (việc làm hằng ngày, kiểm soát 100%: "tập 4 buổi/tuần", "routine đủ mỗi cú").\nCả ba đều cần — nhưng khi THI ĐẤU, chỉ ôm mục tiêu quá trình.'},
+      {h:'Thi đấu phải nghĩ QUÁ TRÌNH, không nghĩ KẾT QUẢ', p:'Kết quả (thắng/thua, lên hạng) không nằm trong tầm kiểm soát trực tiếp và nằm ở tương lai — ôm nó lúc đánh chỉ tạo lo. Mục tiêu quá trình thì kiểm soát được ngay bây giờ. Nghịch lý quen thuộc: càng buông kết quả và lo cho quá trình, kết quả càng tới. (Xem "Ám ảnh tỉ số" trong "Tập trung & ở hiện tại".)'},
+      {h:'Mục tiêu tốt thì CỤ THỂ & ĐO ĐƯỢC', p:'"Chơi tốt hơn" không dẫn đường. "500 cú rút tuần này", "giữ routine đủ trên 90% số cú" thì đo được — biết đã đạt hay chưa, và thấy rõ tiến bộ. Đo được thì tiến bộ THẤY được, và thấy tiến bộ lại nuôi động lực để đi tiếp.'},
+      {h:'Thách thức vừa tầm', p:'Mục tiêu quá dễ thì chán, quá xa thì nản rồi bỏ. Đặt ở mức phải với tay mới tới. Chia mục tiêu lớn thành cột mốc nhỏ hằng tuần để mỗi tuần có một chiến thắng cụ thể — chuỗi thắng nhỏ giữ lửa cho một chặng đường dài.'},
+      {h:'Gắn mục tiêu với ĐIỂM YẾU', p:'Mục tiêu nên kéo bạn vào chỗ khó chịu — cú hay hỏng, tình huống hay sụp tâm lý — không phải lặp lại cái đã giỏi cho sướng tay. Đó mới là nơi điểm số thật sự lớn lên. Dành phần lớn mục tiêu tập cho điểm yếu, dù nó nhàm và bực. (Xem "Động lực & kỷ luật tập luyện".)'},
+      {h:'Viết ra & theo dõi', p:'Mục tiêu trong đầu dễ trôi. Ghi ra (dùng tab Nhật ký và mục Bài tập của app), chấm điểm định kỳ, điều chỉnh. Việc theo dõi biến mục tiêu từ một mong muốn mơ hồ thành một hệ thống có phản hồi — bạn thấy được mình đang đi tới đâu.'},
+      {h:'Kỳ vọng thực tế: tiến bộ không tuyến tính', p:'Sẽ có tuần chững, có tuần như tụt lùi. Đừng đặt mục tiêu kiểu "tháng nào cũng phải lên hạng" rồi bỏ cuộc khi gặp đoạn chững (nó luôn có). Tin vào tích luỹ: gạch xây tường, không phải phép màu một đêm. (Xem "Thoát khỏi giai đoạn sa sút kéo dài".)'},
+      {h:'Xem lại & điều chỉnh định kỳ', p:'Mục tiêu không phải khắc đá. Mỗi vài tuần soi lại: đạt chưa, còn hợp không, cần nâng hay hạ? Đạt rồi thì đặt mốc mới; mãi không đạt thì có thể mốc quá xa hoặc sai trọng tâm. Mục tiêu là la bàn — chỉnh nó theo đường đi thực tế của bạn.'},
+      {h:'Mục tiêu phục vụ bạn, không hành bạn', p:'Nếu mục tiêu chỉ tạo áp lực và giết niềm vui thì đã đặt sai — thường vì quá nặng kết quả. Mục tiêu tốt làm mỗi buổi tập rõ ràng hơn và mỗi tiến bộ nhỏ đáng ăn mừng hơn. Giữ cân bằng giữa tham vọng và niềm vui chơi bi. (Xem "Tránh kiệt sức & giữ lửa lâu dài".)'},
+    ]},
+  {key:'psy_burnout', tag:'Tâm lý', title:'Tránh kiệt sức & giữ lửa lâu dài (burnout)',
+    intro:'Đam mê quá mức, tập quá tải, hoặc biến mỗi buổi chơi thành áp lực thành–bại lâu ngày sẽ "cháy": mất hứng, chán bàn bi, đánh đâu hỏng đó, thậm chí muốn bỏ. Burnout không phải lười — nó là tín hiệu cạn pin. Đi đường dài với bi-a cần giữ LỬA, không chỉ cần kỷ luật.',
+    body:[
+      {h:'Nhận biết dấu hiệu cháy', p:'Mất hứng thú với thứ từng yêu, thấy tập luyện là gánh nặng chứ không phải niềm vui, cáu bẳn, phong độ tụt kéo dài dù vẫn tập, ngại cầm cơ, kết quả kém làm hỏng tâm trạng cả ngày. Nhận ra SỚM để chỉnh, đừng đợi tới lúc chỉ muốn bỏ hẳn mới biết mình đã cháy.'},
+      {h:'Vì sao dân đam mê dễ cháy', p:'Nghịch lý: càng yêu và càng nghiêm túc càng dễ cháy — vì dồn quá nhiều, kỳ vọng quá cao, và gắn giá trị bản thân vào kết quả. Cường độ cao mà không có phục hồi = cạn kiệt. Lửa lớn nhưng không biết giữ thì cháy nhanh hơn lửa vừa.'},
+      {h:'Nghỉ CHỦ ĐỘNG là một phần của tập luyện', p:'Đầu và cơ thể cần phục hồi để tiến bộ, y như cơ bắp cần ngày nghỉ. Nghỉ vài ngày, đôi khi một–hai tuần, không phải lười biếng — nó cho hệ thần kinh "sắp xếp lại" và làm bạn NHỚ bàn bi. Trở lại sau khoảng nghỉ đúng lúc thường tươi và sắc hơn.'},
+      {h:'Tách giá trị bản thân khỏi kết quả', p:'Nếu mỗi trận thua là một vết vào lòng tự trọng thì áp lực tích tụ tất yếu dẫn tới cháy. Bạn là người chơi bi, không phải cái tỉ số. Chơi vì bạn yêu nó và vì nó rèn bạn, không phải để chứng minh giá trị con người mình. (Xem "Vượt qua thất bại & lì đòn".)'},
+      {h:'Giữ lửa: chơi CHO VUI xen kẽ', p:'Không phải buổi nào cũng là tập nghiêm túc hay kèo căng. Thỉnh thoảng đánh vô tư, thử thể thức lạ, chơi với người hợp gu, đánh vài cú cho đẹp mắt. Niềm vui nguyên thuỷ của trò chơi là nhiên liệu — đừng để kỷ luật đốt sạch chính thứ đã kéo bạn đến với bi-a.'},
+      {h:'Đa dạng để không nhàm', p:'Lặp mãi một kiểu tập dễ chán và dễ cháy. Đổi bài, đổi mục tiêu, đổi quán, đổi đối thủ, xem cơ thủ giỏi lấy cảm hứng, đặt một giải nhỏ làm mốc để mong chờ. Cái mới mẻ giữ cho não hứng thú — và não hứng thú thì học nhanh hơn.'},
+      {h:'Cân bằng với phần đời còn lại', p:'Bi-a lành mạnh khi nó là MỘT phần của cuộc sống, không nuốt chửng nó. Giữ ngủ đủ, quan hệ, công việc, sức khoẻ ổn định — nền tảng đời sống vững thì mới chơi bền và chơi vui. Đánh bi thâu đêm, bỏ bê mọi thứ khác là con đường ngắn nhất tới cháy.'},
+      {h:'Kỷ luật VÀ niềm vui, không phải chọn một', p:'Kỷ luật đưa bạn qua ngày xám không có hứng; niềm vui khiến cả hành trình đáng đi. Người đi đường dài cần cả hai: đủ kỷ luật để không bỏ khi chán, đủ niềm vui để không cháy khi ép. Mất một trong hai thì sớm muộn cũng dừng lại. (Xem "Động lực & kỷ luật tập luyện".)'},
+      {h:'Nếu đã cháy: hạ tải, đừng bỏ hẳn', p:'Đừng ra quyết định lớn ("bỏ bi-a") lúc đang cháy — đó là tiếng nói của kiệt sức, không phải của bạn. Hạ cường độ, chơi nhẹ không mục tiêu, hoặc nghỉ hẳn một thời gian rồi để nỗi nhớ tự quay lại. Ngọn lửa nguội gần như luôn bùng lại khi được cho một khoảng thở đủ dài.'},
+    ]},
   {key:'fitness', tag:'Thể lực', title:'Bài tập thể lực cho cơ thủ',
     intro:'Bi-a không cần cơ bắp lớn, nhưng cần cổ tay – vai – core khoẻ, lưng bền và tay ổn định. Vài bài đơn giản tập ở nhà.',
     body:[
@@ -3680,12 +3992,23 @@ const KNOW_CATS=[
   {tag:'Thể lực', label:'💪 Thể lực'},
   {tag:'Tâm lý', label:'🧠 Tâm lý'},
 ];
+// Kiến thức Tâm lý chia nhỏ thành các nhóm con (mọi bài tag 'Tâm lý' đều phải nằm trong 1 nhóm; bài lạ rơi vào "Khác").
+const PSY_SUBCATS=[
+  {label:'🧭 Nền tảng & quy trình', keys:['psy_focus','psy_trust','psy_breath','psy_selftalk','psy_visual','psy_confidence','psy_flow','serious']},
+  {label:'🎯 Trước trận & khởi động', keys:['psy_prematch','psy_slowstart']},
+  {label:'🔥 Áp lực & khoảnh khắc quyết định', keys:['psy_pressure','psy_closeout','psy_stakes','psy_yips','psy_crowd']},
+  {label:'💢 Cảm xúc, lỗi & phục hồi', keys:['psy_after','psy_variance','behind','psy_resilience']},
+  {label:'♟️ Đối thủ & thế trận', keys:['psy_momentum','psy_shark','psy_pokerface','psy_handicap','psy_chair']},
+  {label:'📈 Đường dài & rèn luyện', keys:['psy_stamina','psy_discipline','psy_goals','psy_burnout','psy_slump']},
+];
+const PSY_INSUB=new Set(PSY_SUBCATS.flatMap(s=>s.keys));
 function KnowledgeView(){
   const [archived,setArchived]=usePersist('nc.knowarchive',[]);
   const [pinned,setPinned]=usePersist('nc.knowpin',[]);
   const [fav,setFav]=usePersist('nc.knowfav',[]);
   const [showArch,setShowArch]=useState(false);
   const [favMode,setFavMode]=useState(false);
+  const [sec,setSec]=useState('skill');   // 'skill' | 'psy' — Tâm lý là một phần riêng
   const isArch=(k)=>archived.includes(k);
   const isPin=(k)=>pinned.includes(k);
   const isFav=(k)=>fav.includes(k);
@@ -3693,16 +4016,20 @@ function KnowledgeView(){
   const togglePin=(k)=>setPinned(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
   const toggleFav=(k)=>setFav(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
   const cardProps=(a)=>({onArchive:()=>toggleArch(a.key),onPin:()=>togglePin(a.key),pinned:isPin(a.key),onFav:()=>toggleFav(a.key),fav:isFav(a.key)});
+  const isPsy=(a)=>a.tag==='Tâm lý';
+  const inSec=(a)=> sec==='psy' ? isPsy(a) : !isPsy(a);
   const archList=KNOWLEDGE.filter(a=>isArch(a.key));
-  const pinList=KNOWLEDGE.filter(a=>isPin(a.key) && !isArch(a.key));
+  const pinList=KNOWLEDGE.filter(a=>isPin(a.key) && !isArch(a.key) && inSec(a));
   const favList=KNOWLEDGE.filter(a=>isFav(a.key) && !isArch(a.key));
+  const secArch=archList.filter(inSec);
+  const psyOther=KNOWLEDGE.filter(a=>isPsy(a) && !PSY_INSUB.has(a.key) && !isArch(a.key) && !isPin(a.key));
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Kiến thức bi-a</div>
       <div className="tsub">Chạm để mở/đóng. ⭐ yêu thích · 📌 ghim lên đầu · 🗄 lưu trữ cho gọn.</div>
       {favList.length>0 &&
         <div className="presets" style={{justifyContent:'flex-start',margin:'2px 0 6px'}}>
-          <button className={'chip'+(!favMode?' on':'')} onClick={()=>setFavMode(false)}>Tất cả</button>
+          <button className={'chip'+(!favMode?' on':'')} onClick={()=>setFavMode(false)}>Duyệt theo mục</button>
           <button className={'chip'+(favMode?' on':'')} onClick={()=>setFavMode(true)}>⭐ Yêu thích ({favList.length})</button>
         </div>}
       {favMode
@@ -3710,6 +4037,10 @@ function KnowledgeView(){
             {favList.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
           </div>
         : <>
+            <div className="catbar" style={{marginTop:2,marginBottom:4}}>
+              <button className={'chip'+(sec==='skill'?' on':'')} onClick={()=>setSec('skill')}>🎱 Kỹ năng & thể chất</button>
+              <button className={'chip'+(sec==='psy'?' on':'')} onClick={()=>setSec('psy')}>🧠 Tâm lý</button>
+            </div>
             {pinList.length>0 &&
               <div>
                 <div className="h2">📌 Đã ghim</div>
@@ -3717,31 +4048,52 @@ function KnowledgeView(){
                   {pinList.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
                 </div>
               </div>}
-            {KNOW_CATS.map(c=>{
-              const arts=KNOWLEDGE.filter(a=>a.tag===c.tag && !isArch(a.key) && !isPin(a.key));
-              if(!arts.length) return null;
-              return (
-                <div key={c.tag}>
-                  <div className="h2">{c.label}</div>
-                  <div className="list">
-                    {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} {...cardProps(a)}/>)}
-                  </div>
-                </div>);
-            })}
-            {archList.length>0 &&
+            {sec==='skill'
+              ? KNOW_CATS.filter(c=>c.tag!=='Tâm lý').map(c=>{
+                  const arts=KNOWLEDGE.filter(a=>a.tag===c.tag && !isArch(a.key) && !isPin(a.key));
+                  if(!arts.length) return null;
+                  return (
+                    <div key={c.tag}>
+                      <div className="h2">{c.label}</div>
+                      <div className="list">
+                        {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} {...cardProps(a)}/>)}
+                      </div>
+                    </div>);
+                })
+              : <>
+                  {PSY_SUBCATS.map(sc=>{
+                    const arts=KNOWLEDGE.filter(a=>a.tag==='Tâm lý' && sc.keys.includes(a.key) && !isArch(a.key) && !isPin(a.key));
+                    if(!arts.length) return null;
+                    return (
+                      <div key={sc.label}>
+                        <div className="h2">{sc.label}</div>
+                        <div className="list">
+                          {arts.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
+                        </div>
+                      </div>);
+                  })}
+                  {psyOther.length>0 &&
+                    <div>
+                      <div className="h2">🗂️ Khác</div>
+                      <div className="list">
+                        {psyOther.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
+                      </div>
+                    </div>}
+                </>}
+            {secArch.length>0 &&
               <div style={{marginTop:16}}>
                 <div className="h2" style={{cursor:'pointer',display:'flex',alignItems:'center',gap:8}} onClick={()=>setShowArch(s=>!s)}>
-                  <span style={{flex:1}}>🗄️ Lưu trữ ({archList.length})</span>
+                  <span style={{flex:1}}>🗄️ Lưu trữ ({secArch.length})</span>
                   <span className="muted" style={{fontSize:15}}>{showArch?'▾':'▸'}</span>
                 </div>
                 {showArch
                   ? <>
                       <div className="list">
-                        {archList.map(a=><KnowCard key={a.key} a={a} onArchive={()=>toggleArch(a.key)} archived={true}/>)}
+                        {secArch.map(a=><KnowCard key={a.key} a={a} onArchive={()=>toggleArch(a.key)} archived={true}/>)}
                       </div>
-                      <button className="btn ghost wide" style={{marginTop:8}} onClick={()=>setArchived([])}>↺ Bỏ lưu trữ tất cả ({archList.length})</button>
+                      <button className="btn ghost wide" style={{marginTop:8}} onClick={()=>setArchived(prev=>prev.filter(k=>!secArch.some(a=>a.key===k)))}>↺ Bỏ lưu trữ tất cả ({secArch.length})</button>
                     </>
-                  : <div className="tsub" style={{marginTop:2}}>Chạm để xem {archList.length} bài đã lưu trữ.</div>}
+                  : <div className="tsub" style={{marginTop:2}}>Chạm để xem {secArch.length} bài đã lưu trữ.</div>}
               </div>}
           </>}
     </div>
