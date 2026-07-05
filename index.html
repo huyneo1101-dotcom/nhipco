@@ -130,6 +130,8 @@ body{
 .archbtn:hover{color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent)}
 .archbtn:active{transform:scale(.88)}
 .archbtn svg{width:18px;height:18px;display:block}
+.archbtn.on{color:var(--gold)}
+.kacts{display:flex;align-items:center;gap:1px;flex:none}
 .poslegend{display:flex;gap:14px;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0;flex-wrap:wrap}
 .posdot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.35)}
 
@@ -525,7 +527,7 @@ const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
 const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.cuevotes','nc.customcues',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
-  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan','nc.knowarchive'];
+  'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan','nc.knowarchive','nc.knowpin','nc.knowfav'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
 // DATA = dữ liệu người dùng (trận, thế bi, lỗi, tập luyện...) + vài key ngày-cục-bộ không đồng bộ.
 const PREF_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
@@ -3643,14 +3645,20 @@ const KNOWLEDGE=[
 ];
 const IconArchive=()=>(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="4" rx="1.6"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>);
 const IconUnarchive=()=>(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14l-4-4l4-4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg>);
-function KnowCard({a,defaultOpen,onArchive,archived}){
+const IconStar=({on})=>(<svg viewBox="0 0 24 24" fill={on?'currentColor':'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.6l2.55 5.17 5.7.83-4.13 4.02.98 5.68L12 16.6l-5.1 2.7.98-5.68L3.75 9.6l5.7-.83z"/></svg>);
+const IconPin=({on})=>(<svg viewBox="0 0 24 24" fill={on?'currentColor':'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 4h7l-1 6 2.5 2.5v1.5h-11v-1.5l2.5-2.5z"/><path d="M12 14v6"/></svg>);
+function KnowCard({a,defaultOpen,onArchive,archived,onFav,fav,onPin,pinned}){
   const [open,setOpen]=useState(!!defaultOpen);
   return (
     <div className="card drillC">
       <div className="drillH" onClick={()=>setOpen(o=>!o)}>
         <div className="dn" style={{flex:1,minWidth:0}}><b>{a.title}</b><small>{open?'thu gọn':'đọc'}</small></div>
-        {onArchive && <button className="archbtn" title={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} aria-label={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} onClick={(e)=>{e.stopPropagation();onArchive();}} style={{marginLeft:2}}>{archived?<IconUnarchive/>:<IconArchive/>}</button>}
-        <span className="muted" style={{fontSize:16}}>{open?'▾':'▸'}</span>
+        <div className="kacts">
+          {onFav && <button className={"archbtn"+(fav?" on":"")} title={fav?'Bỏ yêu thích':'Yêu thích'} aria-label={fav?'Bỏ yêu thích':'Yêu thích'} onClick={(e)=>{e.stopPropagation();onFav();}}><IconStar on={fav}/></button>}
+          {onPin && <button className={"archbtn"+(pinned?" on":"")} title={pinned?'Bỏ ghim':'Ghim lên đầu'} aria-label={pinned?'Bỏ ghim':'Ghim lên đầu'} onClick={(e)=>{e.stopPropagation();onPin();}}><IconPin on={pinned}/></button>}
+          {onArchive && <button className="archbtn" title={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} aria-label={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} onClick={(e)=>{e.stopPropagation();onArchive();}}>{archived?<IconUnarchive/>:<IconArchive/>}</button>}
+        </div>
+        <span className="muted" style={{fontSize:16,flex:'none'}}>{open?'▾':'▸'}</span>
       </div>
       {open &&
         <div className="drillB">
@@ -3674,40 +3682,68 @@ const KNOW_CATS=[
 ];
 function KnowledgeView(){
   const [archived,setArchived]=usePersist('nc.knowarchive',[]);
+  const [pinned,setPinned]=usePersist('nc.knowpin',[]);
+  const [fav,setFav]=usePersist('nc.knowfav',[]);
   const [showArch,setShowArch]=useState(false);
+  const [favMode,setFavMode]=useState(false);
   const isArch=(k)=>archived.includes(k);
+  const isPin=(k)=>pinned.includes(k);
+  const isFav=(k)=>fav.includes(k);
   const toggleArch=(k)=>setArchived(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
+  const togglePin=(k)=>setPinned(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
+  const toggleFav=(k)=>setFav(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
+  const cardProps=(a)=>({onArchive:()=>toggleArch(a.key),onPin:()=>togglePin(a.key),pinned:isPin(a.key),onFav:()=>toggleFav(a.key),fav:isFav(a.key)});
   const archList=KNOWLEDGE.filter(a=>isArch(a.key));
+  const pinList=KNOWLEDGE.filter(a=>isPin(a.key) && !isArch(a.key));
+  const favList=KNOWLEDGE.filter(a=>isFav(a.key) && !isArch(a.key));
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Kiến thức bi-a</div>
-      <div className="tsub">Phân theo mục — chạm để mở/đóng từng bài. Bài ít quan tâm có thể lưu trữ cho gọn.</div>
-      {KNOW_CATS.map(c=>{
-        const arts=KNOWLEDGE.filter(a=>a.tag===c.tag && !isArch(a.key));
-        if(!arts.length) return null;
-        return (
-          <div key={c.tag}>
-            <div className="h2">{c.label}</div>
-            <div className="list">
-              {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} onArchive={()=>toggleArch(a.key)}/>)}
-            </div>
-          </div>);
-      })}
-      {archList.length>0 &&
-        <div style={{marginTop:16}}>
-          <div className="h2" style={{cursor:'pointer',display:'flex',alignItems:'center',gap:8}} onClick={()=>setShowArch(s=>!s)}>
-            <span style={{flex:1}}>🗄️ Lưu trữ ({archList.length})</span>
-            <span className="muted" style={{fontSize:15}}>{showArch?'▾':'▸'}</span>
-          </div>
-          {showArch
-            ? <>
-                <div className="list">
-                  {archList.map(a=><KnowCard key={a.key} a={a} onArchive={()=>toggleArch(a.key)} archived={true}/>)}
-                </div>
-                <button className="btn ghost wide" style={{marginTop:8}} onClick={()=>setArchived([])}>↺ Bỏ lưu trữ tất cả ({archList.length})</button>
-              </>
-            : <div className="tsub" style={{marginTop:2}}>Chạm để xem {archList.length} bài đã lưu trữ.</div>}
+      <div className="tsub">Chạm để mở/đóng. ⭐ yêu thích · 📌 ghim lên đầu · 🗄 lưu trữ cho gọn.</div>
+      {favList.length>0 &&
+        <div className="presets" style={{justifyContent:'flex-start',margin:'2px 0 6px'}}>
+          <button className={'chip'+(!favMode?' on':'')} onClick={()=>setFavMode(false)}>Tất cả</button>
+          <button className={'chip'+(favMode?' on':'')} onClick={()=>setFavMode(true)}>⭐ Yêu thích ({favList.length})</button>
         </div>}
+      {favMode
+        ? <div className="list">
+            {favList.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
+          </div>
+        : <>
+            {pinList.length>0 &&
+              <div>
+                <div className="h2">📌 Đã ghim</div>
+                <div className="list">
+                  {pinList.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
+                </div>
+              </div>}
+            {KNOW_CATS.map(c=>{
+              const arts=KNOWLEDGE.filter(a=>a.tag===c.tag && !isArch(a.key) && !isPin(a.key));
+              if(!arts.length) return null;
+              return (
+                <div key={c.tag}>
+                  <div className="h2">{c.label}</div>
+                  <div className="list">
+                    {arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} {...cardProps(a)}/>)}
+                  </div>
+                </div>);
+            })}
+            {archList.length>0 &&
+              <div style={{marginTop:16}}>
+                <div className="h2" style={{cursor:'pointer',display:'flex',alignItems:'center',gap:8}} onClick={()=>setShowArch(s=>!s)}>
+                  <span style={{flex:1}}>🗄️ Lưu trữ ({archList.length})</span>
+                  <span className="muted" style={{fontSize:15}}>{showArch?'▾':'▸'}</span>
+                </div>
+                {showArch
+                  ? <>
+                      <div className="list">
+                        {archList.map(a=><KnowCard key={a.key} a={a} onArchive={()=>toggleArch(a.key)} archived={true}/>)}
+                      </div>
+                      <button className="btn ghost wide" style={{marginTop:8}} onClick={()=>setArchived([])}>↺ Bỏ lưu trữ tất cả ({archList.length})</button>
+                    </>
+                  : <div className="tsub" style={{marginTop:2}}>Chạm để xem {archList.length} bài đã lưu trữ.</div>}
+              </div>}
+          </>}
     </div>
   );
 }
