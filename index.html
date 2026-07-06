@@ -506,7 +506,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
  var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
  function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,rev:r.rev,scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
  function score(e){ if(!e) return Infinity; return ln(sb(e.cueRest,Tt)) // ĐÍCH là chính; các phạt dưới đây NHẸ (chỉ nghiêng chọn, không lấn độ chính xác)
-   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045:0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): KHÔNG phạt draw + PHẠT ÁP PHÊ NGHỊCH (e.rev, chọn cú english tự nhiên/running); CỐ VẤN: giữ nguyên (chính xác). Chặn gần miscue (>0.46R)
+   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045+Math.abs(e.bx)*0.07:0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): KHÔNG phạt draw + phạt ÁP PHÊ NGHỊCH (rev) + ƯU TIÊN KHÔNG SIDE english (trục dọc giữa; +0.07|bx|); CỐ VẤN: giữ nguyên. Chặn gần miscue (>0.46R)
  function stabCost(e){return (e.sensitivity||0)+0.10*Math.abs(e.bx)+0.04*Math.max(0,-e.by-0.32)+0.05*e.rails+0.10*Math.max(0,1.5-e.sp)+0.08*Math.max(0,e.sp-2.4)+0.25*Math.max(0,Math.hypot(e.bx,e.by)-0.46);} // "chi phí bất ổn": nhạy + côn side + rút RẤT sâu + băng (nhẹ) + lực + gần-miscue
  function techKey(e){return (e.by>0.14?'F':e.by<-0.14?'D':'S')+(e.bx>0.12?'R':e.bx<-0.12?'L':'C');} // Follow/Stun/Draw × Right/Center/Left
  function missObj(e){return e?ln(sb(e.cueRest,Tt))+e.scr:Infinity;} // độ chính xác THUẦN + né lỗ/bi (KHÔNG phạt english/lực) — để giữ cú chính xác dù cần english cao
@@ -647,11 +647,16 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
    var evalP=function(P,frag){var s1=solveFast(cue,ball,RN_POCK[P],tgt1,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
     var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
     if(pk1<0)look=14; // 1 NƯỚC: bi kế KẸT từ chỗ dừng → PHẠT NẶNG (đừng bao giờ điều ra kẹt nếu còn cách khác)
-    else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.5-cutNb)*3.5;var buried2=(nb2&&pickPocket(rnLeave(nb2,after2,felt),nb2,after2)<0)?2.5:0;look=frag1*0.4+thin+buried2;} // 2 NƯỚC (hình học)
+    else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.5-cutNb)*3.5;var pos2=0;
+     if(nb2){var s2=solveFast(L1,nb,RN_POCK[pk1],rnLeave(nb2,after2,felt),{felt:felt,others:after,quick2:true}); // ĐÀO SÂU 2-BI: GIẢI cú bi kế (từ chỗ dừng) → chấm CHẤT LƯỢNG vị trí bi kế-kế
+      if(s2.potFail)pos2=4; else{var L2=s2.cueRest,pk2=pickPocket(L2,nb2,after2);
+       if(pk2<0)pos2=4; else{var cut2=Math.max(0.05,dt2(nm(sb(nb2,L2)),nm(sb(RN_POCK[pk2],nb2))));pos2=potFragility(ln(sb(RN_POCK[pk2],nb2)),ln(sb(nb2,L2)),cut2)*0.3+Math.max(0,0.5-cut2)*2+ln(sb(L2,[1.27,0.635]))*0.5+s2.missBy*2.5;}}} // vị trí bi kế-kế: dễ pot + góc đẹp (không mỏng) + giữa bàn + tới được thật
+     look=frag1*0.4+thin+pos2;} // 2 NƯỚC SÂU (giải thật cú kế)
     var ctr=ln(sb(L1,[1.27,0.635]))*0.7; // ƯU TIÊN landing GIỮA BÀN (dễ bắn, không với)
     var cutThis=dt2(nm(sb(ball,cue)),nm(sb(RN_POCK[P],ball))),thinNow=Math.max(0,0.5-cutThis)*2.2; // cắt bi HIỆN TẠI mỏng → khó hãm/kiểm soát cue (mạo hiểm, sai kỳ vọng)
-    var revPen=(s1.rev||0)*0.5; // chỉ phạt ÁP PHÊ NGHỊCH (english NGƯỢC chiều bi chạy trên băng — hãm bất định); running english (cùng chiều) KHÔNG phạt vì nó giúp điều bi (yêu cầu chủ)
-    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+thinNow+revPen,look:look};};
+    var revPen=(s1.rev||0)*0.5; // chỉ phạt ÁP PHÊ NGHỊCH (english NGƯỢC chiều bi chạy trên băng — hãm bất định); running english (cùng chiều) KHÔNG phạt vì nó giúp điều bi
+    var risk=(s1.sensitivity||0)*0.4; // RỦI RO: cú NHẠY (sai lực/tay nhẹ → vị trí lệch nhiều: quá lực/thiếu lực) → phạt, ưu tiên cú CHỊU-run-tay (traffic/chạm bi đã lo ở s1.scr)
+    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+thinNow+revPen+risk,look:look};};
    var bestC=evalP(pockets[0].pk,pockets[0].frag); // lỗ dễ nhất trước
    if((!bestC||bestC.look>=1.5)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2 (rnLeaves đã lọc chỗ bi-kế-ăn-được nên ít khi cần)
    if(bestC){var zAlts=[];for(var li=1;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (2-3 phương án điều bi, miễn phí từ rnLeaves): cú chính vẽ đủ, các vùng còn lại = chỗ có thể điều tới
@@ -3046,21 +3051,12 @@ function rnDia(layout, steps, ov, altOpt){
   return dia;
 }
 function TipFace({tip,size}){
-  const S=size||34, R0=13, cx=16, cy=16, k=R0*0.82, bx=tip?tip.x:0, by=tip?tip.y:0, big=S>=110;
-  const dirs=[[0,-1],[0.707,-0.707],[1,0],[0.707,0.707],[0,1],[-0.707,0.707],[-1,0],[-0.707,-0.707]]; // 8 hướng: cao, cao-phải, phải, thấp-phải, thấp, thấp-trái, trái, cao-trái
-  const rads=[0.32,0.56,0.8], dots=[];
-  dirs.forEach((d,di)=>rads.forEach((r,ri)=>{ if(di%2===1&&ri===2)return; dots.push([cx+d[0]*R0*r, cy+d[1]*R0*r]); })); // các điểm đầu cơ (chéo bớt vòng ngoài)
+  const S=size||34, Rr=13,cx=16,cy=16,k=Rr*0.7, bx=tip?tip.x:0, by=tip?tip.y:0;
   return (<svg viewBox="0 0 32 32" width={S} height={S} style={{flex:'none'}}>
-    <circle cx={cx} cy={cy} r={R0} fill="#f4f1e6" stroke="#c94b3c" strokeWidth={big?1.8:1.3}/>
-    {dirs.map((d,i)=><line key={'ax'+i} x1={cx} y1={cy} x2={cx+d[0]*R0} y2={cy+d[1]*R0} stroke={i%2?'#e0c4bd':'#e8877a'} strokeWidth=".4"/>)}
-    {dots.map((p,i)=><circle key={'d'+i} cx={p[0]} cy={p[1]} r=".95" fill="none" stroke="#9a8f78" strokeWidth=".42"/>)}
-    <circle cx={cx} cy={cy} r="1.5" fill="none" stroke="#c94b3c" strokeWidth=".5"/><circle cx={cx} cy={cy} r=".55" fill="#c94b3c"/>
-    {big && <g fontSize="2" fill="#8a5316" fontWeight="700" textAnchor="middle">
-      <text x={cx} y={cy-R0+2}>CAO</text><text x={cx} y={cy+R0-1}>THẤP</text>
-      <text x={cx-R0+2.2} y={cy+0.6} transform={'rotate(-90 '+(cx-R0+2.2)+' '+(cy+0.6)+')'}>TRÁI</text>
-      <text x={cx+R0-2.2} y={cy+0.6} transform={'rotate(90 '+(cx+R0-2.2)+' '+(cy+0.6)+')'}>PHẢI</text>
-    </g>}
-    <circle cx={cx+bx*k} cy={cy+by*k} r={big?2.4:3.0} fill="#e0556b" stroke="#fff" strokeWidth="1.2"/>
+    <circle cx={cx} cy={cy} r={Rr} fill="#f4f1e6" stroke="#b9b3a2" strokeWidth="1"/>
+    <line x1={cx} y1={cy-Rr} x2={cx} y2={cy+Rr} stroke="#d9d3c4" strokeWidth=".7"/>
+    <line x1={cx-Rr} y1={cy} x2={cx+Rr} y2={cy} stroke="#d9d3c4" strokeWidth=".7"/>
+    <circle cx={cx+bx*k} cy={cy+by*k} r="3.4" fill="#e0556b" stroke="#fff" strokeWidth="1.1"/>
   </svg>);
 }
 function CoachTable({dia,photo,onClick,cls}){
@@ -3237,12 +3233,12 @@ function RunoutCoach(){
       {full && <div className="rnfullov" onClick={()=>setFull(false)}>
         {shot>=0 && steps[shot] && !steps[shot].potFail && !steps[shot].last && !steps[shot].isCombo &&
           <div className="rntipfs" onClick={e=>e.stopPropagation()}>
-            <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={198}/>
+            <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={186}/>
             <div className="rntiplbl">Bi {steps[shot].n} → lỗ {RN_PK[steps[shot].pk]}<br/>đầu cơ {tipLabel({x:steps[shot].bx,y:-steps[shot].by})}<br/><small>lực {steps[shot].speed<1.3?'nhẹ':steps[shot].speed<2.3?'vừa':'chắc'}{steps[shot].rails>0?' · '+steps[shot].rails+' băng':''}</small></div>
           </div>}
         {shot>=0 && steps[shot] && steps[shot].isCombo &&
           <div className="rntipfs" onClick={e=>e.stopPropagation()}>
-            <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={198}/>
+            <TipFace tip={{x:steps[shot].bx,y:-steps[shot].by}} size={186}/>
             <div className="rntiplbl">🎯 {steps[shot].comboMode==='combo'?'Combo dọn chắn':'Gãi bi'}<br/>Bi {steps[shot].n} {steps[shot].comboMode==='combo'?'combo bi '+steps[shot].comboBn:'gãi bi '+steps[shot].comboBn} → lỗ {RN_PK[steps[shot].pk]}<br/>đầu cơ {tipLabel({x:steps[shot].bx,y:-steps[shot].by})}<br/><small>lực {steps[shot].speed<2.3?'vừa':'chắc'} · {steps[shot].comboMode==='combo'?'dọn chắn, bắn tiếp':'ăn bi kẹt'}</small></div>
           </div>}
         <div className="rnfullinner" onClick={e=>e.stopPropagation()}>
