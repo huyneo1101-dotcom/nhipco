@@ -456,7 +456,7 @@ function ballCollide(cue,obj){var n=nm(sb(obj.p,cue.p)),t=pp(n),vn=dt2(cue.v,n),
  var mub=muBall(vs),Jn=objN,cap=mub*Math.abs(Jn)+1e-9,throwV=Math.sign(slipT)*cap*Math.tanh((vs/2)/cap);
  obj.v=ad(ml(n,objN),ml(t,throwV));obj.w=[0,0,0];cue.v=ad(ml(n,cueN),ml(t,vt-throwV));}
 function cushionCollide(b,rt){var n;if(rt=='x0')n=[1,0];else if(rt=='x1')n=[-1,0];else if(rt=='y0')n=[0,1];else n=[0,-1];
- var t=pp(n),vn=dt2(b.v,n),vt=dt2(b.v,t);if(vn>=0)return;vt+=MU_RAIL*(b.w[2]*R);vn=-E_RAIL*vn;vt=vt*0.95;b.v=ad(ml(n,vn),ml(t,vt));
+ var t=pp(n),vn=dt2(b.v,n),vt=dt2(b.v,t);if(vn>=0)return;var eng=MU_RAIL*(b.w[2]*R);if(vt*eng<-1e-9&&Math.abs(vt)>0.15)b.rev=(b.rev||0)+1;vt+=eng;vn=-E_RAIL*vn;vt=vt*0.95;b.v=ad(ml(n,vn),ml(t,vt)); // eng NGƯỢC chiều bi chạy dọc băng = ÁP PHÊ NGHỊCH (đếm để phạt ở run-out)
  b.w[2]*=0.7;b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;} // re-establish natural roll after bank (un-reflected topspin would otherwise create a large artificial slip → unnatural curve back toward rail)
 function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,cush=!!opts.cushions,noPath=!!opts.noPath,dt=opts.dt||1e-4,maxT=opts.maxT||12,obs=opts.obs||(opts.tenBall?[opts.tenBall]:null);
  var cue=launchSpin(speed,dir,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]};
@@ -476,7 +476,7 @@ function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,
   if(path&&t>0&&path.length<4000&&ln(sb(cue.p,path[path.length-1]))>0.008)path.push(cue.p.slice());
   t+=dt;if(atRest(cue))break;}
  if(path&&(path.length===0||ln(sb(path[path.length-1],cue.p))>1e-4))path.push(cue.p.slice()); // ensure path ends exactly at rest (analytic roll-to-rest jump didn't record its endpoint)
- return{cueRest:cue.p.slice(),cuePath:path,rails:rails};}
+ return{cueRest:cue.p.slice(),cuePath:path,rails:rails,rev:cue.rev||0};}
 // ---- solver ----
 function ghostBall(O,pk){return sb(O,ml(nm(sb(pk,O)),2*R));}
 function signedAng(a,b){var A=nm(a),B=nm(b);return Math.atan2(A[0]*B[1]-A[1]*B[0],A[0]*B[0]+A[1]*B[1]);}
@@ -504,9 +504,9 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
   if(felt&&tgtRail>0.16){var rr=Math.min(rest[0]-felt[0],felt[1]-rest[0],rest[1]-felt[2],felt[3]-rest[1]);if(rr<0.10)pen+=(0.10-rr)*2.2;} // #4: bi cái dừng SÁT BĂNG = khó bắc cầu cú sau (chỉ phạt khi đích không cố ý sát băng)
   if(others){if(minT<2.2*R)pen+=80;if(minT<3*R)pen+=(3*R-minT)/R*8;}return pen;} // TRAFFIC RẤT NẶNG: đường bi cái CHẠM bi khác (nảy, <2.2R) → +80 = CẤM (chỉ chọn nếu KHÔNG còn cách nào, vd gãi thế díu); đi trong ~1R bề mặt bi khác (<3R) → phạt nặng tăng dần
  var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
- function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
+ function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,rev:r.rev,scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
  function score(e){ if(!e) return Infinity; return ln(sb(e.cueRest,Tt)) // ĐÍCH là chính; các phạt dưới đây NHẸ (chỉ nghiêng chọn, không lấn độ chính xác)
-   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): KHÔNG phạt draw (trô dùng draw thoải mái); CỐ VẤN: giữ phạt draw nhẹ (chính xác). Băng hợp lệ; chặn gần miscue (>0.46R)
+   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045:0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): KHÔNG phạt draw + PHẠT ÁP PHÊ NGHỊCH (e.rev, chọn cú english tự nhiên/running); CỐ VẤN: giữ nguyên (chính xác). Chặn gần miscue (>0.46R)
  function stabCost(e){return (e.sensitivity||0)+0.10*Math.abs(e.bx)+0.04*Math.max(0,-e.by-0.32)+0.05*e.rails+0.10*Math.max(0,1.5-e.sp)+0.08*Math.max(0,e.sp-2.4)+0.25*Math.max(0,Math.hypot(e.bx,e.by)-0.46);} // "chi phí bất ổn": nhạy + côn side + rút RẤT sâu + băng (nhẹ) + lực + gần-miscue
  function techKey(e){return (e.by>0.14?'F':e.by<-0.14?'D':'S')+(e.bx>0.12?'R':e.bx<-0.12?'L':'C');} // Follow/Stun/Draw × Right/Center/Left
  function missObj(e){return e?ln(sb(e.cueRest,Tt))+e.scr:Infinity;} // độ chính xác THUẦN + né lỗ/bi (KHÔNG phạt english/lực) — để giữ cú chính xác dù cần english cao
@@ -540,7 +540,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
  var opts=[];for(var r2=0;r2<refined.length;r2++){var o=refined[r2],dup=false;for(var z=0;z<opts.length;z++)if(techKey(opts[z])===techKey(o)){dup=true;break;}if(!dup)opts.push(o);} // one option per distinct technique (best-scoring of each)
  var REACH=5*R;var kept=opts.filter(function(o,idx){return idx===0||o.missBy<REACH;}).slice(0,3); // primary always kept; alternatives only if they genuinely reach near the target
  var b=kept[0];
- return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,rails:b.rails,path:b.path,scr:b.scr,potFrag:potFrag,
+ return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,rails:b.rails,rev:b.rev||0,path:b.path,scr:b.scr,potFrag:potFrag,
   options:kept.map(function(o){return{bx:o.bx,by:o.by,speed:o.speed,aim:o.aim,cueRest:o.cueRest,missBy:o.missBy,onTarget:o.onTarget,sensitivity:o.sensitivity,rails:o.rails,path:o.path,scr:o.scr,label:o.label};})};}
 // ---- RUN-OUT: chuỗi dọn bàn (chọn lỗ từng viên · né MỌI bi còn lại · nối cue: điểm dừng cú i = cue cú i+1) ----
 function distSeg(p,a,b){var ab=sb(b,a),d2=dt2(ab,ab)||1e-9,t=Math.max(0,Math.min(1,dt2(sb(p,a),ab)/d2));return ln(sb(p,ad(a,ml(ab,t))));}
@@ -650,11 +650,12 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
     else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.5-cutNb)*3.5;var buried2=(nb2&&pickPocket(rnLeave(nb2,after2,felt),nb2,after2)<0)?2.5:0;look=frag1*0.4+thin+buried2;} // 2 NƯỚC (hình học)
     var ctr=ln(sb(L1,[1.27,0.635]))*0.7; // ƯU TIÊN landing GIỮA BÀN (dễ bắn, không với)
     var cutThis=dt2(nm(sb(ball,cue)),nm(sb(RN_POCK[P],ball))),thinNow=Math.max(0,0.5-cutThis)*2.2; // cắt bi HIỆN TẠI mỏng → khó hãm/kiểm soát cue (mạo hiểm, sai kỳ vọng)
-    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+thinNow,look:look};};
+    var revPen=(s1.rev||0)*0.5; // chỉ phạt ÁP PHÊ NGHỊCH (english NGƯỢC chiều bi chạy trên băng — hãm bất định); running english (cùng chiều) KHÔNG phạt vì nó giúp điều bi (yêu cầu chủ)
+    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+thinNow+revPen,look:look};};
    var bestC=evalP(pockets[0].pk,pockets[0].frag); // lỗ dễ nhất trước
    if((!bestC||bestC.look>=1.5)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2 (rnLeaves đã lọc chỗ bi-kế-ăn-được nên ít khi cần)
    if(bestC){var zAlts=[];for(var li=1;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (2-3 phương án điều bi, miễn phí từ rnLeaves): cú chính vẽ đủ, các vùng còn lại = chỗ có thể điều tới
-    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:tgt1,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
+    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:tgt1,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,rev:bestC.s1.rev||0,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
   if(done)continue;
   var cm=rnCarom(cue,ball,others,felt,nb,after); // KẸT → GÃI (carom, ăn CHÍNH bi mục tiêu)
   if(cm){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'carom',comboB:cm.B,comboBn:seq.indexOf(cm.B)+1,caromX:cm.X,pk:cm.pk,pocket:cm.pocket,path:cm.path,bx:cm.bx,by:cm.by,speed:cm.speed,landing:cm.cueRest,last:false});cue=cm.cueRest.slice();potted[i]=true;continue;}
