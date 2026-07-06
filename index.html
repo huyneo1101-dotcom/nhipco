@@ -506,7 +506,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
  var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
  function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,rev:r.rev,scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
  function score(e){ if(!e) return Infinity; return ln(sb(e.cueRest,Tt)) // ĐÍCH là chính; các phạt dưới đây NHẸ (chỉ nghiêng chọn, không lấn độ chính xác)
-   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045+Math.abs(e.bx)*0.07:0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): KHÔNG phạt draw + phạt ÁP PHÊ NGHỊCH (rev) + ƯU TIÊN KHÔNG SIDE english (trục dọc giữa; +0.07|bx|); CỐ VẤN: giữ nguyên. Chặn gần miscue (>0.46R)
+   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045+Math.abs(e.bx)*0.07:0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): phạt ÁP PHÊ NGHỊCH (rev) + KHÔNG SIDE (|bx|); draw/follow (trục dọc) tự do vì cần cho vị trí (chủ muốn trô); CỐ VẤN: giữ nguyên. Chặn miscue (>0.46R)
  function stabCost(e){return (e.sensitivity||0)+0.10*Math.abs(e.bx)+0.04*Math.max(0,-e.by-0.32)+0.05*e.rails+0.10*Math.max(0,1.5-e.sp)+0.08*Math.max(0,e.sp-2.4)+0.25*Math.max(0,Math.hypot(e.bx,e.by)-0.46);} // "chi phí bất ổn": nhạy + côn side + rút RẤT sâu + băng (nhẹ) + lực + gần-miscue
  function techKey(e){return (e.by>0.14?'F':e.by<-0.14?'D':'S')+(e.bx>0.12?'R':e.bx<-0.12?'L':'C');} // Follow/Stun/Draw × Right/Center/Left
  function missObj(e){return e?ln(sb(e.cueRest,Tt))+e.scr:Infinity;} // độ chính xác THUẦN + né lỗ/bi (KHÔNG phạt english/lực) — để giữ cú chính xác dù cần english cao
@@ -567,7 +567,7 @@ function rnLeaves(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?R
  var back=nm(sb(nb,npos)),perp=[-back[1],back[0]];
  var mk=function(a,sd,D){var cs=Math.cos(a),sn=Math.sin(a),d=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];return[Math.max(felt[0]+2*R,Math.min(felt[1]-2*R,nb[0]+d[0]*D)),Math.max(felt[2]+2*R,Math.min(felt[3]-2*R,nb[1]+d[1]*D))];};
  var clr=function(t){for(var q=0;q<after.length;q++){if(ln(sb(after[q],t))<3*R)return false;if(distSeg(after[q],t,nb)<2.9*R)return false;}return true;};
- var angs=[0.16,0.26,0.36],dists=[0.3,0.42,0.55],cand=[],any=[];
+ var angs=[0.22,0.35,0.48],dists=[0.3,0.42,0.55],cand=[],any=[];
  for(var ai=0;ai<3;ai++)for(var sd=-1;sd<=1;sd+=2)for(var di=0;di<3;di++){var t=mk(angs[ai],sd,dists[di]);if(!clr(t))continue;
   var sc=ln(sb(t,C))*1.5,k,dp; // ƯU TIÊN GIỮA BÀN
   var rail=Math.min(t[0]-felt[0],felt[1]-t[0],t[1]-felt[2],felt[3]-t[1]);if(rail<0.18)sc+=(0.18-rail)*12; // sát băng → cò/với
