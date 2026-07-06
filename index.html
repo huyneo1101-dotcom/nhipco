@@ -4757,5 +4757,34 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   });
 }
 </script>
+
+<!-- pwa-update-banner: tự phát hiện bản mới (so ETag/Last-Modified index.html) -->
+<script>
+(function(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('sw.js').then(function(reg){
+        setInterval(function(){ try{ reg.update(); }catch(e){} }, 300000);
+      }).catch(function(){});
+    });
+  }
+  if(location.protocol==='file:') return;
+  var pageUrl=location.href.split('#')[0].split('?')[0], baseTag=null, shown=false;
+  function getTag(cb){ fetch(pageUrl,{method:'HEAD',cache:'no-store'}).then(function(r){ cb(r.headers.get('etag')||r.headers.get('last-modified')||null); }).catch(function(){ cb(null); }); }
+  function showBanner(){
+    if(shown||!document.body) return; shown=true;
+    var b=document.createElement('div');
+    b.textContent='🔄 Có bản CueZen mới — chạm để cập nhật';
+    b.style.cssText='position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:2147483647;background:#111827;color:#fff;padding:11px 16px;border-radius:13px;text-align:center;font-family:system-ui,-apple-system,sans-serif;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;line-height:1.35';
+    b.setAttribute('role','button');
+    b.onclick=function(){ b.textContent='Đang cập nhật…'; try{ if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){ navigator.serviceWorker.getRegistration().then(function(reg){ try{ if(reg) reg.update(); }catch(e){} setTimeout(function(){ location.reload(); },500); }); return; } }catch(e){} location.reload(); };
+    document.body.appendChild(b);
+  }
+  getTag(function(t){ baseTag=t; });
+  function check(){ if(baseTag==null){ getTag(function(t){ baseTag=t; }); return; } getTag(function(t){ if(t&&t!==baseTag) showBanner(); }); }
+  setInterval(check, 180000);
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') check(); });
+})();
+</script>
 </body>
 </html>
