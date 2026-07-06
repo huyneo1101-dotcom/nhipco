@@ -440,8 +440,11 @@ function ad(a,b){return[a[0]+b[0],a[1]+b[1]];} function sb(a,b){return[a[0]-b[0]
 function ml(a,s){return[a[0]*s,a[1]*s];} function dt2(a,b){return a[0]*b[0]+a[1]*b[1];}
 function ln(a){return Math.hypot(a[0],a[1]);} function nm(a){var l=ln(a)||1;return[a[0]/l,a[1]/l];}
 function pp(a){return[-a[1],a[0]];} var DEG=180/Math.PI;
-function reachEdge(L,away,felt){var tx=9,ty=9;if(away[0]>1e-9)tx=(felt[1]-L[0])/away[0];else if(away[0]<-1e-9)tx=(felt[0]-L[0])/away[0];if(away[1]>1e-9)ty=(felt[3]-L[1])/away[1];else if(away[1]<-1e-9)ty=(felt[2]-L[1])/away[1];return Math.min(tx,ty);} // khoảng VỚI: từ bi cái L, đứng sau lưng (hướng away) tới băng
-function reachPen(L,nb,felt){var d=sb(L,nb);if(ln(d)<1e-6)return 0;var rc=reachEdge(L,nm(d),felt);return rc>0.78?Math.min(rc-0.78,1.0)*6:0;} // VỚI: đứng sau bi cái (đối diện bi kế nb) vươn gậy qua băng bắn nb; 1m74+gậy thoải mái ~0.78m, xa hơn = với (cap 1m để không lấn át pot/kẹt)
+function reachDist(L,shotDir,felt){ // khoảng VỚI ĐÚNG: người đứng ở BĂNG GẦN NHẤT mà bắn được rồi vươn VUÔNG GÓC tới bi cái. Không tính băng mà bắn thẳng vào nó (dot(normal_trong,hướng bắn)<0 → bắn vào lưng người → loại)
+ var rails=[[1,0,L[0]-felt[0]],[-1,0,felt[1]-L[0]],[0,1,L[1]-felt[2]],[0,-1,felt[3]-L[1]]],best=9; // [normal_trong_x, _y, khoảng vuông góc tới băng đó]
+ for(var i=0;i<4;i++){if(rails[i][0]*shotDir[0]+rails[i][1]*shotDir[1]>=-1e-6&&rails[i][2]<best)best=rails[i][2];} // băng đứng được = hướng bắn KHÔNG chọc vào băng đó; vươn = khoảng vuông góc
+ return best;}
+function reachPen(L,nb,felt){var d=sb(nb,L);if(ln(d)<1e-6)return 0;var rc=reachDist(L,nm(d),felt);return rc>0.70?Math.min(rc-0.70,0.7)*8:0;} // VỚI: để bắn bi kế nb từ chỗ dừng L, người 1m74 vươn thoải mái ~0.70m (tựa băng gần nhất); xa hơn = với (cap 0.7m để không lấn át pot/kẹt)
 var SQUIRT=0.06; // squirt/deflection: bi cái văng LỆCH khỏi đường cơ, NGƯỢC phía vê (~1.7° ở nửa-tip; đo thực 0.5–2.3°, Dr.Dave). aimToPot tự bù → vẫn pot, nhưng hướng ra bi thực hơn.
 function launchSpin(speed,dir,bx,by){var u=nm(dir),sq=-bx*SQUIRT,cs=Math.cos(sq),sn=Math.sin(sq),ud=[u[0]*cs-u[1]*sn,u[0]*sn+u[1]*cs],k=2.5*by*speed/R;return{p:null,v:ml(ud,speed),w:[k*(-ud[1]),k*(ud[0]),2.5*bx*speed/R]};}
 function slip(b){return[b.v[0]-R*b.w[1], b.v[1]+R*b.w[0]];}
@@ -3948,6 +3951,20 @@ const KNOWLEDGE=[
       {h:'Đừng để bị đọc ngược lại', p:'Đối thủ cũng đang scouting bạn. Che tử huyệt của mình: đừng lộ cú mình ngại (giữ nhịp và mặt như nhau ở mọi cú), thỉnh thoảng đổi lối để khó đoán, và luyện chính cú yếu của mình ngoài trận để nó thôi là tử huyệt. Người khó đọc buộc đối thủ phải tự phán đoán trong lo lắng.'},
       {h:'Thông tin để QUYẾT ĐỊNH, không để khinh địch', p:'Đọc đối thủ là để chọn thế và chiến thuật sắc hơn — không phải để coi thường rồi lơ là. Người yếu vẫn có cú mạnh, người đang nản vẫn có thể bừng lại. Dùng thông tin lạnh lùng, vẫn làm đủ routine từng cú của mình. Scouting bổ trợ cho lối chơi chắc, không thay thế nó.'},
     ]},
+  {key:'psy_coldchance', tag:'Tâm lý', title:'Toàn cú khó, nguội cơ — rồi run lúc có cơ hội',
+    intro:'Một cảnh rất quen: cả trận vào bàn toàn phải đá băng, nhảy bi, gỡ bi khó — không cú nào "mượt" để ấm tay, nên cơ nguội và mất nhịp. Rồi khi một cơ hội ngon hiếm hoi tới, nó bị phóng đại thành cú sống-còn; tay đang lạnh gặp áp lực cao = run, và bạn hỏng đúng cú đáng lẽ dễ. Đây là một VÒNG LẶP có thật — và gỡ được: giữ ấm khi khó, hạ trọng lượng khi dễ.',
+    body:[
+      {h:'Hiểu vòng lặp để cắt nó', p:'Khó → nguội cơ → mất nhịp → cơ hội tới thì hồi hộp → hỏng cú dễ → càng ít cơ hội. Vì sao cú dễ lại hoá khó: bạn chờ nó quá lâu nên gán cho nó "trọng lượng" khổng lồ, cộng với tay đang nguội — đúng công thức của choke. Gọi tên được vòng lặp là bước đầu để phá nó.'},
+      {h:'Mỗi cú khó là cú NGHIÊM TÚC, không phải cú bỏ đi', p:'Đừng đánh cú đá băng/nhảy bi kiểu buông xuôi "kiểu gì cũng trượt". Chính lúc đó là lúc bạn GIỮ tập trung và giữ tay hoạt động. Làm đủ routine cả cú khó — thái độ nghiêm túc từng cú giữ cho cơ không nguội và đầu không rời trận. (Xem "Chơi 100% công lực".)'},
+      {h:'Giữ ROUTINE giống hệt ở mọi cú', p:'Đá băng, nhảy bi, hay cú dễ — cùng MỘT chuỗi động tác trước cú. Routine là mỏ neo giữ nhịp tay và đầu; lặp nó đều đặn thì tay không "nguội" và không cú nào bị coi là "sự kiện đặc biệt". Cú dễ dùng đúng routine như cú khó → nó thôi làm bạn run. (Xem "Tập trung & ở hiện tại".)'},
+      {h:'Đổi khung: cú khó là bài tập tự chọn', p:'Thay vì "lại toàn bi khó, chán và nản", nghĩ "mỗi cú khó là một lần luyện đá băng / nhảy bi / gỡ khó ngay trong trận". Khung này vừa giữ động lực vừa giữ tập trung — và bạn thật sự giỏi lên đúng những cú đó. Nản là thứ làm nguội tay nhanh nhất; đổi khung để không nản. (Xem "Sợ cú cụ thể & chết tay").'},
+      {h:'Đặt mục tiêu THỰC TẾ cho cú khó', p:'Cú đá băng/khó ít khi vào — nên đừng chấm mình bằng "vào hay trượt". Đặt mục tiêu vừa tầm: chạm đúng bi (không phạm lỗi), để lại thế an toàn, hoặc đưa bi cái về chỗ đỡ. Vào lỗ là bonus. Mục tiêu vừa tầm làm bạn bớt căng và bớt đánh ẩu. (Xem "Cú hai đường" trong "Khi nào tấn công, khi nào bỏ" và "Safety".)'},
+      {h:'Khi CƠ HỘI tới: hạ trọng lượng cú xuống', p:'Cái đầu sẽ hét "đây là cú quyết định, không được hỏng" — chính nó làm tay cứng. Tự nhủ ngược lại: "chỉ là một cú như bao cú tôi từng đánh vào hàng trăm lần". Dồn chú ý vào thứ CỤ THỂ trong tầm kiểm soát — điểm chạm, đưa cơ thẳng — không phải hậu quả. (Xem "Áp lực cú/ván quyết định" trong "Áp lực & khoảnh khắc căng".)'},
+      {h:'Đừng VỒ lấy cơ hội — chậm một nhịp', p:'Nghịch lý: chờ lâu nên khi có cú dễ ta muốn "kết thúc cho nhanh" → vội → hỏng. Đúng lúc này càng phải chậm lại, làm ĐỦ routine. Cơ hội hiếm càng đáng được đánh cẩn thận, không phải vội vàng cho xong. Nhắc mình: "có thời gian — làm đúng quy trình". (Xem "Buông tay & tin cú đánh".)'},
+      {h:'Một hơi thở + câu neo trước cú cơ hội', p:'Ngay trước cú ngon: đứng thẳng, một hơi thở ra thật dài (hạ adrenaline, hạ nhịp tim), buông vai, một từ khoá ("mượt" hoặc "chạm"), rồi mới cúi xuống. Chuỗi này kéo bạn từ "nguội + run" về "ấm + tĩnh" đủ để bắn chuẩn. Nút ⟳ Reset (thở) trong app chạy đúng chuỗi này. (Xem "Hơi thở & điều tiết hưng phấn".)'},
+      {h:'Giữ tay ấm giữa các lượt', p:'Nguội cơ một phần vì ngồi ghế lâu. Giữa lượt, khẽ nhấp cơ trong không khí, siết–thả bàn tay, vài hơi thở đều để giữ nhịp; đầu lượt mới làm nóng lại vài giây bằng một cú chắc trong đầu. Đừng để cơ thể "tắt máy" hẳn khi chờ. (Xem "Vào trận chậm — nóng máy muộn" và "Sức bền tâm lý cho trận dài".)'},
+      {h:'Tập ĐÚNG tình huống này', p:'Ở nhà, tự dựng bài mô phỏng: xen kẽ vài cú khó (đá băng, nhảy bi, bi sát băng) rồi ĐỘT NGỘT đặt một cú dễ — tập bắn chuẩn cú dễ đó ngay sau chuỗi khó, tái tạo cảm giác "cơ hội tới sau khi đã nguội". Lặp nhiều lần thì lúc thật, cú cơ hội không còn làm bạn run. Ghi tiến bộ vào Nhật ký. (Xem "Giải mẫn cảm bằng tập lặp" trong "Sợ cú cụ thể & chết tay").'},
+    ]},
   {key:'serious', tag:'Tâm lý', title:'Chơi 100% công lực — không cú nào hời hợt',
     intro:'Muốn luôn chơi với 100% công lực và sự nghiêm túc, phải hiểu đúng một điểm: KHÔNG phải cú nào cũng căng 100% não — mà là cú nào cũng làm 100% QUY TRÌNH. Cố "gồng" từ đầu tới cuối thì sẽ mệt, đuối, rồi tới bi quyết định lại sựng. Cơ thủ bản lĩnh không phải lúc nào cũng căng — họ LẠNH, ĐỀU và CÓ KỶ LUẬT.',
     body:[
@@ -4357,7 +4374,7 @@ const KNOW_CATS=[
 const PSY_SUBCATS=[
   {label:'🧭 Nền tảng & quy trình', keys:['psy_focus','psy_trust','psy_breath','psy_selftalk','psy_visual','psy_confidence','psy_flow','serious']},
   {label:'🎯 Trước trận & khởi động', keys:['psy_prematch','psy_slowstart']},
-  {label:'🔥 Áp lực & khoảnh khắc quyết định', keys:['psy_pressure','psy_closeout','psy_stakes','psy_yips','psy_crowd']},
+  {label:'🔥 Áp lực & khoảnh khắc quyết định', keys:['psy_pressure','psy_coldchance','psy_closeout','psy_stakes','psy_yips','psy_crowd']},
   {label:'💢 Cảm xúc, lỗi & phục hồi', keys:['psy_after','psy_variance','behind','psy_resilience']},
   {label:'♟️ Đối thủ & thế trận', keys:['psy_momentum','psy_shark','psy_pokerface','psy_handicap','psy_chair']},
   {label:'📈 Đường dài & rèn luyện', keys:['psy_stamina','psy_discipline','psy_goals','psy_burnout','psy_slump']},
