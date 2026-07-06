@@ -440,6 +440,8 @@ function ad(a,b){return[a[0]+b[0],a[1]+b[1]];} function sb(a,b){return[a[0]-b[0]
 function ml(a,s){return[a[0]*s,a[1]*s];} function dt2(a,b){return a[0]*b[0]+a[1]*b[1];}
 function ln(a){return Math.hypot(a[0],a[1]);} function nm(a){var l=ln(a)||1;return[a[0]/l,a[1]/l];}
 function pp(a){return[-a[1],a[0]];} var DEG=180/Math.PI;
+function reachEdge(L,away,felt){var tx=9,ty=9;if(away[0]>1e-9)tx=(felt[1]-L[0])/away[0];else if(away[0]<-1e-9)tx=(felt[0]-L[0])/away[0];if(away[1]>1e-9)ty=(felt[3]-L[1])/away[1];else if(away[1]<-1e-9)ty=(felt[2]-L[1])/away[1];return Math.min(tx,ty);} // khoảng VỚI: từ bi cái L, đứng sau lưng (hướng away) tới băng
+function reachPen(L,nb,felt){var d=sb(L,nb);if(ln(d)<1e-6)return 0;var rc=reachEdge(L,nm(d),felt);return rc>0.78?Math.min(rc-0.78,1.0)*6:0;} // VỚI: đứng sau bi cái (đối diện bi kế nb) vươn gậy qua băng bắn nb; 1m74+gậy thoải mái ~0.78m, xa hơn = với (cap 1m để không lấn át pot/kẹt)
 var SQUIRT=0.06; // squirt/deflection: bi cái văng LỆCH khỏi đường cơ, NGƯỢC phía vê (~1.7° ở nửa-tip; đo thực 0.5–2.3°, Dr.Dave). aimToPot tự bù → vẫn pot, nhưng hướng ra bi thực hơn.
 function launchSpin(speed,dir,bx,by){var u=nm(dir),sq=-bx*SQUIRT,cs=Math.cos(sq),sn=Math.sin(sq),ud=[u[0]*cs-u[1]*sn,u[0]*sn+u[1]*cs],k=2.5*by*speed/R;return{p:null,v:ml(ud,speed),w:[k*(-ud[1]),k*(ud[0]),2.5*bx*speed/R]};}
 function slip(b){return[b.v[0]-R*b.w[1], b.v[1]+R*b.w[0]];}
@@ -573,6 +575,7 @@ function rnLeaves(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?R
   var rail=Math.min(t[0]-felt[0],felt[1]-t[0],t[1]-felt[2],felt[3]-t[1]);if(rail<0.18)sc+=(0.18-rail)*12; // sát băng → cò/với
   var mp=Infinity;for(k=0;k<6;k++){dp=ln(sb(t,RN_POCK[k]));if(dp<mp)mp=dp;}if(mp<0.18)sc+=(0.18-mp)*16; // sát lỗ → đui
   var dnb=ln(sb(t,nb));if(dnb>0.62)sc+=(dnb-0.62)*4;if(dnb<0.26)sc+=(0.26-dnb)*5; // quá xa/gần bi kế
+  sc+=reachPen(t,nb,felt); // VỚI: né chỗ để bi mà 1m74 không vươn tới bắn bi kế thoải mái (xa băng-đứng theo hướng ngắm)
   var e={t:t,sc:sc};any.push(e);if(pickPocket(t,nb,after)>=0)cand.push(e);} // CHỈ giữ chỗ mà BI KẾ ĂN ĐƯỢC (KHÔNG điều ra kẹt)
  var pool=cand.length?cand:any;pool.sort(function(a,b){return a.sc-b.sc;}); // không chỗ nào thoáng bi kế → best-effort (thế bí thật)
  var out=[];for(var ci=0;ci<pool.length&&out.length<3;ci++){var tt=pool[ci].t,dup=false;for(var z=0;z<out.length;z++)if(ln(sb(out[z],tt))<0.16){dup=true;break;}if(!dup)out.push(tt);} // top-3 KHÁC NHAU (cách ≥16cm)
@@ -643,8 +646,8 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
    var sL=solveFast(cue,ball,RN_POCK[pk],ball,{felt:felt,others:others,quick:true});
    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[pk],pk:pk,path:sL.potFail?null:sL.path,bx:sL.bx,by:sL.by,speed:sL.speed,rails:sL.rails,landing:sL.potFail?null:sL.cueRest,last:true,potFail:sL.potFail});potted[i]=true;break;}
   var pockets=rnMakeable(cue,ball,others),done=false;
-  if(pockets.length){var leaves=rnLeaves(nb,after,felt),tgt1=leaves[0];
-   var evalP=function(P,frag){var s1=solveFast(cue,ball,RN_POCK[P],tgt1,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
+  if(pockets.length){var leaves=rnLeaves(nb,after,felt);
+   var evalP=function(P,frag,tgt){var s1=solveFast(cue,ball,RN_POCK[P],tgt,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
     var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
     if(pk1<0)look=14; // 1 NƯỚC: bi kế KẸT từ chỗ dừng → PHẠT NẶNG (đừng bao giờ điều ra kẹt nếu còn cách khác)
     else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.5-cutNb)*3.5;var pos2=0;
@@ -653,14 +656,18 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
        if(pk2<0)pos2=4; else{var cut2=Math.max(0.05,dt2(nm(sb(nb2,L2)),nm(sb(RN_POCK[pk2],nb2))));pos2=potFragility(ln(sb(RN_POCK[pk2],nb2)),ln(sb(nb2,L2)),cut2)*0.3+Math.max(0,0.5-cut2)*2+ln(sb(L2,[1.27,0.635]))*0.5+s2.missBy*2.5;}}} // vị trí bi kế-kế: dễ pot + góc đẹp (không mỏng) + giữa bàn + tới được thật
      look=frag1*0.4+thin+pos2;} // 2 NƯỚC SÂU (giải thật cú kế)
     var ctr=ln(sb(L1,[1.27,0.635]))*0.7; // ƯU TIÊN landing GIỮA BÀN (dễ bắn, không với)
+    var reach=reachPen(L1,nb,felt); // VỚI: chỗ dừng L1 phải VƯƠN TỚI được để bắn bi kế (1m74+gậy), tránh điều ra xa băng-đứng theo hướng ngắm
     var cutThis=dt2(nm(sb(ball,cue)),nm(sb(RN_POCK[P],ball))),thinNow=Math.max(0,0.5-cutThis)*2.2; // cắt bi HIỆN TẠI mỏng → khó hãm/kiểm soát cue (mạo hiểm, sai kỳ vọng)
     var revPen=(s1.rev||0)*0.5; // chỉ phạt ÁP PHÊ NGHỊCH (english NGƯỢC chiều bi chạy trên băng — hãm bất định); running english (cùng chiều) KHÔNG phạt vì nó giúp điều bi
     var risk=(s1.sensitivity||0)*0.4; // RỦI RO: cú NHẠY (sai lực/tay nhẹ → vị trí lệch nhiều: quá lực/thiếu lực) → phạt, ưu tiên cú CHỊU-run-tay (traffic/chạm bi đã lo ở s1.scr)
-    return {s1:s1,P:P,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+thinNow+revPen+risk,look:look};};
-   var bestC=evalP(pockets[0].pk,pockets[0].frag); // lỗ dễ nhất trước
-   if((!bestC||bestC.look>=1.5)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2 (rnLeaves đã lọc chỗ bi-kế-ăn-được nên ít khi cần)
-   if(bestC){var zAlts=[];for(var li=1;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (2-3 phương án điều bi, miễn phí từ rnLeaves): cú chính vẽ đủ, các vùng còn lại = chỗ có thể điều tới
-    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:tgt1,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,rev:bestC.s1.rev||0,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
+    var cplx=Math.max(0,Math.abs(s1.bx)-0.25)*1.3+Math.max(0,s1.speed-2.6)*0.7+Math.max(0,(s1.rails||0)-2)*0.6; // CÚ PHỨC TẠP: nhiều áp phê ngang + lực mạnh + nhiều băng(3+) → DẸP, thà cú đơn giản (thà má đẹp hơn là gần mà phải bắn khó)
+    var farNb=ln(sb(L1,nb)),farPen=farNb>0.82?(farNb-0.82)*1.6:0; // HẠN CHẾ QUÁ XA bi kế (trung bình OK, gần KHÔNG cần) — để xa thì khó dàn/ngắm/điều tiếp
+    return {s1:s1,P:P,tgt:tgt,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+reach+thinNow+revPen+risk+cplx+farPen,look:look};};
+   var bestC=evalP(pockets[0].pk,pockets[0].frag,leaves[0]); // lỗ dễ nhất + chỗ để bi #1
+   if(leaves.length>1){var cL=evalP(pockets[0].pk,pockets[0].frag,leaves[1]);if(cL&&(!bestC||cL.sc<bestC.sc))bestC=cL;} // SO chỗ để bi #2: nếu cú tới #1 phức tạp/với/xa → chọn #2 (cú đơn giản hơn) — má đẹp > gần
+   if((!bestC||bestC.look>=1.5)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag,leaves[0]);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2
+   if(bestC){var zAlts=[];for(var li=0;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.tgt))>0.12&&ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (các chỗ còn lại ngoài chỗ đã chọn) = phương án điều bi thay thế
+    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:bestC.tgt,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,rev:bestC.s1.rev||0,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
   if(done)continue;
   var cm=rnCarom(cue,ball,others,felt,nb,after); // KẸT → GÃI (carom, ăn CHÍNH bi mục tiêu)
   if(cm){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'carom',comboB:cm.B,comboBn:seq.indexOf(cm.B)+1,caromX:cm.X,pk:cm.pk,pocket:cm.pocket,path:cm.path,bx:cm.bx,by:cm.by,speed:cm.speed,landing:cm.cueRest,last:false});cue=cm.cueRest.slice();potted[i]=true;continue;}
@@ -3748,6 +3755,20 @@ function ProblemCard({p,onDelete,onEdit}){
 
 /* ================= Kiến thức bi-a ================= */
 const KNOWLEDGE=[
+  {key:'tac_makeeasy', tag:'Chiến thuật', title:'Chơi cho bi-a tự dễ đi (bài dẫn nhập)',
+    intro:'Bi-a "dễ" KHÔNG phải nhờ đánh cú khó giỏi hơn, mà nhờ TỰ TẠO cho mình toàn cú dễ. Người giỏi trông nhàn vì họ liên tục dọn đường cho "bản thân ở cú tiếp theo". Đây là triết lý gói cả mục Tư duy & chiến thuật: đừng cố đánh hay hơn — hãy để lại cho mình cú dễ hơn. Mỗi mục dưới đây là một bài riêng, đọc sâu ở đó.',
+    body:[
+      {h:'Triết lý gốc: để lại cú dễ, đừng cố cú khó', p:'Trận đấu là chuỗi từng-cú-một. Thắng đều đặn là người biến ván khó thành chuỗi cú đơn giản, không phải người xử được nhiều cú xuất thần. Trước mỗi cú, ngoài "vào bi", hãy hỏi: "cú này để lại cho mình cú sau DỄ hay KHÓ?" Câu hỏi đó đổi cả lối chơi.'},
+      {h:'Để lại GÓC, đừng để bi thẳng', p:'Bi thẳng-lỗ nhìn dễ nhưng rất khó điều bi cái đi tiếp. Có một góc nhỏ thì bi cái tự chạy sang cú sau. Đây là cách "dễ hoá" số một: chủ động chừa góc. (Xem "Đọc bàn & chạy hình cả ván".)'},
+      {h:'Đường bi cái NGẮN, ÍT băng', p:'Bi cái đi càng xa, càng nhiều băng thì sai số càng lớn. Ưu tiên đứng bi → theo nhẹ → rút ngắn; xoáy mạnh, nhiều băng là lựa chọn cuối. Đường ngắn = ít cơ hội sai. (Xem "Điều bi tối giản — ưu tiên đường ngắn, ít băng".)'},
+      {h:'Nghĩ theo VÙNG, không theo điểm', p:'Đừng ép bi cái về đúng một chấm; chỉ cần về VÙNG còn đánh được cú sau. Vùng cho bạn biên độ sai an toàn — mỗi cú bớt căng ngay lập tức, và bạn ít khi rơi vào thế bí.'},
+      {h:'Đọc bàn & dọn theo THỨ TỰ', p:'Sắp thứ tự dọn sao cho mỗi cú mở ra cú kế, cả chuỗi thông tới bi cuối — thay vì dọn 4 bi đầu rồi tự bí ở bi thứ 5. Lập "bản đồ" ván trước khi cúi xuống cú một. (Xem "Đọc bàn & chạy hình cả ván".)'},
+      {h:'Xử lý bi khó & cụm SỚM', p:'Bi sát băng, bi kê, cụm bi — giải quyết lúc còn có bi cái thuận, đừng dồn về cuối ván khi hết lựa chọn. Xử bi vấn đề khi nó còn "dễ" là cách giữ cho phần còn lại của ván luôn dễ. (Xem "Bi khó: bi sát băng, bi kê, bi dính".)'},
+      {h:'Lực NHỎ, kiểm soát cao', p:'50–70% lực là đủ cho hầu hết cú. Lực mạnh làm mất kiểm soát bi cái và siết tay. Bi-a lên trình là môn của lực nhỏ chính xác, không phải lực lớn — và lực nhỏ khiến cú nào cũng dễ điều hơn.'},
+      {h:'Cú xác suất cao + an toàn nếu trượt', p:'Cú 70% mà trượt vẫn an toàn thường tốt hơn cú 90% mà trượt là tặng bàn. Luôn tính cả HẬU QUẢ khi hỏng, không chỉ khả năng vào. (Xem "Chơi theo xác suất" và "Khi nào tấn công, khi nào bỏ".)'},
+      {h:'Không có cú dễ thì đánh safety', p:'Đừng ép cú khó khi bàn bí. Nhường lượt đúng cách ép đối thủ tự hỏng — và để phần khó cho họ. Safety là cách giữ cho MÌNH luôn được đánh cú dễ. (Xem "Safety / phòng thủ — khi nào & đánh thế nào".)'},
+      {h:'Đơn giản hoá quyết định', p:'Ít lựa chọn cầu kỳ = ít mệt não = ít sai. Quyết xong 4 thứ khi còn ĐỨNG (lỗ · vùng bi cái · lực · đầu cơ), cúi xuống chỉ việc bắn. Câu gói lại: đừng cố đánh hay hơn — hãy để lại cho mình cú dễ hơn. (Xem "Đánh tiết kiệm năng lượng".)'},
+    ]},
   {key:'percent', tag:'Chiến thuật', title:'Chơi theo xác suất (percentage play)',
     intro:'Người chơi giỏi không chọn cú "đẹp nhất" mà chọn cú cho mình cơ hội THẮNG VÁN cao nhất. Chơi theo xác suất = mỗi quyết định đều nghiêng phần thắng về phía mình qua nhiều ván, không phải ăn may một cú.',
     body:[
@@ -3813,6 +3834,31 @@ const KNOWLEDGE=[
       {h:'Ít quyết định = ít mệt = ít sai', p:'Mỗi lựa chọn cầu kỳ (xoáy gì, mấy băng, lực bao nhiêu) đều đốt năng lượng và mở đường cho sai lầm. Đường đơn giản vừa chính xác hơn vừa giữ đầu bạn tỉnh táo cho cú then chốt. (Xem "Đánh tiết kiệm năng lượng".)'},
       {h:'Khi nào ĐƯỢC phép cầu kỳ', p:'Tối giản không có nghĩa không bao giờ đi băng hay xoáy. Khi thế bàn BẮT BUỘC (bi vấn đề, cần né bi chắn), cứ dùng — nhưng như một lựa chọn có chủ đích, không phải thói quen. Quy tắc: chỉ trả giá bằng độ phức tạp khi thật sự cần thiết.'},
     ]},
+  {key:'tac_tangent', tag:'Chiến thuật', title:'Đường tiếp tuyến & 3 hướng bi cái (theo / rút / đứng)',
+    intro:'Điều bi bắt đầu từ việc THẤY TRƯỚC bi cái sẽ chạy đâu sau khi chạm bi mục tiêu. Chỉ cần nắm một quy tắc hình học đơn giản — đường tiếp tuyến — cộng ba hướng cơ bản (theo, rút, đứng), bạn đọc được đường bi cái ở gần như mọi cú. Đây là nền tảng của toàn bộ điều bi; thiếu nó thì "điều bi" chỉ là đánh rồi ngạc nhiên.',
+    body:[
+      {h:'Đường tiếp tuyến là gì', p:'Khi bi cái chạm bi mục tiêu KHÔNG chính giữa (cú cắt), bi mục tiêu đi theo đường nối hai tâm; còn bi cái bật ra theo đường VUÔNG GÓC với đường đó — gọi là đường tiếp tuyến. Với cú đánh TÂM bi (không xoáy dọc), bi cái đi gần đúng đường tiếp tuyến này. Tập "nhìn thấy" đường tiếp tuyến trước mỗi cú cắt là bước một của điều bi.'},
+      {h:'Cú đứng bi (đè tâm / stun) — đi đúng tiếp tuyến', p:'Đánh tâm bi với lực vừa, không theo không rút, bi cái sau va chạm chạy ĐÚNG đường tiếp tuyến (90 độ so với hướng bi mục tiêu). Đây là hướng "mặc định" dễ đoán nhất — làm mốc để tính hai hướng còn lại. Cú đứng bi là công cụ điều bi chính xác và an toàn nhất.'},
+      {h:'Cú theo (cu lê / follow) — kéo đường về phía TRƯỚC', p:'Đánh CAO tâm bi, bi cái xoáy tới; sau va chạm nó không đi thẳng tiếp tuyến mà cong RA TRƯỚC (theo hướng bi mục tiêu). Càng đánh cao và mạnh, bi cái càng "chồm" theo. Dùng khi cần bi cái tiến lên phía trước sau cú đánh.'},
+      {h:'Cú rút (trô / draw) — kéo đường về phía SAU', p:'Đánh THẤP tâm bi, bi cái xoáy ngược; sau va chạm nó cong LÙI so với đường tiếp tuyến (giật về phía bạn). Càng đánh thấp và dứt khoát, bi cái càng rút mạnh. Dùng khi cần kéo bi cái lùi lại sau khi ăn bi.'},
+      {h:'Ba hướng = một cây quạt', p:'Hình dung từ điểm va chạm, bi cái có thể đi theo một "cây quạt": rút kéo đường lùi về sau, đứng bi đi đúng tiếp tuyến, theo đẩy đường ra trước. Chọn cao/tâm/thấp là chọn vị trí trong cây quạt đó. Thấy được cây quạt này là thấy được gần hết các vị trí bi cái có thể tới.'},
+      {h:'Cú thẳng (full ball) — không có tiếp tuyến', p:'Khi đánh THẲNG (chạm chính giữa, bi mục tiêu đi thẳng về lỗ), không có đường tiếp tuyến ngang: bi cái chỉ có thể đứng (đè tâm), tiến (theo) hoặc lùi (rút) trên cùng một đường thẳng. Đây là lý do bi thẳng khó điều sang ngang — và vì sao nên chừa GÓC. (Xem "Chơi cho bi-a tự dễ đi".)'},
+      {h:'Góc cắt càng mỏng, bi cái đi càng xa', p:'Cú cắt mỏng truyền ít lực sang bi mục tiêu nên bi cái giữ nhiều đà, chạy dài theo tiếp tuyến. Cú cắt dày (gần thẳng) thì bi cái mất nhiều đà, đi ngắn. Đọc được "độ dày" của cú giúp bạn đoán bi cái sẽ đi bao xa để canh lực. (Xem "Cảm giác lực & kiểm soát tốc độ".)'},
+      {h:'Áp phê chỉ bẻ đường SAU khi chạm băng', p:'Xoáy trái/phải (áp phê) gần như không đổi hướng bi cái ngay sau va chạm — nó chủ yếu bẻ góc khi bi cái CHẠM BĂNG. Nên với điều bi không băng, cứ tính bằng tiếp tuyến + theo/rút; để dành áp phê cho khi cần chỉnh góc bật băng. Đừng thêm xoáy ngang khi chưa cần. (Xem "Điều bi tối giản".)'},
+      {h:'Tập "gọi đường bi cái"', p:'Bài tập đơn giản mà đổi trình: trước mỗi cú, NÓI TRƯỚC bi cái sẽ dừng ở đâu, rồi đánh và so. Bắt đầu với cú đứng bi (dễ đoán nhất), rồi thêm theo/rút. Đoán đúng dần nghĩa là bạn đã "thấy" đường bi cái — từ đó điều bi thành chủ động thay vì hên xui. Ghi tiến bộ vào Nhật ký.'},
+    ]},
+  {key:'tac_speed', tag:'Chiến thuật', title:'Cảm giác lực & kiểm soát tốc độ',
+    intro:'Hỏi các cơ thủ giỏi điều gì khó nhất, phần lớn nói: KIỂM SOÁT LỰC. Ngắm đúng hướng mà sai lực thì bi cái vẫn đi sai chỗ — và lực là thứ khó "nhìn" nhất, phải cảm. Điều bi thật ra là điều LỰC nhiều hơn điều xoáy. Đây là cách rèn "đồng hồ lực" trong đầu.',
+    body:[
+      {h:'Lực quan trọng hơn xoáy', p:'Đa số cú điều bi hỏng vì SAI LỰC, không phải sai xoáy: bi cái quá đà hoặc non, chạy quá hoặc thiếu. Đánh tâm bi với đúng lực xử lý được phần lớn tình huống. Trước khi nghĩ tới áp phê hay trô, hãy hỏi: "lực bao nhiêu?" Lực là biến số số một của điều bi.'},
+      {h:'Nghĩ lực theo THANG, không theo cảm hứng', p:'Đặt cho mình một thang lực, ví dụ 1–5: (1) đẩy nhẹ bi cái nhích một chút · (2) đi khoảng nửa bàn · (3) một băng · (4) hai băng · (5) phá/đập. Trước cú, chọn một SỐ trong thang thay vì "đánh đại cho tới". Có ngôn ngữ cho lực thì mới điều khiển được nó.'},
+      {h:'Điều bi bằng LỰC trước, xoáy sau', p:'Rất nhiều vị trí đạt được chỉ bằng đánh tâm + đúng lực (bi cái chạy theo tiếp tuyến/theo/rút một quãng đúng bằng lực). Ưu tiên giải bằng lực; chỉ thêm xoáy khi lực không đủ đưa bi cái tới. Ít biến số hơn = ít sai hơn. (Xem "Điều bi tối giản" và "Đường tiếp tuyến & 3 hướng bi cái".)'},
+      {h:'Lực nhỏ dễ kiểm soát hơn lực lớn', p:'Cùng một sai số phần trăm, lực lớn đẩy bi cái lệch xa hơn nhiều. Lực mạnh còn bắt tay siết, phá nhịp đưa cơ. Khi phân vân, chọn NHẸ hơn — bi cái đi ngắn thì lệch cũng gần. Chỉ đánh mạnh khi thật sự cần (phá cụm, đường dài). (Xem "Chơi cho bi-a tự dễ đi".)'},
+      {h:'Lực đến từ NHỊP, không từ gồng', p:'Bi cái đi xa nhờ tốc độ đầu cơ lúc chạm, mà tốc độ đó đến từ một cú vung MƯỢT và dài, không phải từ siết tay đẩy mạnh. Cầm cơ lỏng, tăng biên độ vung để tăng lực; gồng cơ tay chỉ làm chệch hướng và lực thất thường. Lực êm mới là lực chính xác.'},
+      {h:'Đọc tốc độ mặt bàn hôm nay', p:'Cùng một lực cho quãng đường khác nhau tùy nỉ mới/cũ, ẩm/khô, băng nảy nhiều/ít. Vài cú khởi động đầu buổi/đầu trận là để "hiệu chỉnh đồng hồ lực" với bàn hôm đó. Bàn nhanh thì giảm lực, bàn nặng thì tăng. (Xem "Vào trận chậm — nóng máy muộn".)'},
+      {h:'Đủ lực tới vị trí là được', p:'Đừng cố đưa bi cái về đúng một chấm bằng lực hoàn hảo. Nhắm VÙNG và chọn lực sao cho nếu lệch nhẹ, bi cái vẫn nằm trong vùng đánh được. "Đủ tới nơi" chắc ăn hơn "chuẩn từng phân mà liều". (Xem "Điều bi tối giản".)'},
+      {h:'Bài tập rèn cảm giác lực', p:'• Đẩy bi cái từ đầu bàn, cố dừng đúng ở băng đối diện — rồi thử dừng ở giữa, ở 3/4. • Đánh một bi rồi bắt bi cái dừng đúng một điểm đánh dấu, tăng dần khoảng cách. • Cùng một cú, tập đi 1 băng / 2 băng / 3 băng về đúng vùng. Chấm điểm và ghi vào Nhật ký — cảm giác lực rèn được như cơ bắp, chỉ cần lặp có mục tiêu.'},
+    ]},
   {key:'tac_planb', tag:'Chiến thuật', title:'Kế hoạch B — khi điều bi lệch',
     intro:'Bàn bi hiếm khi chạy đúng 100% ý bạn: bi cái về hơi quá, hơi non, bị vướng, hay nằm trớ — chuyện thường ngày. Điều tách người bình tĩnh với người sụp đổ không phải điều bi hoàn hảo, mà là cách xử lý khi điều bi LỆCH. Kế hoạch B là kỹ năng đọc lại thế bàn và cứu ván thay vì cố đấm một cú xấu.',
     body:[
@@ -3863,6 +3909,44 @@ const KNOWLEDGE=[
       {h:'Bi gần lỗ nhưng góc xấu', p:'Bi sát lỗ chưa chắc dễ nếu bi cái ở góc tệ hoặc bị bi chắn — đừng chủ quan. Đôi khi tốt hơn là để dành bi đó làm bi bảo hiểm / bi mồi và dọn bi khác trước, quay lại nó khi có góc thuận. (Xem "Đọc bàn & chạy hình cả ván".)'},
       {h:'Giảm kỳ vọng, giữ bình tĩnh', p:'Bi khó dễ làm bực và siết tay. Chấp nhận không phải bi nào cũng vào đẹp; mục tiêu là XỬ LÝ gọn — vào được thì tốt, không thì để lại thế khó cho đối thủ — chứ không phải cú xuất thần. Bình tĩnh chọn phương án ít thiệt hại thắng cú liều hoa mỹ. (Xem "Áp lực & khoảnh khắc căng".)'},
       {h:'Tập riêng bi khó', p:'Dựng lại các thế khó hay gặp (bi sát băng, bi kê, bi dính) và luyện nhiều trong môi trường không áp lực, để lúc thật không hoảng. Biết trước "loại bi này mình xử thế nào" khiến bi khó bớt đáng sợ. Ghi lại cách xử hiệu quả vào Nhật ký.'},
+    ]},
+  {key:'tac_coldenemy', tag:'Chiến thuật', title:'Làm đối thủ "mất tay" — kiểm soát nhịp & thế trận',
+    intro:'Có một sự thật ai chơi lâu cũng biết: tay đối thủ NGUỘI đi khi họ ngồi lâu, và khi ra bàn chỉ gặp cú khó. "Mất tay" = tay nguội + mất nhịp + mất tự tin. Toàn bộ chiến thuật ở đây gói trong một câu: GIỮ họ trên ghế, và khi họ ra bàn thì đừng cho cú dễ nào để làm nóng lại. Đây là chiến thuật hợp lệ — khác hẳn tiểu xảo quấy rối.',
+    body:[
+      {h:'Vì sao đối thủ "mất tay"', p:'Ba thứ nguội cùng lúc khi ai đó ngồi ngoài lâu: CƠ (mất cảm giác lực), NHỊP (rời khỏi guồng), và ĐẦU (bắt đầu nghĩ ngợi, tự nghi). Ra bàn mà cú đầu tiên đã khó thì cả ba thứ đó càng tệ. Bạn không cần "phá" đối thủ — chỉ cần tạo điều kiện để họ tự nguội. (Liên quan "Vào trận chậm — nóng máy muộn".)'},
+      {h:'Giữ họ trên ghế càng lâu càng tốt', p:'Chạy loạt dài, dọn gọn — mỗi phút họ ngồi là cơ nguội thêm, nhịp mất thêm. Đây chính là cái khổ của "vào trận chậm", và bạn đang ép họ nếm nó ngay giữa trận. Ưu tiên số một: giành và giữ bàn.'},
+      {h:'Safety để họ không có cú làm nóng', p:'Người nguội tay cần một cú DỄ để lấy lại cảm giác — đừng tặng, kể cả khi bạn không ăn. Bắt họ mở màn bằng cú khó, đi băng, hoặc gỡ snooker. Không cho một cú "mượt" nào để họ khởi động lại. (Xem "Safety / phòng thủ — khi nào & đánh thế nào".)'},
+      {h:'Giấu bi cái, kéo xa, chừa góc xấu', p:'Mỗi lần họ ra bàn đều phải xử lý thế khó → không cú nào trơn để lấy đà, nản dồn nản. Giấu bi cái sau bi chắn, kéo bi cái và bi mục tiêu ra xa nhau, để lại góc tệ. Nghĩ từ GÓC NHÌN của họ: họ càng ít thấy đường dễ càng tốt.'},
+      {h:'Cắt nhịp khi họ đang nóng', p:'Nếu họ đang chạy liền mấy ván (đang lên tay), chủ động bẻ nhịp một cách HỢP LỆ: đi lại, uống nước, dùng quyền nghỉ, chậm lại làm đủ routine — đừng cuốn theo tốc độ hưng phấn của họ. Một ván sạch của bạn có thể tắt đà của họ. (Xem "Đà & động lượng trận đấu".)'},
+      {h:'Áp nhịp của MÌNH lên trận', p:'Chơi đều, chậm, chắc. Người bị ép chơi theo nhịp lạ — nhất là chậm hơn họ thích — dễ mất cảm giác tay và sốt ruột. Đừng để đối thủ quy định tốc độ; giữ guồng của bạn và buộc họ theo.'},
+      {h:'Mặt lạnh — đừng cho họ năng lượng', p:'Không than khi trượt, không ăn mừng lộ liễu khi ăn. Họ không đọc được bạn, không có "mồi" tinh thần để máu lên; thấy bạn lạnh và đều, họ tự nghi. Poker face vừa giữ bạn ổn định vừa rút năng lượng của đối phương. (Xem "Poker face — giấu cảm xúc & đọc đối thủ".)'},
+      {h:'Ép lỗi để lấy bi cầm tay', p:'Ở 9/10 bi, một cú snooker tốt buộc họ đánh trớ → dễ phạm lỗi → bạn được đặt bi cầm tay. Vừa lấy lợi thế thế bàn, vừa khoét thêm bực bội và mất tự tin của họ. Biết luật để tính: đôi khi ép một cú snooker đáng giá hơn cố công.'},
+      {h:'Họ vừa ngồi lâu ra bàn — TẤN CÔNG ngay', p:'Đúng lúc tay họ nguội nhất, đừng cho thời gian nóng lại: dồn tập trung, chọn cú chắc và dứt điểm gọn. Khai thác cửa sổ "nguội tay" trước khi họ tìm lại cảm giác. (Xem "Dứt điểm — bản năng sát thủ khi đang dẫn".)'},
+      {h:'Ranh giới: chiến thuật vs tiểu xảo', p:'Làm đối thủ mất tay bằng THẾ BÀN + NHỊP ĐỘ + MẶT LẠNH là chơi đàng hoàng. Khác hẳn "sharking" — cố tình gây tiếng động, đứng chắn tầm mắt, nói đểu — vốn là chơi xấu, dễ phản tác dụng và tự đốt tập trung của chính bạn. Thắng bằng kiểm soát ván, không bằng quấy rối. (Xem "Đối phó tiểu xảo tâm lý".)'},
+    ]},
+  {key:'tac_racemgmt', tag:'Chiến thuật', title:'Quản lý trận theo tỉ số (race management)',
+    intro:'Một trận không phải là một chuỗi cú đồng đều — nó có tỉ số, có thể thức (race to mấy), có khúc đầu và khúc cuối. Người quản trị trận tốt điều chỉnh mức RỦI RO theo tình thế: lúc nào chơi chắc, lúc nào chấp nhận liều. Cùng một thế bàn, quyết định đúng đổi theo tỉ số. Đây là tầng chiến thuật trên cả từng cú.',
+    body:[
+      {h:'Cùng thế bàn, khác tỉ số — khác quyết định', p:'Một cú công 60% có nên đánh hay không phụ thuộc tỉ số. Đang dẫn đậm: bỏ, chơi chắc. Đang bị dẫn sát thua: đánh, vì cần đột biến. Trước khi chọn công/thủ, luôn liếc tỉ số. Chiến thuật không nằm riêng ở bàn bi — nó nằm ở "bàn bi + tỉ số + thể thức". (Nền tảng: "Khi nào tấn công, khi nào bỏ".)'},
+      {h:'Đang DẪN: giảm rủi ro, ép đối thủ tự hỏng', p:'Khi dẫn điểm, ưu thế là của bạn — đừng cho không. Nghiêng về cú chắc và safety, tránh cú % thấp, buộc đối thủ phải liều để đuổi. Người dẫn thua thường vì nôn nóng khép trận bằng cú mạo hiểm, không phải vì chơi quá chắc. (Xem "Dứt điểm" để chắc mà vẫn không rén.)'},
+      {h:'Đang BỊ DẪN: chọn rủi ro có tính toán', p:'Bị dẫn thì phải chấp nhận cú % thấp hơn để tạo đột biến — nhưng LIỀU CÓ TÍNH, không phải liều loạn. Chia nhỏ mục tiêu: gỡ MỘT ván trước, đừng đòi gỡ hết ngay. Giữ safety khi cần, ép đối thủ (đang căng vì sắp thắng) tự sai. (Xem "Tâm lý khi bị dẫn điểm".)'},
+      {h:'Ván "bản lề" — dồn tài nguyên', p:'Không phải ván nào cũng nặng như nhau. Ván gỡ hoà, ván vượt lên, ván hill-hill là bản lề — dồn tập trung và chọn lối chơi kỹ nhất cho những ván đó, chơi tiết kiệm ở ván ít quan trọng. Biết đâu là ván đáng "đốt pin" giúp bạn còn sức cho lúc quyết định. (Xem "Sức bền tâm lý cho trận dài".)'},
+      {h:'Đọc thể thức: race dài hay ngắn', p:'Race ngắn (tới 3–5): mỗi ván nặng, ít thời gian sửa sai, khởi đầu tốt cực quan trọng, một cú liều hỏng có thể mất trận. Race dài (tới 9–11+): kỹ năng và sự ổn định thắng thế, đừng hoảng vì bị dẫn sớm, kiên nhẫn để đẳng cấp lên tiếng. Điều chỉnh độ liều theo độ dài race.'},
+      {h:'Luật thắng-thua ván (winner/loser break)', p:'Ai được phá ván sau ảnh hưởng lớn tới chiến lược. Nếu người THẮNG ván được phá (winner break), một loạt sạch có thể cuốn nhiều ván liền — càng phải cắt mạch đối thủ và giữ mạch của mình. Nếu người THUA được phá (loser/alternate break), trận cân hơn, an tâm chơi chắc. Biết luật phá để định mức liều.'},
+      {h:'Đừng để một ván đổi cả chiến lược', p:'Thắng một ván đẹp không có nghĩa lao vào liều; thua một ván xui không có nghĩa đổi sang thủ thủ cả trận. Giữ chiến lược tổng thể theo tỉ số, đừng để cảm xúc của MỘT ván lái cả trận. Điều chỉnh theo tỉ số là việc của lý trí, không phải của phản ứng. (Xem "Chấp nhận may rủi & cú xui".)'},
+      {h:'Chốt kế hoạch trước mỗi ván', p:'Một thói quen nhỏ: đầu mỗi ván, tự nhắc một câu về thế trận — "đang dẫn, chơi chắc", "hill-hill, tập trung cao nhất", "bị dẫn, tìm một cơ hội đột biến". Đặt ý định theo tỉ số cho mỗi ván giúp bạn không đánh trôi theo quán tính. Ghi lại trận nào mình quản lý tỉ số kém vào Nhật ký để sửa.'},
+    ]},
+  {key:'tac_scouting', tag:'Chiến thuật', title:'Đọc & khai thác thói quen đối thủ (scouting)',
+    intro:'Bàn bi không chỉ có bi — còn có một con người bên kia với điểm yếu và thói quen riêng. Người chơi tinh ý QUAN SÁT đối thủ và bày thế trận đánh vào chỗ yếu của họ. Bạn không cần thắng bằng cú hay hơn nếu biết đẩy đối thủ vào đúng cú họ hay hỏng. Đây là chiến thuật "đánh vào người", không chỉ "đánh vào bi".',
+    body:[
+      {h:'Quan sát từ khi CHƯA tới lượt mình', p:'Lúc ngồi ghế đừng lơ đãng — đó là giờ trinh sát. Xem đối thủ: cú nào họ đánh tự tin, cú nào họ ngập ngừng? Họ điều bi tốt hay hay bỏ vị trí? Phá mạnh hay kiểm soát? Thủ có sắc không? Vài ván đầu thu thập dữ liệu này đáng giá bằng nhiều điểm về sau. (Xem "Ghế chờ là một phần của trận" trong "Ngồi chờ tới lượt".)'},
+      {h:'Tìm cú YẾU của họ', p:'Gần như ai cũng có tử huyệt: cú rút cự ly dài, cú cắt mỏng, đôi bi, bi sát băng, cú lực, hay cú dưới áp lực. Nhận ra một-hai cú họ hay hỏng, rồi BÀY THẾ buộc họ phải dùng đúng cú đó — nhất là ở ván quan trọng. Đây là ứng dụng trực tiếp nhất của việc đọc đối thủ.'},
+      {h:'Để lại thế đúng vào điểm yếu', p:'Khi đánh safety hoặc buông một cú, đừng chỉ nghĩ "khó chung chung" — nghĩ "khó VỚI HỌ". Nếu họ kém cú đi băng, giấu bi cần một cú kick. Nếu họ yếu lực nhẹ, để lại cú cần chạm khẽ. Safety nhắm vào tử huyệt cụ thể hiệu quả hơn nhiều safety chung chung. (Xem "Safety / phòng thủ".)'},
+      {h:'Đọc trạng thái tâm lý qua dấu hiệu', p:'Thở gấp, siết cơ, đánh vội, liếc tỉ số, than thở = đang căng → chơi chắc, kiên nhẫn ép thêm. Buông vai, thở dài, đánh bất cần = đang nản → siết lối chơi, đừng cho cú xui để họ bám lại. Điều chỉnh theo trạng thái đối thủ theo thời gian thực. (Xem "Poker face — giấu cảm xúc & đọc đối thủ".)'},
+      {h:'Nhận diện KIỂU người chơi', p:'Phân loại nhanh để biết cách trị: người TẤN CÔNG liều (cho họ ít bàn mở, ép safety, chờ họ tự hỏng cú khó); người THỦ chắc (kiên nhẫn hơn họ, đừng nôn nóng phá thế); người NÓNG VỘI (chơi chậm, đều, để họ tự sốt ruột); người dễ TILT (giữ mặt lạnh, đừng cho cớ, chờ họ tự đổ sau một cú hỏng).'},
+      {h:'Học đường ra bi của họ', p:'Người chơi có "gu" điều bi riêng — hay đưa bi cái về vùng nào, thích đánh nhóm bi nào trước. Đoán được lối ra bi của họ giúp bạn biết họ định làm gì và đôi khi chặn trước (để lại thế phá kế hoạch của họ). Quan sát vài ván là thấy khuôn mẫu.'},
+      {h:'Đừng để bị đọc ngược lại', p:'Đối thủ cũng đang scouting bạn. Che tử huyệt của mình: đừng lộ cú mình ngại (giữ nhịp và mặt như nhau ở mọi cú), thỉnh thoảng đổi lối để khó đoán, và luyện chính cú yếu của mình ngoài trận để nó thôi là tử huyệt. Người khó đọc buộc đối thủ phải tự phán đoán trong lo lắng.'},
+      {h:'Thông tin để QUYẾT ĐỊNH, không để khinh địch', p:'Đọc đối thủ là để chọn thế và chiến thuật sắc hơn — không phải để coi thường rồi lơ là. Người yếu vẫn có cú mạnh, người đang nản vẫn có thể bừng lại. Dùng thông tin lạnh lùng, vẫn làm đủ routine từng cú của mình. Scouting bổ trợ cho lối chơi chắc, không thay thế nó.'},
     ]},
   {key:'serious', tag:'Tâm lý', title:'Chơi 100% công lực — không cú nào hời hợt',
     intro:'Muốn luôn chơi với 100% công lực và sự nghiêm túc, phải hiểu đúng một điểm: KHÔNG phải cú nào cũng căng 100% não — mà là cú nào cũng làm 100% QUY TRÌNH. Cố "gồng" từ đầu tới cuối thì sẽ mệt, đuối, rồi tới bi quyết định lại sựng. Cơ thủ bản lĩnh không phải lúc nào cũng căng — họ LẠNH, ĐỀU và CÓ KỶ LUẬT.',
@@ -4329,7 +4413,7 @@ function KnowledgeView(){
             {sec==='tactic'
               ? (()=>{ const arts=KNOWLEDGE.filter(a=>a.tag==='Chiến thuật' && !isArch(a.key) && !isPin(a.key));
                   return arts.length
-                    ? <div className="list">{arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='percent'} {...cardProps(a)}/>)}</div>
+                    ? <div className="list">{arts.map(a=><KnowCard key={a.key} a={a} defaultOpen={a.key==='tac_makeeasy'} {...cardProps(a)}/>)}</div>
                     : null; })()
               : sec==='phys'
               ? KNOW_CATS.filter(c=>c.tag!=='Tâm lý' && c.tag!=='Chiến thuật').map(c=>{
