@@ -3192,6 +3192,7 @@ function RunoutCoach(){
     w.postMessage({type:'altshot',cue:curStep.cue,ball:curStep.ballPos,pocket:curStep.pocket,leave:curStep.leaveAlts[zi],others,felt:[0,2.54,0,1.27],gen:1});
     setTimeout(()=>{ setAltBusy(b=>{ if(b){try{w.terminate();}catch(e){}} return false; }); },12000); }; // an toàn: quá 12s thì thôi
   const mainDia=rnDia(layout, steps, planning?null:shot, curAlt);
+  const dbgPos=()=>{ const cueSI=(layout.bih&&steps[0]&&steps[0].cue)?steps[0].cue:rnA2S(layout.cue); const ballsSI=layout.balls.map(rnA2S); const cs=steps[shot<0?0:shot]; return 'cue='+JSON.stringify(cueSI.map(x=>+x.toFixed(3)))+' balls='+JSON.stringify(ballsSI.map(b=>b.map(x=>+x.toFixed(3))))+(cs&&!cs.potFail?(' | cú'+cs.n+' lỗ'+cs.pk+' bx='+(cs.bx||0).toFixed(2)+' by='+(cs.by||0).toFixed(2)+' sp='+(cs.speed||0).toFixed(2)):''); }; // DEBUG: copy toạ độ SI để báo lỗi chính xác
   const log=stat.log||[];
   const avgMs=log.length? log.reduce((s,x)=>s+x.ms,0)/log.length : 0;
   const okRate=log.length? Math.round(log.filter(x=>x.ok).length/log.length*100) : 0;
@@ -3262,6 +3263,7 @@ function RunoutCoach(){
                     <button className={'chip'+(shot===-1?' on':'')} onClick={()=>setShot(-1)}>🗺️ Tổng quan</button>
                     <button className="chip" onClick={()=>setShot(Math.max(0,shot-1))}>‹ Cú trước</button>
                     <button className="chip" onClick={()=>setShot(Math.min(steps.length-1,(shot<0?0:shot)+1))}>Cú sau ›</button>
+                    <button className="chip" title="Copy toạ độ để báo lỗi" onClick={(e)=>{const t=e.currentTarget,o=t.textContent;try{navigator.clipboard.writeText(dbgPos());t.textContent='✓ Đã copy';}catch(err){t.textContent='(lỗi copy)';}setTimeout(()=>{t.textContent=o;},1500);}}>📋 Copy vị trí</button>
                   </div>
                   {false && nZones>0 && computeAlt && <span/>}{/* bấm-mới-tính tạm ẩn (đang chỉnh độ tin cậy worker); vùng để bi ②③ vẫn hiện trên bàn */}
                   {shot>=0 && steps[shot] && !steps[shot].potFail && dispStep &&
