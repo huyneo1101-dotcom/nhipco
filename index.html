@@ -466,6 +466,7 @@ function cushionCollide(b,rt){var n;if(rt=='x0')n=[1,0];else if(rt=='x1')n=[-1,0
 function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,cush=!!opts.cushions,noPath=!!opts.noPath,dt=opts.dt||1e-4,maxT=opts.maxT||12,obs=opts.obs||(opts.tenBall?[opts.tenBall]:null);
  var cue=launchSpin(speed,dir,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]};
  var path=noPath?null:[cue.p.slice()],t=0,collided=false,obsHit=obs?obs.map(function(){return false;}):null,rails=0;
+ var mc=!!opts.mc,MCP=mc?[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]]:null,nineMin=Infinity; // mc: theo dõi con 9 có tới lỗ đích không + scratch bi cái
  while(t<maxT){
   if(!collided){if(ln(sb(cue.p,obj.p))<=2*R){ballCollide(cue,obj);collided=true;}}
   if(obs)for(var oi=0;oi<obs.length;oi++){if(!obsHit[oi]&&ln(sb(cue.p,obs[oi]))<=2*R){ballCollide(cue,{p:obs[oi].slice(),v:[0,0],w:[0,0,0]});obsHit[oi]=true;}} // other balls are physical obstacles: cue bounces off them (never drawn passing through)
@@ -476,12 +477,16 @@ function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,
    if(f){var cd=[];if(d[0]>1e-9)cd.push((f[1]-R-cue.p[0])/d[0]);if(d[0]<-1e-9)cd.push((f[0]+R-cue.p[0])/d[0]);if(d[1]>1e-9)cd.push((f[3]-R-cue.p[1])/d[1]);if(d[1]<-1e-9)cd.push((f[2]+R-cue.p[1])/d[1]);for(var i=0;i<cd.length;i++)if(cd[i]>1e-6&&cd[i]<L)L=cd[i];}
    if(D<=L){var rest=ad(cue.p,ml(d,D));if(!f||(rest[0]>=f[0]+R-1e-3&&rest[0]<=f[1]-R+1e-3&&rest[1]>=f[2]+R-1e-3&&rest[1]<=f[3]-R+1e-3)){cue.p=rest;cue.v=[0,0];cue.w=[0,0,0];break;}}
    var jmp=Math.max(0,L-1e-4),s2=Math.sqrt(Math.max(0,s*s-2*a*jmp));cue.p=ad(cue.p,ml(d,jmp));cue.v=ml(d,s2);cue.w[0]=-cue.v[1]/R;cue.w[1]=cue.v[0]/R;cue.w[2]*=Math.exp(-jmp*1.5);if(path&&path.length<4000)path.push(cue.p.slice());}
-  clothStep(cue,dt);if(collided)clothStep(obj,dt);
+  clothStep(cue,dt);if(collided){clothStep(obj,dt);if(mc){var dn9=ln(sb(obj.p,opts.pocket));if(dn9<nineMin)nineMin=dn9;}} // theo đường con 9 → khoảng gần lỗ đích nhất
   if(cush&&f){if(cue.p[0]<f[0]+R){cue.p[0]=f[0]+R;cushionCollide(cue,'x0');rails++;}if(cue.p[0]>f[1]-R){cue.p[0]=f[1]-R;cushionCollide(cue,'x1');rails++;}if(cue.p[1]<f[2]+R){cue.p[1]=f[2]+R;cushionCollide(cue,'y0');rails++;}if(cue.p[1]>f[3]-R){cue.p[1]=f[3]-R;cushionCollide(cue,'y1');rails++;}}
   if(path&&t>0&&path.length<4000&&ln(sb(cue.p,path[path.length-1]))>0.008)path.push(cue.p.slice());
   t+=dt;if(atRest(cue))break;}
  if(path&&(path.length===0||ln(sb(path[path.length-1],cue.p))>1e-4))path.push(cue.p.slice()); // ensure path ends exactly at rest (analytic roll-to-rest jump didn't record its endpoint)
- return{cueRest:cue.p.slice(),cuePath:path,rails:rails,rev:cue.rev||0};}
+ if(mc&&collided){var gg2=0,ndt=4e-4;while(gg2++<10000){var dnn=ln(sb(obj.p,opts.pocket));if(dnn<nineMin)nineMin=dnn;if(nineMin<=1.4*R||atRest(obj))break;if(f&&(obj.p[0]<f[0]-3*R||obj.p[0]>f[1]+3*R||obj.p[1]<f[2]-3*R||obj.p[1]>f[3]+3*R))break;clothStep(obj,ndt);}} // lăn NỐT con 9 tới lỗ/nghỉ: cue có thể nghỉ trước (stun) → đừng cắt sớm. dt thô 4e-4 đủ cho pass/fail (con 9 lăn thẳng)
+ var out={cueRest:cue.p.slice(),cuePath:path,rails:rails,rev:cue.rev||0};
+ if(mc){var cuePk=Infinity,restPk=Infinity,pI,pK;if(path)for(pI=0;pI<path.length;pI++)for(pK=0;pK<6;pK++){var dP=ln(sb(path[pI],MCP[pK]));if(dP<cuePk)cuePk=dP;}for(pK=0;pK<6;pK++){var dR=ln(sb(cue.p,MCP[pK]));if(dR<restPk)restPk=dR;} // con 9 vào lỗ (đường đi trong ~1.4R tâm lỗ) · scratch (đường/điểm dừng bi cái sát miệng lỗ) · chạm bi khác
+  out.ninePotted=nineMin<=1.4*R;out.cueScratch=(cuePk<0.06||restPk<0.07);out.cueHitObs=obsHit?obsHit.indexOf(true)>=0:false;}
+ return out;}
 // ---- solver ----
 function ghostBall(O,pk){return sb(O,ml(nm(sb(pk,O)),2*R));}
 function signedAng(a,b){var A=nm(a),B=nm(b);return Math.atan2(A[0]*B[1]-A[1]*B[0],A[0]*B[0]+A[1]*B[1]);}
@@ -495,6 +500,10 @@ function aimToPot(A,O,pocket,bx,speed){var G=ghostBall(O,pocket),des=nm(sb(pocke
  var lo=base-0.30,hi=base+0.30,gr=0.6180339887,c1=hi-gr*(hi-lo),c2=lo+gr*(hi-lo),f1=cost(c1),f2=cost(c2);
  for(var it=0;it<13;it++){if(f1<f2){hi=c2;c2=c1;f2=f1;c1=hi-gr*(hi-lo);f1=cost(c1);}else{lo=c1;c1=c2;f1=f2;c2=lo+gr*(hi-lo);f2=cost(c2);}if(hi-lo<1e-3)break;}
  cost((lo+hi)/2);return eb;}
+// ---- Monte-Carlo robustness (gieo sai số tay người) ----
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};} // PRNG có seed → tái lập (không nhấp nháy khi re-solve lúc kéo)
+function gaussStream(rnd){var have=false,g=0;return function(){if(have){have=false;return g;}var u=rnd();if(u<1e-9)u=1e-9;var v=rnd(),m=Math.sqrt(-2*Math.log(u)),a=2*Math.PI*v;g=m*Math.sin(a);have=true;return m*Math.cos(a);};} // Box-Muller: 2 số ngẫu nhiên đều → 2 Gaussian
+function mcHash(){var h=2166136261>>>0;for(var i=0;i<arguments.length;i++){var q=Math.round(arguments[i]*1000)|0;h^=(q&0xffff);h=Math.imul(h,16777619);h^=((q>>>16)&0xffff);h=Math.imul(h,16777619);}return h>>>0;} // FNV-1a trên toạ độ/đầu-cơ/lực làm tròn → seed
 function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.quick3)opts.quick=true;var felt=opts.felt||null,others=opts.others||(opts.ten?[opts.ten]:null),dt=opts.quick?2e-4:1e-4; // run-out(quick): dt thô 2e-4 cho nhanh (đủ cm cho hướng dẫn); Cố vấn: 1e-4 chính xác. others[] = bi phải né
  var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]];
  var bxG=opts.quick3?[-0.2,0,0.2]:opts.quick2?[-0.22,0,0.22]:opts.quick?[-0.3,-0.12,0,0.12,0.3]:[-0.42,-0.28,-0.14,0,0.14,0.28,0.42],byG=opts.quick3?[-0.3,0,0.3]:opts.quick2?[-0.3,-0.1,0,0.1,0.3]:opts.quick?[-0.4,-0.2,-0.08,0,0.08,0.2,0.4]:[-0.45,-0.3,-0.18,-0.08,0,0.08,0.18,0.3,0.45],spG=opts.quick3?[1.5,2.5]:opts.quick2?[1.0,1.7,2.5]:[0.7,1.1,1.6,2.1,2.6,3.2]; // Cố vấn: mịn; run-out(quick): thô; quick2: nước-2; quick3: SIÊU thô 18 điểm (phương án phụ, không refine/probe)
@@ -532,21 +541,36 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
  var nextBall=(!opts.quick&&others&&others.length)?others[0]:null; // #5: "bi kế" để chấm GÓC LEAVE (Cố vấn: con 10)
  function leaveAng(rest){ if(!nextBall) return 0.4; var rest2=others.filter(function(o){return o!==nextBall;}),pk=pickPocket(rest,nextBall,rest2); if(pk<0)return 1.4; var a=nm(sb(nextBall,rest)),b=nm(sb(POCK[pk],nextBall)); return Math.acos(Math.max(-1,Math.min(1,dt2(a,b)))); } // góc cắt trên bi kế nếu để cue ở rest
  function leavePen(a){ return Math.max(0,0.16-a)*4 + Math.max(0,a-0.95)*3; } // quá thẳng(<9°, chỉ stun được) hoặc quá mỏng(>54°) = khó điều cú kế
- function finalize(e){var probes=[];if(!opts.quick3)for(var a2 of[-0.06,0.06])for(var s2 of[-0.25,0.25]){var pe=evalC(cl(e.bx+a2,-0.48,0.48),e.by,cl(e.sp+s2,0.5,3.3));if(pe)probes.push(ln(sb(pe.cueRest,e.cueRest)));} // quick3: bỏ probe độ nhạy
-  e.sensitivity=probes.length?probes.reduce(function(a,b){return a+b;},0)/probes.length:0;
+ var MC_N=36,MC_DT=1e-4; // N mẫu "đánh thử" mô phỏng sai số tay; dt mịn (KHÔNG 2e-4 kẻo cú rút "nổ tung" giả)
+ function robustness(e){ // gieo sai số tay THẬT quanh cú e → % con 9 vào + độ tản bi cái + scratch. Seed cố định theo thế → tái lập.
+  var seed=mcHash(cue[0],cue[1],nine[0],nine[1],pocket[0],pocket[1],Tt[0],Tt[1],Math.round(e.bx*100)/100,Math.round(e.by*100)/100,Math.round(e.sp*10)/10);
+  var rnd=mulberry32(seed),G=gaussStream(rnd),pots=0,risk=0,cloud=[],sx=0,sy=0;
+  for(var s=0;s<MC_N;s++){
+   var da=G()*0.007,sp=Math.max(0.4,e.sp*(1+G()*0.11)); // ngắm lệch ~0.4° · lực ±11%
+   var bx=cl(e.bx+G()*0.022,-0.5,0.5),by=cl(e.by+G()*0.022,-0.5,0.5),h=Math.hypot(bx,by);if(h>0.5){bx*=0.5/h;by*=0.5/h;} // english lệch, kẹp né miscue
+   var c=Math.cos(da),n2=Math.sin(da),aim=[e.aim[0]*c-e.aim[1]*n2,e.aim[0]*n2+e.aim[1]*c];
+   var r=simulate(cue,sp,aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:MC_DT,obs:others,mc:true,pocket:pocket});
+   if(r.ninePotted)pots++;if(r.cueScratch||r.cueHitObs)risk++;cloud.push(r.cueRest);sx+=r.cueRest[0];sy+=r.cueRest[1];}
+  var mx=sx/MC_N,my=sy/MC_N,ss=0;for(var q2=0;q2<cloud.length;q2++){var ex=cloud[q2][0]-mx,ey=cloud[q2][1]-my;ss+=ex*ex+ey*ey;}
+  return{potRate:pots/MC_N,posSpread:Math.sqrt(ss/MC_N),riskHit:risk/MC_N,cloud:cloud};} // posSpread = RMS tản vị trí bi cái (m)
+ function finalize(e){
+  if(opts.quick){var probes=[];if(!opts.quick3)for(var a2 of[-0.06,0.06])for(var s2 of[-0.25,0.25]){var pe=evalC(cl(e.bx+a2,-0.48,0.48),e.by,cl(e.sp+s2,0.5,3.3));if(pe)probes.push(ln(sb(pe.cueRest,e.cueRest)));} // run-out: giữ probe THÔ (rẻ) — MC quá tốn cho cả bàn
+   e.sensitivity=probes.length?probes.reduce(function(a,b){return a+b;},0)/probes.length:0;e.posSpread=e.sensitivity;e.potRate=null;e.riskHit=0;e.cloud=null;}
+  else{var rb=robustness(e);e.potRate=rb.potRate;e.posSpread=rb.posSpread;e.riskHit=rb.riskHit;e.cloud=rb.cloud;e.sensitivity=rb.posSpread;} // Cố vấn: MC thật; sensitivity=posSpread (vùng ra bi, m)
   e.leaveAng=leaveAng(e.cueRest);
   e.missBy=ln(sb(e.cueRest,Tt));e.onTarget=e.missBy<2*R;e.reachable=e.missBy<5*R;e.potted=Math.abs(e.potErr)<0.03;e.speed=e.sp;
   var v=e.by>0.14?'lê':e.by<-0.14?'rút':'stun',s=e.bx>0.12?' phải':e.bx<-0.12?' trái':'',pw=e.sp<1.3?'nhẹ':e.sp<2.3?'vừa':'chắc';e.label=v+s+' · '+pw;return e;}
  refined.forEach(finalize);
  // XẾP HẠNG: miss là CHÍNH (gộp thùng 2.5cm), trong cùng thùng thì ưu tiên ỔN ĐỊNH (stabCost thấp) — "tới đích, rồi chọn cú chắc tay nhất"
- function rankKey(e){return Math.round((e.missBy+e.scr*0.02)/0.025)*0.025 + 0.02*stabCost(e) + 0.015*leavePen(e.leaveAng);} // + #5: ưu tiên leave GÓC ĐẸP trên bi kế
+ function rankKey(e){var potPen=1-(e.potRate==null?1:e.potRate); // MISS là chính (gộp thùng 2.5cm); rồi ĂN CHẮC con 9 (potPen NẶNG, có thể nhảy thùng) + vùng ra bi nhỏ (posSpread) + ít scratch
+  return Math.round((e.missBy+e.scr*0.02)/0.025)*0.025 + 0.30*potPen + 0.60*(e.posSpread||0) + 0.06*(e.riskHit||0) + 0.02*stabCost(e) + 0.015*leavePen(e.leaveAng);} // + #5: leave GÓC ĐẸP bi kế
  refined.sort(function(a,b){return rankKey(a)-rankKey(b);});
  // dedup options that share technique AND land in the same spot; keep reachable alternatives (primary always kept)
  var opts=[];for(var r2=0;r2<refined.length;r2++){var o=refined[r2],dup=false;for(var z=0;z<opts.length;z++)if(techKey(opts[z])===techKey(o)){dup=true;break;}if(!dup)opts.push(o);} // one option per distinct technique (best-scoring of each)
  var REACH=5*R;var kept=opts.filter(function(o,idx){return idx===0||o.missBy<REACH;}).slice(0,3); // primary always kept; alternatives only if they genuinely reach near the target
  var b=kept[0];
- return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,rails:b.rails,rev:b.rev||0,path:b.path,scr:b.scr,potFrag:potFrag,
-  options:kept.map(function(o){return{bx:o.bx,by:o.by,speed:o.speed,aim:o.aim,cueRest:o.cueRest,missBy:o.missBy,onTarget:o.onTarget,sensitivity:o.sensitivity,rails:o.rails,path:o.path,scr:o.scr,label:o.label};})};}
+ return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,posSpread:b.posSpread,potRate:b.potRate,riskHit:b.riskHit,cloud:b.cloud,rails:b.rails,rev:b.rev||0,path:b.path,scr:b.scr,potFrag:potFrag,
+  options:kept.map(function(o){return{bx:o.bx,by:o.by,speed:o.speed,aim:o.aim,cueRest:o.cueRest,missBy:o.missBy,onTarget:o.onTarget,sensitivity:o.sensitivity,posSpread:o.posSpread,potRate:o.potRate,riskHit:o.riskHit,cloud:o.cloud,rails:o.rails,path:o.path,scr:o.scr,label:o.label};})};}
 // ---- RUN-OUT: chuỗi dọn bàn (chọn lỗ từng viên · né MỌI bi còn lại · nối cue: điểm dừng cú i = cue cú i+1) ----
 function distSeg(p,a,b){var ab=sb(b,a),d2=dt2(ab,ab)||1e-9,t=Math.max(0,Math.min(1,dt2(sb(p,a),ab)/d2));return ln(sb(p,ad(a,ml(ab,t))));}
 function potFragility(dOP,dCO,cutCos){return dOP*(0.45+0.4*dCO)/Math.max(0.28,cutCos);} // DUNG SAI PHA POT: xa lỗ × xa cue / độ dày cắt (cutCos~1=thẳng dễ, ~0=mỏng khó). Nhỏ = pot dễ/tha lỗi.
@@ -636,7 +660,30 @@ function rnCombo(cue,ball,others,felt){ // COMBO DỌN CHẮN: bi mục tiêu K�
  if(!bc)return null;
  return {B:best.B,pk:best.pk,pocket:RN_POCK[best.pk],Bghost:best.Bghost,cueRest:bc.r.cueRest,path:bc.r.cuePath,bx:bc.bx,by:bc.by,speed:bc.sp};}
 function rnAltShot(cue,ball,pocket,leave,others,felt){var s=solveFast(cue,ball,pocket,leave,{felt:felt,others:others,quick2:true});if(s.potFail)return{potFail:true};return{bx:s.bx,by:s.by,speed:s.speed,path:s.path,landing:s.cueRest,rails:s.rails};} // BẤM-MỚI-TÍNH: giải 1 cú tới VÙNG ĐỂ BI phụ (lưới quick2 cho NHANH ~0.5s; cú phụ chỉ để so sánh)
-function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.slice();}),N=seq.length,potted=[],z; for(z=0;z<N;z++)potted.push(false); var cue=layout.cue.slice(),steps=[],guard=0;
+function placeBIH(seq,felt){ // BI CẦM TAY: chọn chỗ đặt bi cái TỐI ƯU cho hình bi mới — cú 1 DÀY (không mỏng/đui) + để bi cho bi 2 đẹp (không mỏng/đui). Chạy trong worker.
+ var nb=seq[0]; if(!nb)return[1.27,0.635];
+ var after=[],i; for(i=1;i<seq.length;i++)after.push(seq[i]); var nb2=after[0]||null,after2=after.slice(1);
+ var angs=[0.30,0.44,0.55],dists=[0.38,0.52,0.66],best=null,bestSc=1e9; // góc cắt ~17-32° (góc tự nhiên/nửa bi), khoảng cách vừa
+ for(var pk=0;pk<6;pk++){var pocket=RN_POCK[pk]; if(ln(sb(nb,pocket))<0.25)continue; // bi 1 quá sát lỗ → bỏ lỗ đó
+  var back=nm(sb(nb,pocket)),perp=[-back[1],back[0]];
+  for(var ai=0;ai<3;ai++)for(var sd=-1;sd<=1;sd+=2)for(var di=0;di<3;di++){
+   var a=angs[ai],cs=Math.cos(a),sn=Math.sin(a),D=dists[di],dir=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];
+   var C=[nb[0]+dir[0]*D,nb[1]+dir[1]*D];
+   if(C[0]<felt[0]+2*R||C[0]>felt[1]-2*R||C[1]<felt[2]+2*R||C[1]>felt[3]-2*R)continue; // trong bàn
+   var bad=false,q; for(q=0;q<after.length;q++){if(ln(sb(after[q],C))<2.2*R||distSeg(after[q],C,nb)<2.2*R){bad=true;break;}} if(bad)continue; // C không đè bi & đường C→bi1 SẠCH
+   var pkc=pickPocket(C,nb,after); if(pkc<0)continue; // bi 1 phải ĂN ĐƯỢC từ C (không đui)
+   var cut=Math.max(0.05,dt2(nm(sb(nb,C)),nm(sb(RN_POCK[pkc],nb))));
+   var tgt=nb2?rnLeave(nb2,after2,felt):nb;
+   var s1=solveFast(C,nb,RN_POCK[pkc],tgt,{felt:felt,others:after,quick3:true}); if(s1.potFail)continue;
+   var L1=s1.cueRest,look=0;
+   if(nb2){var pk2=pickPocket(L1,nb2,after2);
+    if(pk2<0)look=20; // CẤM để đui bi 2
+    else{var cut2=Math.max(0.05,dt2(nm(sb(nb2,L1)),nm(sb(RN_POCK[pk2],nb2))));look=Math.max(0,0.62-cut2)*6+reachPen(L1,nb2,felt)+(cut2<0.5?7:0);}} // bi 2 KHÔNG mỏng + với được
+   var thin1=cut<0.60?(0.60-cut)*14:0; // CẤM cú 1 mỏng (phạt nặng → luôn ưu tiên góc dày nếu có)
+   var sc=look+thin1+s1.missBy*3+s1.scr+reachPen(C,nb,felt)+(s1.rev||0)*0.4;
+   if(sc<bestSc){bestSc=sc;best=C;}}}
+ return best||[1.27,0.635];}
+function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.slice();}),N=seq.length,potted=[],z; for(z=0;z<N;z++)potted.push(false); var cue=(layout.bih?placeBIH(seq,felt):layout.cue.slice()),steps=[],guard=0;
  while(guard++<N*2){
   var i=-1,q;for(q=0;q<N;q++){if(!potted[q]){i=q;break;}}if(i<0)break; // bi thấp nhất CHƯA ăn = mục tiêu (9-bi: chạm nó trước)
   var ball=seq[i],others=[];for(q=0;q<N;q++){if(!potted[q]&&q!==i)others.push(seq[q]);} var last=(others.length===0);
@@ -2257,6 +2304,7 @@ function DieuBiAdvisor(){
             onMouseDown={(e)=>{e.stopPropagation();setPk(i);}} onTouchStart={(e)=>{e.stopPropagation();setPk(i);}}/>;})}
           {opts.map((op,i)=> i===sel?null:<polyline key={'p'+i} points={ptsOf(op.path)} fill="none" stroke={DB_COL[i%3]} strokeWidth=".6" strokeDasharray="2 1.6" opacity="0.5" strokeLinejoin="round" pointerEvents="none"/>)}
           {o && <polyline points={ptsOf(o.path)} fill="none" stroke={DB_COL[sel%3]} strokeWidth="1.05" strokeLinejoin="round" strokeLinecap="round" pointerEvents="none"/>}
+          {o && o.cloud ? o.cloud.map((c,i)=>{const a=s2a(c);return <circle key={'cl'+i} cx={a.x} cy={a.y} r=".7" fill={DB_COL[sel%3]} opacity=".26" pointerEvents="none"/>;}) : null}
           <circle cx={tgt.x} cy={tgt.y} r="1.8" fill="none" stroke="#efe9d8" strokeWidth=".8" strokeDasharray="1.4 1.2"/>
           <Ball x={ten.x} y={ten.y} r={1.1} b={{num:10,stripe:'#2f6fd6'}}/>
           <Ball x={nine.x} y={nine.y} r={1.1} b={{num:9,stripe:'#e8c020'}}/>
@@ -2291,8 +2339,9 @@ function DieuBiAdvisor(){
               <div style={{marginTop:6}}>
                 {o.onTarget?<span className="chip on">✓ tới đích ({(o.missBy*100).toFixed(1)}cm)</span>:<span className="chip">gần nhất {Math.round(o.missBy*100)}cm</span>}
                 {res.potFrag!=null?<span className={'chip'+(res.potFrag<0.9?' on':'')}>pha ăn bi {res.potFrag<0.9?'dễ':res.potFrag<1.9?'vừa':'khó'}</span>:null}
+                {o.potRate!=null?<span className={'chip'+(o.potRate>=0.6?' on':'')}>ăn chắc {Math.round(o.potRate*100)}%</span>:null}
                 {o.rails>0?<span className="chip">{o.rails} băng</span>:null}
-                {o.sensitivity*100>25?<span className="chip">nhạy {Math.round(o.sensitivity*100)}cm</span>:null}
+                {o.posSpread!=null&&o.posSpread*100>15?<span className="chip">vùng ra bi ~{Math.round(o.posSpread*100)}cm</span>:null}
                 {o.scr>0.5?<span className="chip">⚠ rủi ro lỗ/bi10</span>:null}
               </div>
             </div>
@@ -3002,7 +3051,7 @@ function genRackOnce(n){
   while(!cue && g<4000){ g++; const p={x:RN_MINX+(RN_MAXX-RN_MINX)*Math.random(), y:RN_MINY+(RN_MAXY-RN_MINY)*Math.random()};
     if(rnInFelt(p) && all.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>7)) cue=p; }
   if(!cue) cue={x:24,y:30};
-  return {cue, balls:[...others, {x:RN_SPOT.x,y:RN_SPOT.y}], game:n};
+  return {cue, balls:[...others, {x:RN_SPOT.x,y:RN_SPOT.y}], game:n, bih:true}; // BI CẦM TAY: engine đặt bi cái tối ưu cho hình bi mới (cue chỉ là dự phòng)
 }
 function genRack(n){ // sinh lại tới khi cue có ĐƯỜNG THOÁNG tới bi 1 (khớp ngưỡng traffic ~2.2 đv của engine) → thế mặc định không kẹt ngay cú 1
   let best=null;
@@ -3036,7 +3085,8 @@ const RN_PK=['trên-trái','trên-phải','dưới-trái','dưới-phải','gi�
 function rnDia(layout, steps, ov, altOpt){
   const overview=(ov===-1), noRoute=(ov==null || !steps || !steps.length || (ov>=0 && !steps[ov]));
   if(overview || noRoute){ // Tổng quan = cả bàn + mũi tên thứ tự; đang lập map / chưa tính = chỉ bi (giấu thứ tự)
-    const balls=[{x:layout.cue.x,y:layout.cue.y,cue:true}];
+    const cueP=(layout.bih && steps && steps[0] && steps[0].cue)?rnS2A(steps[0].cue):layout.cue; // BIH: bi cái ở chỗ engine đặt (steps[0].cue)
+    const balls=[{x:cueP.x,y:cueP.y,cue:true}];
     layout.balls.forEach((b,i)=>{ const n=i+1; balls.push(n<=8?{x:b.x,y:b.y,num:n,solid:POOL[n]}:{x:b.x,y:b.y,num:n,stripe:POOL[n]}); });
     const dia={balls};
     if(overview){ const ar=[]; for(let i=0;i<layout.balls.length-1;i++){ const a=layout.balls[i],b=layout.balls[i+1]; ar.push([a.x,a.y,b.x,b.y]); } dia.arrows=ar; }
@@ -3107,7 +3157,7 @@ function RunoutCoach(){
   const [altBusy,setAltBusy]=useState(false);   // bấm-mới-tính dùng CHUNG worker chính (route đã xong khi bấm)
   const fileRef=useRef(null);
   useEffect(()=>{ setAltSel(0); setAltShot(null); },[shot,steps]);   // đổi cú → về phương án chính
-  useEffect(()=>{ const layoutSI={cue:rnA2S(layout.cue), balls:layout.balls.map(rnA2S)}; // đổi thế bi → giải lại lộ trình (né mọi bi, nối chuỗi cue)
+  useEffect(()=>{ const layoutSI={cue:rnA2S(layout.cue), balls:layout.balls.map(rnA2S), bih:!!layout.bih}; // đổi thế bi → giải lại lộ trình (né mọi bi, nối chuỗi cue); bih → engine tự đặt bi cái tối ưu
     solve({type:'runout', layout:layoutSI, felt:[0,2.54,0,1.27]}, (res)=>setSteps(Array.isArray(res)?res.map(s=>{ let o=(typeof s.bx==='number')?{...s,bx:-s.bx}:s; if(o.alts)o={...o,alts:o.alts.map(a=>(typeof a.bx==='number'?{...a,bx:-a.bx}:a))}; return o; }):[])); },[layout]); // ĐỔI english trái↔phải khi hiển thị (theo yêu cầu chủ); path vẫn là physics gốc
   const newRack=(n)=>{ setEdit(false); setPhoto(null); setLayout(genRack(n)); setShot(0); if(mode==='quiz'){ setPhase('plan'); setT0(Date.now()); } };
   const startEdit=()=>{ setPhoto(null); setPcue(null); setPballs([]); setEdit(true); };
