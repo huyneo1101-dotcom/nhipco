@@ -538,7 +538,7 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
  if(opts.quick&&!pool.some(function(e){return e.objReach;}))return{potFail:true}; // KHÔNG cú nào đủ lực đưa bi tới lỗ → báo potFail (run-out sẽ thử lỗ khác / báo kẹt) thay vì gợi cú lê chết bi
  pool.sort(function(a,b){return score(a)-score(b);});
  // refine the best representative of up to 4 distinct techniques → diverse options
- var maxSeeds=opts.quick?1:4; var seeds=[],seen={};for(var p=0;p<pool.length&&seeds.length<maxSeeds;p++){var kk=techKey(pool[p]);if(seen[kk])continue;seen[kk]=1;seeds.push(pool[p]);} // quick=1 seed (run-out chỉ cần cú tốt nhất, khỏi phí đa phương án)
+ var maxSeeds=opts.quick?(opts.deep?3:1):4; var seeds=[],seen={};for(var p=0;p<pool.length&&seeds.length<maxSeeds;p++){var kk=techKey(pool[p]);if(seen[kk])continue;seen[kk]=1;seeds.push(pool[p]);} // quick=1 seed (nhanh, đủ cho ca dễ); quick+deep=3 seed (chỉ bật khi leave đang chưa đẹp, tìm đường điều bi — kể cả nhiều băng — tốt hơn)
  var missSeeds=[]; if(!opts.quick){var byMiss=pool.slice().sort(function(a,b){return ln(sb(a.cueRest,Tt))-ln(sb(b.cueRest,Tt));});for(var m2=0;m2<3&&m2<byMiss.length;m2++)missSeeds.push(byMiss[m2]);} // cú SÁT ĐÍCH nhất (kể cả english cao) → refine theo độ CHÍNH XÁC thuần, khỏi bị phạt english kéo trôi
  var refined=opts.quick3?seeds.slice():seeds.map(function(s){return refineFrom(s,score);}).concat(missSeeds.map(function(s){return refineFrom(s,missObj);})); // quick3: KHÔNG refine (siêu nhanh)
  var nextBall=(!opts.quick&&others&&others.length)?others[0]:null; // #5: "bi kế" để chấm GÓC LEAVE (Cố vấn: con 10)
@@ -700,7 +700,7 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[pk],pk:pk,path:sL.potFail?null:sL.path,bx:sL.bx,by:sL.by,speed:sL.speed,rails:sL.rails,landing:sL.potFail?null:sL.cueRest,last:true,potFail:sL.potFail});potted[i]=true;break;}
   var pockets=rnMakeable(cue,ball,others),done=false;
   if(pockets.length){var leaves=rnLeaves(nb,after,felt);
-   var evalP=function(P,frag,tgt){var s1=solveFast(cue,ball,RN_POCK[P],tgt,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
+   var evalP=function(P,frag,tgt,deep){var s1=solveFast(cue,ball,RN_POCK[P],tgt,{felt:felt,others:others,quick:true,deep:deep});if(s1.potFail)return null;
     var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
     if(pk1<0)look=14; // 1 NƯỚC: bi kế KẸT từ chỗ dừng → PHẠT NẶNG (đừng bao giờ điều ra kẹt nếu còn cách khác)
     else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.62-cutNb)*5.5;var pos2=0; // TRÁNH ĐỂ LẠI CÚ CẮT MỎNG (rất dễ trượt): phạt cắt bi kế >~52° (cutNb<0.62) mạnh
@@ -718,7 +718,14 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
     return {s1:s1,P:P,tgt:tgt,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+reach+thinNow+revPen+risk+cplx+farPen,look:look};};
    var bestC=evalP(pockets[0].pk,pockets[0].frag,leaves[0]); // lỗ dễ nhất + chỗ để bi #1
    if(leaves.length>1){var cL=evalP(pockets[0].pk,pockets[0].frag,leaves[1]);if(cL&&(!bestC||cL.sc<bestC.sc))bestC=cL;} // SO chỗ để bi #2: nếu cú tới #1 phức tạp/với/xa → chọn #2 (cú đơn giản hơn) — má đẹp > gần
+   if(leaves.length>2){var cL3=evalP(pockets[0].pk,pockets[0].frag,leaves[2]);if(cL3&&(!bestC||cL3.sc<bestC.sc))bestC=cL3;} // SO nốt chỗ để bi #3 (trước bỏ qua, giờ luôn thử — thêm 1 phương án gần như miễn phí)
    if((!bestC||bestC.look>=1.5)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag,leaves[0]);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2
+   if(!bestC||bestC.look>=0.9){ // leave còn chưa đẹp → TÌM KỸ HƠN (3 kỹ thuật thay vì 1) cho các chỗ để bi đã xét, kể cả đường điều bi nhiều băng — chỉ tốn thêm khi thật sự cần
+    var dCands=[evalP(pockets[0].pk,pockets[0].frag,leaves[0],true)];
+    if(leaves.length>1)dCands.push(evalP(pockets[0].pk,pockets[0].frag,leaves[1],true));
+    if(leaves.length>2)dCands.push(evalP(pockets[0].pk,pockets[0].frag,leaves[2],true));
+    for(var di=0;di<dCands.length;di++){var dc=dCands[di];if(dc&&(!bestC||dc.sc<bestC.sc))bestC=dc;}
+   }
    if(bestC){var zAlts=[];for(var li=0;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.tgt))>0.12&&ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (các chỗ còn lại ngoài chỗ đã chọn) = phương án điều bi thay thế
     steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:bestC.tgt,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,rev:bestC.s1.rev||0,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
   if(done)continue;
