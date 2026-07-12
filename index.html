@@ -717,14 +717,14 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
     var farNb=ln(sb(L1,nb)),farPen=farNb>0.82?(farNb-0.82)*1.6:0; // HẠN CHẾ QUÁ XA bi kế (trung bình OK, gần KHÔNG cần) — để xa thì khó dàn/ngắm/điều tiếp
     return {s1:s1,P:P,tgt:tgt,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+reach+thinNow+revPen+risk+cplx+farPen,look:look};};
    var bestC=evalP(pockets[0].pk,pockets[0].frag,leaves[0]); // lỗ dễ nhất + chỗ để bi #1
-   if(leaves.length>1){var cL=evalP(pockets[0].pk,pockets[0].frag,leaves[1]);if(cL&&(!bestC||cL.sc<bestC.sc))bestC=cL;} // SO chỗ để bi #2: nếu cú tới #1 phức tạp/với/xa → chọn #2 (cú đơn giản hơn) — má đẹp > gần
-   if(leaves.length>2){var cL3=evalP(pockets[0].pk,pockets[0].frag,leaves[2]);if(cL3&&(!bestC||cL3.sc<bestC.sc))bestC=cL3;} // SO nốt chỗ để bi #3 (trước bỏ qua, giờ luôn thử — thêm 1 phương án gần như miễn phí)
-   if((!bestC||bestC.look>=1.5)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag,leaves[0]);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2
+   function keep(c){if(c&&(!bestC||c.sc<bestC.sc))bestC=c;} // giữ ứng viên nếu điểm tốt hơn hiện tại
+   if(leaves.length>1)keep(evalP(pockets[0].pk,pockets[0].frag,leaves[1])); // SO chỗ để bi #2: nếu cú tới #1 phức tạp/với/xa → chọn #2 (cú đơn giản hơn) — má đẹp > gần
+   if(leaves.length>2)keep(evalP(pockets[0].pk,pockets[0].frag,leaves[2])); // SO nốt chỗ để bi #3 (trước bỏ qua, giờ luôn thử — thêm 1 phương án gần như miễn phí)
+   if((!bestC||bestC.look>=1.5)&&pockets.length>1)keep(evalP(pockets[1].pk,pockets[1].frag,leaves[0])); // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2
    if(!bestC||bestC.look>=0.9){ // leave còn chưa đẹp → TÌM KỸ HƠN (3 kỹ thuật thay vì 1) cho các chỗ để bi đã xét, kể cả đường điều bi nhiều băng — chỉ tốn thêm khi thật sự cần
-    var dCands=[evalP(pockets[0].pk,pockets[0].frag,leaves[0],true)];
-    if(leaves.length>1)dCands.push(evalP(pockets[0].pk,pockets[0].frag,leaves[1],true));
-    if(leaves.length>2)dCands.push(evalP(pockets[0].pk,pockets[0].frag,leaves[2],true));
-    for(var di=0;di<dCands.length;di++){var dc=dCands[di];if(dc&&(!bestC||dc.sc<bestC.sc))bestC=dc;}
+    keep(evalP(pockets[0].pk,pockets[0].frag,leaves[0],true));
+    if(leaves.length>1)keep(evalP(pockets[0].pk,pockets[0].frag,leaves[1],true));
+    if(leaves.length>2)keep(evalP(pockets[0].pk,pockets[0].frag,leaves[2],true));
    }
    if(bestC){var zAlts=[];for(var li=0;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.tgt))>0.12&&ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (các chỗ còn lại ngoài chỗ đã chọn) = phương án điều bi thay thế
     steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:bestC.tgt,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,rev:bestC.s1.rev||0,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
