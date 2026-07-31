@@ -1,5 +1,5 @@
 /* CueZen service worker — app shell offline + cập nhật ưu tiên mạng cho trang chính */
-const CACHE = 'nhipco-v30';
+const CACHE = 'nhipco-v31';
 const CORE = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', (e) => {
