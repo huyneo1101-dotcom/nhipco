@@ -91,6 +91,19 @@ body{
   width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer;display:grid;place-items:center}
 .iconbtn:active{transform:scale(.94)}
 
+.notifwrap{position:relative}
+.notifbadge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 3px;border-radius:999px;
+  background:var(--danger);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;line-height:1;box-shadow:var(--shadow)}
+.notifbackdrop{position:fixed;inset:0;z-index:45;background:transparent}
+.notifpanel{position:absolute;top:48px;right:0;z-index:46;width:282px;max-width:78vw;
+  background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow);padding:8px;display:flex;flex-direction:column;gap:4px}
+.notifhead{font-weight:800;font-size:12.5px;color:var(--muted);padding:4px 6px 2px;text-transform:uppercase;letter-spacing:.4px}
+.notifempty{padding:10px 8px;font-size:13px;color:var(--text);line-height:1.4}
+.notifitem{display:block;width:100%;text-align:left;background:var(--card2);border:1px solid var(--line);
+  border-radius:10px;padding:9px 10px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+.notifitem:active{transform:scale(.98)}
+
 .body{flex:1;padding:6px 16px 14px;display:flex;flex-direction:column}
 
 .tabs{display:flex;gap:5px;padding:8px 8px calc(12px + env(safe-area-inset-bottom));
@@ -733,7 +746,7 @@ function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.
 self.onmessage=function(e){var d=e.data;try{var res=d.type==='runout'?runoutRoute(d.layout,d.felt):d.type==='altshot'?rnAltShot(d.cue,d.ball,d.pocket,d.leave,d.others,d.felt):solveFast(d.cue,d.nine,d.pocket,d.target,{felt:d.felt,others:d.others,ten:d.ten});self.postMessage({gen:d.gen,res:res});}catch(err){self.postMessage({gen:d.gen,res:d.type==='runout'?[]:{potFail:true,err:String(err&&err.message||err)}});}};
 </script>
 <script type="text/babel" data-presets="react">
-const {useState,useEffect,useRef,useCallback} = React;
+const {useState,useEffect,useRef,useCallback,useMemo} = React;
 // State gắn với localStorage: trả về [giá trị, lưu]. `lưu` nhận giá trị hoặc hàm cập nhật,
 // ghi vào store ngay trong updater nên chạm nhanh liên tiếp không mất dữ liệu.
 function usePersist(key, def){
@@ -1212,6 +1225,12 @@ const DRILLS=[
     why:'Đường ít biến số (ít xoáy, ít băng, lực nhỏ) là đường ít sai số và ít tốn não. Tập cho ưu tiên này thành phản xạ.',
     fixes:['Mất vị trí bi cái','Không tính đường ra bi','Lực quá mạnh'],
     dia:{balls:[{x:20,y:32,c:W},{x:40,y:24,c:R},{x:58,y:34,c:R},{x:76,y:20,c:R}],arrows:[[23,31,37,25]]}},
+  {key:'streak10',cat:'men',name:'Chuỗi 10 cú không trượt',max:10,target:'10 liên tiếp',
+    setup:'Một cú thẳng vừa tầm (~2 viên gạch), dựng lại y hệt mỗi lần. Vào 10 cú LIÊN TIẾP. Trượt một cú là xoá đếm, quay về 1. Không đổi cú cho dễ hơn giữa chừng.',
+    scoring:'Chuỗi dài nhất đạt được trong buổi (0–10)',
+    why:'Cú thứ 8, thứ 9 mới là bài kiểm tra thật: cú vẫn dễ y như cú đầu, nhưng tay bắt đầu rén vì sợ mất chuỗi. Đây là cách rẻ nhất để tự tạo áp lực thật mà không cần đối thủ — và để thấy rõ mình hỏng vì kỹ thuật hay vì cái đầu.',
+    fixes:['Run tay khi căng','Bỏ lỡ cú dễ','Nóng vội','Giật tay khi bắn'],
+    dia:{balls:[{x:34,y:26,c:W},{x:64,y:26,c:R}],line:[37,26,62,26],zone:[64,26,7]}},
   {key:'mapfirst',cat:'pos',name:'Lập bản đồ trước khi bắn',max:10,target:'≥8/10',
     setup:'Xếp 6–8 bi ngẫu nhiên. Trước khi chạm bi nào, PHẢI đọc xong thứ tự chạy cả bàn + hình dung đường bi cái tới từng viên — nói to bản đồ rồi mới bắn. 10 ván. (Hoặc dùng tab 🗺️ Run-out → Luyện để tự chấm thời gian lập map.)',
     scoring:'Số ván bạn lập ĐỦ bản đồ trước khi chạm bi (dù có chạy hết hay không), trên 10',
@@ -1457,6 +1476,53 @@ const RESET_LINES=[
 ];
 const RESET_PHASES=[['Hít vào',4,1.35],['Giữ',2,1.35],['Thở ra',6,1]];
 
+/* ---- Nhắc nhở (chuông) — đọc kế hoạch tuần từ localStorage, không phụ thuộc state của Training ---- */
+function useWeekReminders(){
+  const [tick,setTick]=useState(0);
+  useEffect(()=>{ const id=setInterval(()=>setTick(t=>t+1),4000); return ()=>clearInterval(id); },[]);
+  return useMemo(()=>{
+    const wp=store.get('nc.weekplan',null);
+    if(!wp||!Array.isArray(wp.days)||wp.days.length!==7) return [];
+    const curWeek=isoMonday(new Date());
+    const dk=(d)=>d.toISOString().slice(0,10);
+    const curWeekId=dk(curWeek);
+    if(wp.week!==curWeekId) return [];
+    const recs=store.get('nc.training',[])||[];
+    const ghost=store.get('nc.ghost',[])||[];
+    const dayDateStr=(i)=>{ const m=new Date(curWeek); m.setDate(m.getDate()+i); return dk(m); };
+    const dayDone=(i)=>{ const day=wp.days[i]||{}; const dt=dayDateStr(i); const keys=day.keys||[];
+      return recs.some(r=>r.date===dt&&keys.includes(r.drill)) || (day.ghost&&ghost.some(g=>g.date===dt)); };
+    const todayIdx=(new Date().getDay()+6)%7;
+    const items=[];
+    for(let i=0;i<todayIdx;i++){ if(!dayDone(i)) items.push({key:'m'+i, text:'⚪ Bỏ lỡ buổi tập '+(WEEK_DOW[i]||'')+' tuần này'}); }
+    if(!dayDone(todayIdx)) items.push({key:'t', text:'🟠 Hôm nay chưa hoàn thành buổi tập'});
+    return items;
+  },[tick]);
+}
+function NotifBell(){
+  const [open,setOpen]=useState(false);
+  const items=useWeekReminders();
+  const count=items.length;
+  const goTrain=()=>{ setOpen(false); NAV.go('train'); };
+  return (
+    <div className="notifwrap">
+      <button className="iconbtn" onClick={()=>setOpen(o=>!o)} aria-label="Nhắc nhở">
+        🔔
+        {count>0 && <span className="notifbadge">{count>9?'9+':count}</span>}
+      </button>
+      {open && <>
+        <div className="notifbackdrop" onClick={()=>setOpen(false)}/>
+        <div className="notifpanel">
+          <div className="notifhead">Nhắc nhở tuần này</div>
+          {count===0
+            ? <div className="notifempty">✅ Đang đúng kế hoạch tuần này — cứ giữ nhịp vậy nhé!</div>
+            : items.map(it=><button key={it.key} className="notifitem" onClick={goTrain}>{it.text}</button>)}
+        </div>
+      </>}
+    </div>
+  );
+}
+
 /* ================= App ================= */
 function App(){
   const [order,setOrder]=useState(()=>mergeOrder(store.get('nc.taborder',null)));
@@ -1482,6 +1548,7 @@ function App(){
         </div>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
           <button className="resetBtn" onClick={()=>setReset(true)}>⟳ Reset</button>
+          <NotifBell/>
           <button className="iconbtn" onClick={()=>setSettings(true)} aria-label="Cài đặt">⚙️</button>
         </div>
       </div>
@@ -3853,6 +3920,19 @@ const KNOWLEDGE=[
       {h:'Phá & mở ván cũng là xác suất', p:'Chọn cú phá KIỂM SOÁT được (giữ bi cái, có bi vào hoặc để lại thế) thay vì phá thật mạnh cầu may. Đầu ván đặt mình vào thế % cao thì cả ván nhẹ nhàng hơn.'},
       {h:'Luyện tư duy này thế nào', p:'Sau mỗi ván, xem lại: cú nào mình chọn theo cảm hứng thay vì theo %? Ghi vào Nhật ký. Dần dần "máy tính xác suất" trong đầu sẽ tự bật lên trước mỗi cú, và bạn ngừng tặng ván cho đối thủ.'},
     ]},
+  {key:'tac_break', tag:'Chiến thuật', title:'Phá bi — chính xác ở tốc độ cao, không phải sức mạnh',
+    intro:'Ván được định đoạt trước khi bạn đánh cú "thật" đầu tiên. Phá bi là cú duy nhất bạn hoàn toàn chủ động, vậy mà lại là cú nhiều người tập ít nhất — họ chỉ nện thật mạnh rồi hy vọng. Người phá giỏi không phá mạnh hơn: họ phá CHÍNH XÁC ở tốc độ cao. Sai điểm chạm một chút thôi là phom không mở đúng và bạn mất quyền kiểm soát ngay lập tức.',
+    body:[
+      {h:'Mạnh không phải là mục tiêu', p:'Lực chỉ có ích khi nó được truyền ĐÚNG. Đánh 100% mà chạm lệch bi đầu thì năng lượng tán đi khắp nơi: phom mở lệch, bi cái văng loạn, và bạn thường mất lượt dù có bi rơi. Ngược lại một cú 80% chạm dày cho phom tản đều và bi cái nằm ngoan. Phá bi là môn của độ chính xác dưới tốc độ, không phải môn thi sức.'},
+      {h:'Chạm DÀY bi đầu là tất cả', p:'Chạm dày (full hit) đúng tâm bi đầu = truyền tối đa năng lượng vào phom và giữ bi cái không văng lung tung. Chạm mỏng dù chỉ vài milimet là bi cái đổi hướng mạnh và phom mở nửa vời. Trước khi nghĩ tới bất cứ thứ gì khác, hãy chắc bạn chạm dày được đều đặn.'},
+      {h:'Thước đo của cú phá là BI CÁI, không phải số bi rơi', p:'Bi rơi khi phá phần lớn là may. Thứ lặp lại được và quyết định ván là: bi cái dừng ở đâu. Bi cái đứng quanh giữa bàn = bạn nhìn được cả bàn và gần như luôn có cú kế. Bi cái lủi lỗ hoặc dính băng = ván coi như tặng đối thủ, dù vừa rơi hai bi.'},
+      {h:'Nhìn bi cái, đừng nhìn phom tản', p:'Phản xạ tự nhiên là dõi theo đám bi bung ra vì nó vui mắt. Người giỏi theo dõi BI CÁI, vì đó là thứ duy nhất họ điều khiển được và là dữ liệu để chỉnh cú phá sau. Sau mỗi cú phá, câu hỏi đầu tiên phải là "bi cái dừng đâu", không phải "có vào bi nào không".'},
+      {h:'Xây lực dần, đừng bắt đầu ở 100%', p:'Bắt đầu ở 70–80% lực và chỉ tăng khi bạn giữ được bi cái ổn định ở mức đó. Tăng lực trước khi có kiểm soát chỉ là tập cho chắc cái sai. Rất nhiều người chơi phong trào sẽ phá tốt hơn ngay lập tức nếu chịu giảm 20% lực.'},
+      {h:'Thân người phải giữ được, không được đổ', p:'Cú phá hỏng thường hỏng ở thân: nhổm người, xoay vai, mất điểm tựa nên đầu cơ chạm lệch. Chân trụ chắc, đầu giữ nguyên tới khi bi cái đi hẳn. Nếu sau cú phá bạn phải bước một bước để lấy lại thăng bằng, cú đó đã quá tay so với sức kiểm soát của bạn.'},
+      {h:'Cùng một vị trí, lặp cho thành hệ', p:'Đừng mỗi lần phá một kiểu. Chọn một vị trí đặt bi cái cố định, một điểm chạm cố định, phá đi phá lại cho tới khi kết quả lặp lại được. Có một cú phá ỔN ĐỊNH đáng giá hơn nhiều so với một cú phá thỉnh thoảng nổ đẹp. Khi đã ổn định rồi mới thử dịch vị trí để tìm cú tốt hơn.'},
+      {h:'Đọc bàn ngay khi bi vừa đứng yên', p:'Cú phá xong là bạn đang ở thời điểm nhiều thông tin nhất ván: bàn mở, chưa có gì bị khoá. Đứng lại đọc bản đồ ngay lúc đó thay vì nhào vào cú dễ nhất trước mắt. Rất nhiều ván mất ở cú THỨ HAI chứ không phải ở cú phá. (Xem "Đọc bàn & chạy hình cả ván".)'},
+      {h:'Tập phá: bỏ hẳn việc đếm bi rơi', p:'Bài tập: phá 10 lần và KHÔNG quan tâm có bi vào hay không — chỉ ghi lại bi cái dừng ở đâu. Giữ được bi cái quanh giữa bàn đều đặn nghĩa là cú phá đã lên, phần bi rơi sẽ tự theo sau. (Xem bài tập "Phá bi có kiểm soát" và "Phá 9-bi chuẩn" ở tab Rèn luyện.)'},
+    ]},
   {key:'tac_readfast', tag:'Chiến thuật', title:'Đọc bàn nhanh hơn — thấy bản đồ tức thì',
     intro:'Biết CÁCH đọc bàn (nghĩ ngược, bi mồi, chia chặng) là một chuyện; đọc bàn NHANH tới mức bản đồ tự hiện ra khi vừa nhìn bàn lại là chuyện khác. Điểm yếu hay gặp: bắn khi bản đồ chưa đủ trong đầu, vì lập map còn chậm nên sốt ruột cúi xuống. Tốc độ đọc bàn RÈN được — đây là cách.',
     body:[
@@ -3994,6 +4074,20 @@ const KNOWLEDGE=[
       {h:'Bi gần lỗ nhưng góc xấu', p:'Bi sát lỗ chưa chắc dễ nếu bi cái ở góc tệ hoặc bị bi chắn — đừng chủ quan. Đôi khi tốt hơn là để dành bi đó làm bi bảo hiểm / bi mồi và dọn bi khác trước, quay lại nó khi có góc thuận. (Xem "Đọc bàn & chạy hình cả ván".)'},
       {h:'Giảm kỳ vọng, giữ bình tĩnh', p:'Bi khó dễ làm bực và siết tay. Chấp nhận không phải bi nào cũng vào đẹp; mục tiêu là XỬ LÝ gọn — vào được thì tốt, không thì để lại thế khó cho đối thủ — chứ không phải cú xuất thần. Bình tĩnh chọn phương án ít thiệt hại thắng cú liều hoa mỹ. (Xem "Áp lực & khoảnh khắc căng".)'},
       {h:'Tập riêng bi khó', p:'Dựng lại các thế khó hay gặp (bi sát băng, bi kê, bi dính) và luyện nhiều trong môi trường không áp lực, để lúc thật không hoảng. Biết trước "loại bi này mình xử thế nào" khiến bi khó bớt đáng sợ. Ghi lại cách xử hiệu quả vào Nhật ký.'},
+    ]},
+  {key:'tac_kickbank', tag:'Chiến thuật', title:'Bắn băng & thoát băng (bank / kick) — có hệ thống, đừng đoán',
+    intro:'Đa số người chơi coi cú đi băng là chuyện hên xui: nhắm đại, đánh, rồi hy vọng. Nên họ hiếm khi được thưởng, và càng hiếm thì càng né — thành ra bị che là coi như mất lượt. Sự thật ngược lại: băng có QUY LUẬT. Bi vào băng thế nào thì ra thế ấy, lặp đi lặp lại. Việc của bạn không phải đoán, mà là học cách cái bàn phản ứng.',
+    body:[
+      {h:'Phân biệt bank và kick', p:'BANK là bạn đánh BI MỤC TIÊU vào băng rồi bật vào lỗ. KICK là bạn cho BI CÁI đi băng trước rồi mới chạm bi mục tiêu — thường để thoát khi bị che. Hai thứ dùng chung nguyên lý phản xạ nhưng khác mục đích: bank để ăn bi, kick để sống sót và phản đòn.'},
+      {h:'Ngừng đoán, bắt đầu quan sát', p:'Đổi câu hỏi trong đầu từ "chắc nó đi hướng này" sang "cái bàn này phản ứng thế nào". Mỗi cú đi băng bạn đánh — kể cả trượt — là một mẩu dữ liệu, nếu bạn chịu nhìn bi đi hết đường và ghi nhớ. Người đoán thì đánh 1000 cú vẫn đoán; người quan sát thì sau 50 cú đã có cảm giác.'},
+      {h:'Học đường TỰ NHIÊN trước, xoáy tính sau', p:'Đánh không xoáy, lực vừa, thì góc vào gần bằng góc ra — đó là đường nền để mọi tính toán bám vào. Thêm áp phê khi chưa nắm đường tự nhiên chỉ tạo hỗn loạn: bạn không biết mình sai vì ngắm hay vì xoáy. Học đường trần cho thuộc rồi mới coi xoáy là công cụ tinh chỉnh.'},
+      {h:'Dùng mốc kim cương làm hệ quy chiếu', p:'Các chấm kim cương trên khung bàn không để trang trí — chúng là hệ toạ độ. Có một hệ đếm cố định (dù đơn giản) giúp bạn LẶP LẠI được cú đánh và biết mình sai bao nhiêu để chỉnh, thay vì mỗi lần lại nhắm mới từ đầu. (Xem bài tập "Hệ băng kim cương" ở tab Rèn luyện.)'},
+      {h:'Lực làm đổi góc', p:'Cùng một điểm chạm băng, lực mạnh cho góc ra "ngắn" hơn (bi bật ra gần vuông hơn) vì băng bị ép lún, lực nhẹ cho góc "dài" hơn. Đây là lý do một cú tính đúng vẫn trượt. Chốt một mức lực chuẩn cho các cú đi băng của bạn và bám lấy nó — đổi lực là đổi cả bài toán.'},
+      {h:'Hình dung TRỌN đường đi trước khi cúi', p:'Đừng chỉ ngắm điểm chạm băng đầu tiên. Vẽ trong đầu cả hành trình: bi rời cơ → chạm băng ở đâu → bật ra theo đường nào → chạm mục tiêu ở mặt nào. Chỉ thấy đoạn đầu thì phần còn lại là hy vọng. Người giỏi cú băng không thấy một cú đánh, họ thấy cả một hành trình của bi cái.'},
+      {h:'Một băng cho thuần rồi mới hai băng', p:'Đừng bắt đầu bằng những cú ba băng hoa mỹ. Một băng, lực chuẩn, không xoáy — làm cho tới khi đoán trúng đường đều đặn. Cú nhiều băng chỉ là nhiều cú một băng nối nhau: sai số ở băng đầu bị nhân lên ở băng sau, nên nền tảng phải sạch trước.'},
+      {h:'Mỗi bàn một tính nết — hiệu chỉnh lúc khởi động', p:'Băng mới nảy khác băng cũ, nỉ nhanh khác nỉ chậm, bàn lạnh khác bàn đã ấm. Trong lúc khởi động, đánh vài cú đi băng chỉ để ĐO cái bàn hôm nay, đừng bê nguyên cảm giác từ bàn quen sang. Cơ thủ giỏi luôn dành vài phút "hỏi chuyện" cái bàn trước khi tin vào nó.'},
+      {h:'Kick trước, nhảy bi sau', p:'Cơ nhảy làm nhiều người lười học kick — và họ mất luôn một vũ khí. Kick không chỉ để chạm hợp lệ: một cú kick tính kỹ có thể vừa thoát vừa để bi cái ở chỗ đối thủ không xử được. Nhảy bi thường chỉ giải quyết cái trước mắt, kick giải quyết cả thế trận. (Xem "Safety / phòng thủ" và bài tập "Thoát snooker".)'},
+      {h:'Có cú băng ổn định là đổi cả lối chơi', p:'Khi bạn tin được cú đi băng, bạn hết sợ bị che — mà hết sợ bị che thì bạn dám đánh safety mạnh tay hơn, dám chọn cú an toàn thay vì liều. Kỹ năng này không chỉ cứu vài cú lẻ: nó mở khoá toàn bộ mảng phòng thủ. (Xem "Khi nào tấn công, khi nào bỏ".)'},
     ]},
   {key:'tac_coldenemy', tag:'Chiến thuật', title:'Làm đối thủ "mất tay" — kiểm soát nhịp & thế trận',
     intro:'Có một sự thật ai chơi lâu cũng biết: tay đối thủ NGUỘI đi khi họ ngồi lâu, và khi ra bàn chỉ gặp cú khó. "Mất tay" = tay nguội + mất nhịp + mất tự tin. Toàn bộ chiến thuật ở đây gói trong một câu: GIỮ họ trên ghế, và khi họ ra bàn thì đừng cho cú dễ nào để làm nóng lại. Đây là chiến thuật hợp lệ — khác hẳn tiểu xảo quấy rối.',

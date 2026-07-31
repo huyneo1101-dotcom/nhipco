@@ -1,0 +1,17 @@
+# CHỈ ignore cấu hình máy lẻ trong .claude/ — KHÔNG ignore cả thư mục:
+# repo này cố ý theo dõi .claude/skills/ (11 skill dùng chung của các app PWA),
+# ignore cả .claude/ là làm mọi skill thêm mới về sau biến mất khỏi git.
+.claude/launch.json
+.claude/settings.local.json
+
+# Server xem thử do công cụ preview sinh ra mỗi lần chạy
+.preview-*.js
+
+# Bản sao lưu trước khi sửa. Riêng .crlf-bak: bản trước khi chuyển CRLF -> LF
+# ngày 31.7.2026 — editor nào đó đã ghi cả file bằng CRLF, làm diff phồng từ
+# 95 dòng thật lên 10.040 dòng. Giữ bản sao để đối chiếu, không commit.
+*.bak
+*.crlf-bak
+
+# Rác macOS
+.DS_Store
