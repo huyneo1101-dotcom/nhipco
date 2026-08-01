@@ -43,4 +43,4 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
 - Tĩnh, không CI (không có `netlify.toml` / `.github/workflows`). Remote `huyneo1101-dotcom/nhipco`; host phục vụ thẳng thư mục gốc, push `main` là cập nhật. Xem skill `deploy-static` nếu muốn nối CI/CD.
 
 ## Skills dùng chung
-Repo có `.claude/skills/` (11 skill từ plugin vibe-pwa-kit): bigfile-nav, local-store, data-backup, web-push, pwa-healthcheck, scaffold-vibe-pwa, supabase-sync, deploy-static, theme-pack, lock-static-app, doc-single-file-app.
+Repo có `.claude/skills/` (13 skill từ plugin vibe-pwa-kit): bigfile-nav, local-store, data-backup, web-push, pwa-healthcheck, scaffold-vibe-pwa, supabase-sync, deploy-static, theme-pack, lock-static-app, doc-single-file-app, smoke-test, supabase-security-audit.
