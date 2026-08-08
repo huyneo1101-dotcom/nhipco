@@ -4,7 +4,7 @@ App tĩnh một-file: toàn bộ UI + logic + CSS trong `index.html` (~4.973 dò
 
 ## Quy tắc làm việc với file này
 - **KHÔNG đọc cả `index.html` (~5.000 dòng)** — dùng grep định vị rồi Read cửa sổ nhỏ (xem skill `bigfile-nav`).
-- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v34`).
+- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v35`).
 - Babel transpile trong trình duyệt: lỗi cú pháp là trắng màn hình, không báo terminal. Kiểm tra Console sau khi sửa.
 
 ## Dữ liệu (localStorage, tiền tố `nc.`)
