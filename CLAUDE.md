@@ -66,7 +66,12 @@ dung giao subagent `nghien-cuu-tam-ly-co-thu` chạy **Opus** (mục 23 CLAUDE.m
 | Việc | Viết bài `psy_pro_*` MỚI cho 1 cơ thủ lấy từ hàng chờ | Soát các bài `psy_pro_*` đã có, bổ sung `{h,p}` nếu có tin mới thật, đáng kể |
 
 - **Hàng chờ cơ thủ**: `co-thu-nghien-cuu-hang-cho.json` (cùng thư mục) — `hang_cho` rỗng thì
-  routine tự bổ sung cơ thủ mới từ BXH công khai, không dừng.
+  routine tự bổ sung cơ thủ mới từ BXH công khai, không dừng. Nạp 08/08/2026: **top 50 Fargo
+  Rate** (pool 9 bi, đọc từ `fargorate.com/top-ten-lists`), xếp đúng thứ tự hạng, trừ 02 người
+  đã xong còn 48 trong hàng chờ. `hang_cho` là mảng **chuỗi tên thuần** — routine lấy phần tử
+  đầu, đừng đổi sang object. Bảng hạng đầy đủ (kèm tên đúng như FargoRate viết, quốc gia,
+  rating) nằm ở trường `bang_xep_hang_fargorate` cùng file, dùng để tra khi tên tiếng Việt hoá
+  không khớp nguồn nước ngoài.
 - **Hồ sơ đầy đủ** (nguồn, trích dẫn nguyên văn + dịch) nằm ở file `<Tên>-tam-ly-tu-phong-van.md`
   cùng thư mục — bản tóm tắt trong `index.html` phải khớp với bản đầy đủ này khi có bổ sung.
 - Điểm chèn bài mới trong `index.html`: neo `{key:'fitness', tag:'Thể lực', ...}` (chèn NGAY
