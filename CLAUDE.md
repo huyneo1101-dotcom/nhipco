@@ -33,10 +33,11 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
   - `log` 📓 **Nhật ký** → `MatchLog` (MatchForm, SummaryView).
   - `train` 📈 **Rèn luyện** → `Training` (DRILLS, PROBLEMS, STRETCHES).
   - `know` 📚 **Kiến thức** → `KnowTab`.
-- **Kiến thức**: mảng `KNOWLEDGE` (~3895) là nguồn thật duy nhất. `KnowledgeView` chia **4 mục** qua `secOf`: `tactic` (tag `Chiến thuật`, 22 bài, nhóm con `TAC_SUBCATS`) · `tech` (tag `Kỹ thuật`, 24 bài, nhóm con `TECH_SUBCATS`) · `phys` (`Thể trạng`/`Dinh dưỡng`/`Thể lực`, 4 bài, phẳng theo tag) · `psy` (tag `Tâm lý`, 44 bài, nhóm con `PSY_SUBCATS`). Tổng 94 bài.
-  - Thêm tag mới thì phải sửa **4 chỗ**: `KNOW_CATS` · `secOf` · nút trong `catbar` · bộ lọc nhánh `phys` (nếu không loại trừ, tag mới bị mục Thể chất nuốt).
-  - ⚠️ Thêm bài mới vào 3 mục có nhóm con thì phải khai key vào `TAC_SUBCATS`/`TECH_SUBCATS`/`PSY_SUBCATS`, nếu không bài rơi vào rổ "🗂️ Khác" ở cuối mục.
-  - Trỏ chéo giữa các bài dùng 3 khuôn hợp lệ: `(Xem "tên BÀI".)` · `(Xem "tên GẠCH" trong "tên BÀI".)` · `(Xem bài tập "tên" ở tab Rèn luyện.)`. Tránh dấu ngoặc đơn bên trong cụm `(Xem …)`.
+- **Kiến thức**: mảng `KNOWLEDGE` (~3895) là nguồn thật duy nhất. `KnowledgeView` chia **5 mục** qua `secOf`, thứ tự hiển thị trong catbar (Tâm lý đứng đầu, Cơ thủ ngay cạnh — Huy chốt 08/08/2026): `psy` (tag `Tâm lý`, 41 bài, nhóm con `PSY_SUBCATS`, mặc định mở khi vào tab) · `coThu` (tag `Cơ thủ`, 3 bài, **phẳng không nhóm con** — hồ sơ tâm lý cơ thủ đỉnh cao, routine hằng ngày tự thêm) · `tactic` (tag `Chiến thuật`, 22 bài, nhóm con `TAC_SUBCATS`) · `tech` (tag `Kỹ thuật`, 24 bài, nhóm con `TECH_SUBCATS`) · `phys` (`Thể trạng`/`Dinh dưỡng`/`Thể lực`, 4 bài, phẳng theo tag). Tổng 94 bài.
+  - Thêm tag mới thì phải sửa **4 chỗ**: `KNOW_CATS` · `secOf` · nút trong `catbar` · bộ lọc nhánh `phys` (nếu không loại trừ, tag mới bị mục Thể chất nuốt — nhánh `phys` hiện loại trừ `Tâm lý`/`Cơ thủ`/`Chiến thuật`/`Kỹ thuật`).
+  - ⚠️ Thêm bài mới vào 3 mục có nhóm con thì phải khai key vào `TAC_SUBCATS`/`TECH_SUBCATS`/`PSY_SUBCATS`, nếu không bài rơi vào rổ "🗂️ Khác" ở cuối mục. Mục `coThu` KHÔNG có subcats — mọi bài `tag:'Cơ thủ'` tự hiện, không cần khai key ở đâu thêm.
+  - Nút chọn mục (`catbar` trong `KnowledgeView`) dùng class `catbar wrap` (CSS `.catbar.wrap{flex-wrap:wrap;overflow-x:visible}`) — bấm-để-xuống-dòng, KHÔNG phải dải chip kéo ngang như `catbar` trần (vẫn dùng ở `KnowReview`/Training).
+  - Trỏ chéo giữa các bài dùng 3 khuôn hợp lệ: `(Xem "tên BÀI".)` · `(Xem "tên GẠCH" trong "tên BÀI".)` · `(Xem bài tập "tên" ở tab Rèn luyện.)`. Tránh dấu ngoặc đơn bên trong cụm `(Xem …)`. **Khuôn `(Xem "tên BÀI".)` giờ bấm được** — `renderKnowText()` (ngay trước `KnowCard`) dò cụm `"..."` khớp đúng `a.title` một bài đang có (bảng tra `KNOW_TITLE_TO_KEY`), biến thành `<span className="klink">` gọi `navToKnowArticle(key)`: bài đang mở (Đọc) nhận ngay qua `_knowNavListeners` (không remount), bài từ Ôn luyện ép `seg='read'` qua `_setKnowSeg` rồi `KnowledgeView` đọc `_knowNavKey` lúc mount. Cụm không khớp tiêu đề nào (tên gạch đầu dòng, tên bài tập ở tab khác) giữ nguyên chữ thường, không link.
   - `KNOW_CARDS` (~4663) tự sinh thẻ ôn luyện từ mọi mục `body` — thêm bài là tab Ôn luyện tự có thẻ, không phải sửa gì.
   - ⚠️ `data/knowledge.js` (178 KB) là **bản chết**, không được `index.html` hay `sw.js` nạp; đừng sửa nó, cũng đừng lấy làm chuẩn.
 - Đồng bộ đám mây: `cloudInit`/`cloudPush`/`cloudApply`/`cloudSnap` (~764–791); `Settings` (~1761) chứa auth + backup.
@@ -68,6 +69,7 @@ dung giao subagent `nghien-cuu-tam-ly-co-thu` chạy **Opus** (mục 23 CLAUDE.m
 - **Hồ sơ đầy đủ** (nguồn, trích dẫn nguyên văn + dịch) nằm ở file `<Tên>-tam-ly-tu-phong-van.md`
   cùng thư mục — bản tóm tắt trong `index.html` phải khớp với bản đầy đủ này khi có bổ sung.
 - Điểm chèn bài mới trong `index.html`: neo `{key:'fitness', tag:'Thể lực', ...}` (chèn NGAY
-  TRƯỚC nó) + mảng `keys` của nhóm `{label:'🎙️ Học từ cơ thủ đỉnh cao', ...}` trong `PSY_SUBCATS`.
+  TRƯỚC nó). Bài mới đặt `tag:'Cơ thủ'` (từ 08/08/2026, KHÔNG còn `tag:'Tâm lý'`) — mục Cơ thủ
+  hiển thị phẳng, không có mảng `keys:[...]` con nào cần khai thêm.
 - ⛔ **Cấm bịa trích dẫn** — luật số một trong `nghien-cuu-tam-ly-co-thu.md`. Không đủ tư liệu
   công khai thật thì routine bỏ qua cơ thủ đó, ghi vào `khong_du_tu_lieu`, KHÔNG viết hồ sơ giả.
