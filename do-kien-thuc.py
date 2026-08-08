@@ -18,7 +18,16 @@ import unicodedata
 from collections import Counter
 
 DUONG = '/Users/Huy/Claude/App/NhipCo/index.html'
-MUC = [('PSY_SUBCATS', 'Tâm lý'), ('TAC_SUBCATS', 'Chiến thuật'), ('TECH_SUBCATS', 'Kỹ thuật')]
+# Ba tag có mục riêng; mọi tag KHÁC đều rơi vào mục Thể chất — đúng như bộ lọc
+# nhánh 'phys' trong index.html (secOf). Vì thế PHYS_SUBCATS khai tag là None:
+# thêm một tag mới mà quên khai nhóm con thì phép đo phải kêu, không được im.
+TAG_RIENG = ('Tâm lý', 'Chiến thuật', 'Kỹ thuật')
+MUC = [
+    ('PSY_SUBCATS', ('Tâm lý',)),
+    ('TAC_SUBCATS', ('Chiến thuật',)),
+    ('TECH_SUBCATS', ('Kỹ thuật',)),
+    ('PHYS_SUBCATS', None),
+]
 
 
 def chuan(x):
@@ -31,8 +40,9 @@ def chuan(x):
 
 
 def main():
+    duong = sys.argv[1] if len(sys.argv) > 1 else DUONG   # đo được cả bản trong worktree
     try:
-        s = open(DUONG, encoding='utf-8').read()
+        s = open(duong, encoding='utf-8').read()
         seg = s[s.index('const KNOWLEDGE=['):s.index('const KNOW_CATS=[')]
     except (OSError, ValueError) as e:
         print('✗ chưa đo được: %s' % e)
@@ -61,8 +71,16 @@ def main():
         except ValueError:
             print('✗ %s: không tìm thấy — chưa đo được' % ten)
             return 2
-        trong = set(re.findall(r"'([a-z_]+)'", re.sub(r'label:.[^,]*', '', s[i:j])))
-        roi = [a['key'] for a in bai if a['tag'] == tag and a['key'] not in trong]
+        # Chỉ bóc key BÊN TRONG keys:[...] — hẹp đúng bằng chỗ mã app thật sự đọc.
+        # Bản cũ xoá nhãn bằng r'label:.[^,]*' rồi quét cả khối; đã dựng bản hỏng
+        # để đo và bản cũ VẪN đọc đủ key khi nhãn chứa dấu phẩy, nên đây là siết
+        # phạm vi phòng ngừa, KHÔNG phải vá một lỗ đã bắt được. Ghi rõ để người
+        # sau khỏi tưởng có bug thật rồi đi dựng lại phép đo quanh giả thuyết sai.
+        trong = set()
+        for m in re.finditer(r'keys:\[([^\]]*)\]', s[i:j]):
+            trong.update(re.findall(r"'([^']+)'", m.group(1)))
+        thuoc = (lambda t: t not in TAG_RIENG) if tag is None else (lambda t: t in tag)
+        roi = [a['key'] for a in bai if thuoc(a['tag']) and a['key'] not in trong]
         if roi:
             print('✗ %s: %d bài rơi vào rổ "Khác" — %s' % (ten, len(roi), roi))
             lech += 1
