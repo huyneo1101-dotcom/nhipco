@@ -18,10 +18,13 @@ import unicodedata
 from collections import Counter
 
 DUONG = '/Users/Huy/Claude/App/NhipCo/index.html'
-# Ba tag có mục riêng; mọi tag KHÁC đều rơi vào mục Thể chất — đúng như bộ lọc
+# Các tag có mục riêng; mọi tag KHÁC đều rơi vào mục Thể chất — đúng như bộ lọc
 # nhánh 'phys' trong index.html (secOf). Vì thế PHYS_SUBCATS khai tag là None:
 # thêm một tag mới mà quên khai nhóm con thì phép đo phải kêu, không được im.
-TAG_RIENG = ('Tâm lý', 'Chiến thuật', 'Kỹ thuật')
+# ⚠️ Thêm tag có mục riêng trong index.html thì phải thêm vào ĐÂY cùng lượt, nếu
+# không phép đo tính tag đó vào mục Thể chất rồi kêu oan. Tag 'Cơ thủ' (mục coThu,
+# phẳng không nhóm con) đã vào danh sách này ngày 08/08/2026 vì đúng lý do đó.
+TAG_RIENG = ('Tâm lý', 'Cơ thủ', 'Chiến thuật', 'Kỹ thuật')
 MUC = [
     ('PSY_SUBCATS', ('Tâm lý',)),
     ('TAC_SUBCATS', ('Chiến thuật',)),
@@ -43,7 +46,12 @@ def main():
     duong = sys.argv[1] if len(sys.argv) > 1 else DUONG   # đo được cả bản trong worktree
     try:
         s = open(duong, encoding='utf-8').read()
-        seg = s[s.index('const KNOWLEDGE=['):s.index('const KNOW_CATS=[')]
+        # Cắt ở '\n];' đóng mảng, KHÔNG cắt ở 'const KNOW_CATS=['. Giữa hai chỗ đó
+        # có mã (KNOW_TITLE_TO_KEY, renderKnowText, KnowCard) và chú thích của mã
+        # cũng chứa cụm (Xem "tên bài".) làm ví dụ — quét tới đó thì chú thích bị
+        # tính là trỏ chéo của bài CUỐI mảng rồi báo hỏng oan. Đã gặp thật 08/08/2026.
+        d = s.index('const KNOWLEDGE=[')
+        seg = s[d:s.index('\n];', d) + 3]
     except (OSError, ValueError) as e:
         print('✗ chưa đo được: %s' % e)
         return 2

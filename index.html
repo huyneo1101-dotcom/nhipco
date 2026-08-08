@@ -233,6 +233,7 @@ body{
 /* ----- Lists / match journal + training ----- */
 .list{display:flex;flex-direction:column;gap:10px;margin-top:10px;padding-bottom:6px}
 .preline{white-space:pre-wrap}
+.klink{color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .mcard{padding:13px;display:flex;flex-direction:column;gap:7px;cursor:pointer}
 .mtop{display:flex;align-items:center;gap:10px}
 .rbadge{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-weight:900;
@@ -268,6 +269,7 @@ body{
 .planrow .pt b{font-weight:800;font-size:14px}
 .planrow .pt small{display:block;color:var(--muted);font-size:11.5px;font-weight:600;margin-top:1px}
 .catbar{display:flex;gap:7px;overflow-x:auto;padding:9px 0 3px;scrollbar-width:none}
+.catbar.wrap{flex-wrap:wrap;overflow-x:visible}
 .catbar::-webkit-scrollbar{display:none}
 .catbar .chip{flex:none}
 .drillC{padding:0;overflow:hidden;margin-top:0}
@@ -1367,6 +1369,18 @@ let _pendingSeg=null;   // {tab, seg}
 let _pendingLive=null;  // {keys, counts} — từ bảng Đang đấu → mở Ghi trận bên Nhật ký
 const NAV={ go:()=>{} };
 function takePendingSeg(tab, def){ if(_pendingSeg && _pendingSeg.tab===tab){ const s=_pendingSeg.seg; _pendingSeg=null; return s; } return def; }
+// Link trỏ chéo giữa các bài Kiến thức (khuôn (Xem "tên bài".) trong nội dung): bấm vào tên bài
+// là mở thẳng bài đó. KnowledgeView đang mở sẵn thì nhận trực tiếp qua _knowNavListeners (không remount);
+// đang ở tab Ôn luyện thì ép seg='read' qua _setKnowSeg để KnowledgeView mount mới đọc _knowNavKey.
+let _setKnowSeg=null, _knowNavKey=null, _knowNavListeners=[];
+function navToKnowArticle(key){
+  const hadListener=_knowNavListeners.length>0;
+  _knowNavListeners.slice().forEach(fn=>fn(key));
+  if(hadListener){ _knowNavKey=null; }
+  else { _knowNavKey=key; if(_setKnowSeg) _setKnowSeg('read'); }
+}
+function takePendingKnowArt(){ const k=_knowNavKey; _knowNavKey=null; return k; }
+function subscribeKnowNav(fn){ _knowNavListeners.push(fn); return ()=>{ _knowNavListeners=_knowNavListeners.filter(f=>f!==fn); }; }
 function tabView(id){
   switch(id){
     case 'pre': return <PreMatch/>;
@@ -4473,7 +4487,7 @@ const KNOWLEDGE=[
       {h:'Kiên nhẫn với đường cong tiến bộ', p:'Sửa một mắt xích nền tảng thường làm bạn đánh TỆ ĐI trong một tới hai tuần, vì cơ thể đang thay thế thói quen cũ. Đây là hiện tượng bình thường và là dấu hiệu việc sửa đang có tác dụng thật. Người bỏ cuộc ở giai đoạn này quay về thói quen cũ và mắc kẹt vĩnh viễn ở đó. Biết trước điều này là điều kiện để vượt qua nó. (Xem "Thoát khỏi giai đoạn sa sút" ở mục Tâm lý.)'},
     ]},
   {key:'psy_intro', tag:'Tâm lý', title:'Đầu vững thì tay mới vững (bài dẫn nhập)',
-    intro:'Kỹ thuật quyết định TRẦN trình độ của bạn, còn tâm lý quyết định bao nhiêu phần của cái trần đó thật sự xuất hiện trên bàn vào ngày thi đấu. Gần như không ai thua vì không biết đánh cú đó; người ta thua vì lúc căng thì đánh khác lúc tập. Mục này gom 08 nhóm, đi từ nền tảng cho tới đường dài và khép lại bằng hồ sơ tâm lý của cơ thủ đỉnh cao. Mỗi mục dưới đây là một nhóm, mở từng bài trong nhóm để đọc sâu.',
+    intro:'Kỹ thuật quyết định TRẦN trình độ của bạn, còn tâm lý quyết định bao nhiêu phần của cái trần đó thật sự xuất hiện trên bàn vào ngày thi đấu. Gần như không ai thua vì không biết đánh cú đó; người ta thua vì lúc căng thì đánh khác lúc tập. Mục này gom 07 nhóm, đi từ nền tảng cho tới đường dài. Mỗi mục dưới đây là một nhóm, mở từng bài trong nhóm để đọc sâu. Hồ sơ tâm lý cơ thủ đỉnh cao nay nằm ở mục riêng bên cạnh, dựng từ phụ đề hàng chục video phỏng vấn: hai người cùng lên đỉnh thế giới bằng hai hệ thống gần như đối xứng nhau, nên đọc để đối chiếu với chính mình thay vì để bắt chước. (Xem "Filler: tự tin dựng có chủ đích", "Gorst: quy trình bịt nỗi sợ trượt" và "Filler vs Gorst: hai lối tâm lý đối lập".)',
     body:[
       {h:'Vấn đề gốc: khoảng cách giữa lúc tập và lúc đấu', p:'Hãy tự đo một lần cho cụ thể: cùng một cú, tập một mình vào 9/10, ra trận có tiền hoặc có người đứng xem thì còn 6/10. Ba cú chênh lệch đó không phải vấn đề kỹ thuật, vì tay bạn vẫn là tay đó, bàn vẫn là bàn đó. Toàn bộ mục Tâm lý tồn tại để thu hẹp đúng khoảng cách này. Vì thế cách đọc đúng không phải đi tìm mẹo lấy lại bình tĩnh, mà là tìm ra nhóm nào bên dưới đang là chỗ rò rỉ lớn nhất của RIÊNG bạn.'},
       {h:'🧭 Nền tảng & quy trình — thứ phải có trước tiên', p:'Chín bài về tập trung, hơi thở, lời tự nhủ, hình dung, chơi hết công lực, và cái khó nhất là buông tay để tin cú đánh. Đây là nhóm phải đọc đầu tiên, vì mọi kỹ năng tâm lý khác đều dựng trên nó: không giữ nổi sự chú ý ở cú đang đánh thì không bài nào phía dưới dùng được. (Xem "Tự tin & giữ bình tĩnh" và "Vào vùng dòng chảy".)'},
@@ -4483,8 +4497,7 @@ const KNOWLEDGE=[
       {h:'♟️ Đối thủ & thế trận — năm bài về người ngồi bên kia', p:'Đọc cảm xúc đối thủ và giấu cảm xúc của mình, xử lý tiểu xảo, giữ đầu lạnh trên ghế chờ, và tâm lý riêng của thế kèo trên hoặc kèo dưới. Nguyên tắc chung của cả nhóm: đối thủ chỉ tác động được vào bạn qua đúng một cửa là sự chú ý của bạn, nên đóng cửa đó lại là mọi tiểu xảo mất hiệu lực. (Xem "Đánh kèo trên & kèo dưới".)'},
       {h:'🎚️ Độ ổn định & phong độ đều — nhóm dày nhất, mười bài', p:'Đây là nhóm dành cho người đã đánh được nhưng ngày lên ngày xuống. Trọng tâm không phải nâng đỉnh mà nâng SÀN: đo dao động của chính mình, đối xử với mọi cú như nhau, giữ mức khi đổi bàn đổi quán, và thôi chỉnh kỹ thuật liên tục. (Xem "Độ ổn định", "Ổn định của QUYẾT ĐỊNH" và "Đầu vào đều thì đầu ra mới đều".)'},
       {h:'📈 Đường dài & rèn luyện — năm bài cho quãng nhiều tháng', p:'Sức bền tâm lý trong trận dài, kỷ luật tập lúc hết hứng, cách đặt mục tiêu không tự làm khổ mình, dấu hiệu kiệt sức, và cách thoát khỏi giai đoạn sa sút kéo dài. Nhóm này ít cấp bách nhất nên hay bị bỏ qua, trong khi nó quyết định bạn còn chơi bi-a sau ba năm nữa hay không. (Xem "Chọn một thể loại mà chín" và "Trở lại sau kỳ nghỉ dài".)'},
-      {h:'🎙️ Học từ cơ thủ đỉnh cao — ba bài rút từ lời chính người trong nghề', p:'Hồ sơ tâm lý của Joshua Filler và Fedor Gorst dựng từ phụ đề hàng chục video phỏng vấn, cộng một bài so sánh hai lối đi. Giá trị của nhóm này nằm ở chỗ nó cho thấy không có một lối tâm lý đúng duy nhất: hai người cùng lên đỉnh thế giới bằng hai hệ thống gần như đối xứng nhau. Đọc để đối chiếu với chính mình, đừng đọc để bắt chước. (Xem "Filler: tự tin dựng có chủ đích", "Gorst: quy trình bịt nỗi sợ trượt" và "Filler vs Gorst: hai lối tâm lý đối lập".)'},
-      {h:'Cách dùng mục này', p:'Đừng đọc tuần tự 44 bài. Cách dùng đúng: mở tab Nhật ký, xem lại ba trận gần nhất rồi ghi ra bạn mất điểm vì lý do gì nhiều nhất, sau đó chỉ đọc đúng nhóm tương ứng. Mỗi lần chỉ mang MỘT thứ vào bàn, giữ nó vài buổi cho thành phản xạ rồi mới lấy thêm thứ khác. Dùng tab Ôn luyện để nhắc lại, vì kiến thức tâm lý đọc xong quên rất nhanh mà lại chỉ cần tới đúng lúc bạn đang căng nhất.'},
+      {h:'Cách dùng mục này', p:'Đừng đọc tuần tự 41 bài. Cách dùng đúng: mở tab Nhật ký, xem lại ba trận gần nhất rồi ghi ra bạn mất điểm vì lý do gì nhiều nhất, sau đó chỉ đọc đúng nhóm tương ứng. Mỗi lần chỉ mang MỘT thứ vào bàn, giữ nó vài buổi cho thành phản xạ rồi mới lấy thêm thứ khác. Dùng tab Ôn luyện để nhắc lại, vì kiến thức tâm lý đọc xong quên rất nhanh mà lại chỉ cần tới đúng lúc bạn đang căng nhất.'},
     ]},
   {key:'psy_coldchance', tag:'Tâm lý', title:'Toàn cú khó, nguội cơ — rồi run lúc có cơ hội',
     intro:'Một cảnh rất quen: cả trận vào bàn toàn phải đá băng, nhảy bi, gỡ bi khó — không cú nào "mượt" để ấm tay, nên cơ nguội và mất nhịp. Rồi khi một cơ hội ngon hiếm hoi tới, nó bị phóng đại thành cú sống-còn; tay đang lạnh gặp áp lực cao = run, và bạn hỏng đúng cú đáng lẽ dễ. Đây là một VÒNG LẶP có thật — và gỡ được: giữ ấm khi khó, hạ trọng lượng khi dễ.',
@@ -5123,7 +5136,7 @@ const KNOWLEDGE=[
       {h:'Dấu hiệu bạn đang bị chia', p:'Lực thường xuyên quá tay hoặc non ở vài buổi đầu sau mỗi lần đổi loại; điểm bài chuẩn nhảy mạnh không lý do; cảm giác vừa quen tay thì lại phải làm quen lại. Ba dấu hiệu này chỉ thẳng vào lịch chơi của bạn chứ không chỉ vào kỹ thuật.'},
       {h:'Khi nào chuyển loại chính là hợp lý', p:'Chuyển hẳn vì thấy hợp hơn, vì giải đấu quanh mình chơi loại đó, hoặc vì hết hứng với loại cũ đều là lý do chính đáng. Điều cần tránh chỉ là chuyển đi chuyển lại. Chuyển thì chuyển dứt khoát, và chấp nhận vài tuần đầu tiên là quãng hiệu chỉnh, không phải quãng để chấm điểm.'},
     ]},
-  {key:'psy_pro_filler', tag:'Tâm lý', title:'Filler: tự tin dựng có chủ đích — hồ sơ từ 19 video phỏng vấn',
+  {key:'psy_pro_filler', tag:'Cơ thủ', title:'Filler: tự tin dựng có chủ đích — hồ sơ từ 19 video phỏng vấn',
     intro:'Rút từ phụ đề 19 video phỏng vấn Joshua Filler (2019–2026, tổng 442.000 ký tự). Filler không phải mẫu cơ thủ bình thản — anh lo lắng cao độ nhưng đã tìm cách biến chính sự lo lắng đó thành độ tập trung, và một niềm tin vào bản thân được dựng lên có chủ đích như công cụ nghề nghiệp, không phải cảm giác tự nhiên.',
     body:[
       {h:'Hai tầng tự tin song song', p:'"Trong đầu tôi, tôi biết mình là tay cơ giỏi nhất — tôi nghĩ vậy vì nếu không thì chẳng có tự tin nào cả", nhưng ngay câu sau anh hạ giọng: mọi đối thủ hàng đầu đều có thể thắng anh, mỗi trận chỉ là 50/50. Tầng công bố để nuôi trạng thái thi đấu, tầng đánh giá riêng để giữ tỉnh táo — người ngoài chỉ nghe tầng thứ nhất rồi gọi đó là kiêu ngạo.'},
@@ -5134,7 +5147,7 @@ const KNOWLEDGE=[
       {h:'Nguồn gốc khả năng chịu áp lực: tập bằng tiền túi lúc thiếu niên', p:'"Năm 15 tuổi, tôi cầm 50 đô cuối cùng trong túi và nói muốn chơi ăn 50 đô đó — hồi hộp y như đánh giải thật. Điều đó giúp tôi xử lý áp lực rất nhiều." Anh nói rõ đây không phải lời khuyên cho người trẻ, và luôn chọn đối thủ mạnh hơn mình chứ không đi ăn tiền người yếu.'},
       {h:'Hai con người: trên bàn và ngoài đời', p:'"Tôi khá nhút nhát trong mọi chuyện. Ở bàn có thể trông khác, nhưng ngoài đời tôi khá rụt rè. Khi ở với người lạ tôi rất ít nói, rồi họ nghĩ tôi kiêu — thật ra không phải, tôi không muốn nói chuyện thôi." Anh chưa từng cố tiết chế cách ăn mừng ồn ào của mình, gọi đó là "van xả áp lực" theo đúng bản năng.'},
     ]},
-  {key:'psy_pro_gorst', tag:'Tâm lý', title:'Gorst: quy trình bịt nỗi sợ trượt — hồ sơ từ 22 video phỏng vấn',
+  {key:'psy_pro_gorst', tag:'Cơ thủ', title:'Gorst: quy trình bịt nỗi sợ trượt — hồ sơ từ 22 video phỏng vấn',
     intro:'Rút từ phụ đề 22 video phỏng vấn Fedor Gorst (2021–2026, tổng 959.000 ký tự). Gorst vận hành bằng quy trình, không bằng cảm hứng — nhịp thở, cách dừng ở cuối cú lùi cơ, thực đơn, giờ ngủ đều được dựng lên để đè xuống một thứ anh gọi thẳng là nỗi sợ trượt bi.',
     body:[
       {h:'Con quỷ trong đầu, gọi thẳng tên', p:'"Con quỷ lớn nhất trong đầu tôi là sợ trượt bi. Khi đã cúi xuống, có lúc não bảo: mày sắp trượt đấy, mày đang làm gì vậy." Cách chống là nói đè lên bằng mệnh lệnh khẳng định: "Tôi phải giữ tích cực — không, tôi sẽ ăn bi này. Tôi đang ăn bi này."'},
@@ -5145,7 +5158,7 @@ const KNOWLEDGE=[
       {h:'Động cơ gốc là tiền, nói thẳng không né', p:'"Động lực của tôi xưa nay thật ra là tiền. Tôi lớn lên trong một gia đình không mấy khá giả và động lực lớn nhất của tôi là chuyện tài chính." Nhưng động cơ đó cạn dần sau khi anh đã có đủ — dẫn tới một quãng hụt động lực mà anh thừa nhận công khai sau khi gom gần hết danh hiệu lớn: "khi đã đạt được giấc mơ rồi thì rất khó để tiếp tục đẩy bản thân."'},
       {h:'Nguồn gốc khả năng chịu áp lực, và một sự cẩn trọng đáng ghi', p:'Cha mất khi anh 13 tuổi, buộc anh thành trụ cột và bắt đầu đánh tiền ở phòng bi-a Moskva. Nhưng anh từ chối biến bi kịch đó thành lời giải thích duy nhất cho sự lì đòn của mình, và bác luôn cách hiểu phổ biến rằng đánh tiền là trường rèn bản lĩnh: "bản lĩnh tinh thần là thứ phải làm việc với chuyên gia tâm lý và phân tích từng trận thua, không phải chuyện cá cược."'},
     ]},
-  {key:'psy_pro_fillervsgorst', tag:'Tâm lý', title:'Filler vs Gorst: hai lối tâm lý đối lập cho cùng một bài toán',
+  {key:'psy_pro_fillervsgorst', tag:'Cơ thủ', title:'Filler vs Gorst: hai lối tâm lý đối lập cho cùng một bài toán',
     intro:'Cùng thế hệ, cùng chia nhau gần hết danh hiệu lớn của làng 9 bi thế giới, nhưng Filler và Gorst giải bài toán tâm lý đỉnh cao bằng hai hệ thống gần như đối xứng — so sánh trực tiếp từng nét, rút từ hồ sơ phỏng vấn riêng của mỗi người ("Filler: tự tin dựng có chủ đích" và "Gorst: quy trình bịt nỗi sợ trượt").',
     body:[
       {h:'Chống nghĩ bậy: im lặng, so với nói đè lên', p:'Cả hai độc lập nêu cùng một quy luật — nghĩ mình sắp trượt thì sẽ trượt thật. Filler chữa bằng cách làm trống đầu hoàn toàn. Gorst chữa bằng cách tự ra lệnh khẳng định trong đầu. Cùng một chẩn đoán, một người chữa bằng im lặng, một người chữa bằng tiếng nói.'},
@@ -5200,10 +5213,27 @@ const IconArchive=()=>(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const IconUnarchive=()=>(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14l-4-4l4-4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg>);
 const IconStar=({on})=>(<svg viewBox="0 0 24 24" fill={on?'currentColor':'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.6l2.55 5.17 5.7.83-4.13 4.02.98 5.68L12 16.6l-5.1 2.7.98-5.68L3.75 9.6l5.7-.83z"/></svg>);
 const IconPin=({on})=>(<svg viewBox="0 0 24 24" fill={on?'currentColor':'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 4h7l-1 6 2.5 2.5v1.5h-11v-1.5l2.5-2.5z"/><path d="M12 14v6"/></svg>);
-function KnowCard({a,defaultOpen,onArchive,archived,onFav,fav,onPin,pinned}){
+// Bảng tra tiêu đề bài → key, để nhận diện cụm (Xem "tên bài".) trong nội dung là link thật.
+const KNOW_TITLE_TO_KEY=Object.fromEntries(KNOWLEDGE.map(a=>[a.title,a.key]));
+// Dò các cụm "..." trong văn bản: khớp đúng tiêu đề một bài đã có thì biến thành link bấm mở bài đó;
+// không khớp (vd tên gạch đầu dòng, hay "...ở tab Rèn luyện") thì giữ nguyên chữ thường.
+function renderKnowText(text){
+  return text.split(/("[^"]+")/g).map((part,i)=>{
+    if(part.charAt(0)==='"' && part.charAt(part.length-1)==='"'){
+      const key=KNOW_TITLE_TO_KEY[part.slice(1,-1)];
+      if(key) return <span key={i} className="klink" onClick={(e)=>{e.stopPropagation();navToKnowArticle(key);}}>{part}</span>;
+    }
+    return part;
+  });
+}
+function KnowCard({a,defaultOpen,onArchive,archived,onFav,fav,onPin,pinned,navKey}){
   const [open,setOpen]=useState(!!defaultOpen);
+  const elRef=useRef(null);
+  useEffect(()=>{
+    if(navKey && navKey===a.key){ setOpen(true); if(elRef.current) elRef.current.scrollIntoView({behavior:'smooth',block:'start'}); }
+  },[navKey]);
   return (
-    <div className="card drillC">
+    <div className="card drillC" ref={elRef}>
       <div className="drillH" onClick={()=>setOpen(o=>!o)}>
         <div className="dn" style={{flex:1,minWidth:0}}><b>{a.title}</b><small>{open?'thu gọn':'đọc'}</small></div>
         <div className="kacts">
@@ -5219,7 +5249,7 @@ function KnowCard({a,defaultOpen,onArchive,archived,onFav,fav,onPin,pinned}){
           {a.body.map((s,i)=>(
             <div key={i} className="kv">
               <b>{s.h}</b>
-              <div className="preline" style={{marginTop:2}}>{s.p}</div>
+              <div className="preline" style={{marginTop:2}}>{renderKnowText(s.p)}</div>
             </div>))}
         </div>}
     </div>
@@ -5233,6 +5263,7 @@ const KNOW_CATS=[
   {tag:'Dinh dưỡng', label:'🥗 Dinh dưỡng'},
   {tag:'Thể lực', label:'💪 Thể lực'},
   {tag:'Tâm lý', label:'🧠 Tâm lý'},
+  {tag:'Cơ thủ', label:'🎙️ Cơ thủ'},
 ];
 // Kiến thức Chiến thuật chia nhỏ theo dòng chảy một ván (bài lạ rơi vào "Khác").
 const TAC_SUBCATS=[
@@ -5262,7 +5293,6 @@ const PSY_SUBCATS=[
   {label:'♟️ Đối thủ & thế trận', keys:['psy_momentum','psy_shark','psy_pokerface','psy_handicap','psy_chair']},
   {label:'🎚️ Độ ổn định & phong độ đều', keys:['psy_consistency','psy_floor','psy_sameness','psy_decconsist','psy_varmeasure','psy_offtable','psy_awaytable','psy_tinker','psy_onegame','psy_layoff']},
   {label:'📈 Đường dài & rèn luyện', keys:['psy_stamina','psy_discipline','psy_goals','psy_burnout','psy_slump']},
-  {label:'🎙️ Học từ cơ thủ đỉnh cao', keys:['psy_pro_filler','psy_pro_gorst','psy_pro_fillervsgorst']},
 ];
 const PSY_INSUB=new Set(PSY_SUBCATS.flatMap(s=>s.keys));
 // Kiến thức Thể chất chia nhỏ theo dòng chảy một ngày chơi (bài lạ rơi vào "Khác").
@@ -5280,16 +5310,30 @@ function KnowledgeView(){
   const [fav,setFav]=usePersist('nc.knowfav',[]);
   const [showArch,setShowArch]=useState(false);
   const [favMode,setFavMode]=useState(false);
-  const [sec,setSec]=useState('tactic');   // 'tactic' | 'phys' | 'psy' — mỗi mảng là một phần riêng
+  const [sec,setSec]=useState('psy');   // 'psy' | 'coThu' | 'tactic' | 'tech' | 'phys' — mỗi mảng là một phần riêng
+  const [navTarget,setNavTarget]=useState(null); // key bài đang được link trỏ chéo dẫn tới — tự mở + cuộn tới
   const isArch=(k)=>archived.includes(k);
   const isPin=(k)=>pinned.includes(k);
   const isFav=(k)=>fav.includes(k);
   const toggleArch=(k)=>setArchived(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
   const togglePin=(k)=>setPinned(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
   const toggleFav=(k)=>setFav(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
-  const cardProps=(a)=>({onArchive:()=>toggleArch(a.key),onPin:()=>togglePin(a.key),pinned:isPin(a.key),onFav:()=>toggleFav(a.key),fav:isFav(a.key)});
-  const secOf=(a)=> a.tag==='Tâm lý' ? 'psy' : (a.tag==='Chiến thuật' ? 'tactic' : (a.tag==='Kỹ thuật' ? 'tech' : 'phys'));
+  const cardProps=(a)=>({onArchive:()=>toggleArch(a.key),onPin:()=>togglePin(a.key),pinned:isPin(a.key),onFav:()=>toggleFav(a.key),fav:isFav(a.key),navKey:navTarget});
+  const secOf=(a)=> a.tag==='Tâm lý' ? 'psy' : (a.tag==='Cơ thủ' ? 'coThu' : (a.tag==='Chiến thuật' ? 'tactic' : (a.tag==='Kỹ thuật' ? 'tech' : 'phys')));
   const inSec=(a)=> secOf(a)===sec;
+  useEffect(()=>{
+    const apply=(key)=>{
+      const art=KNOWLEDGE.find(x=>x.key===key);
+      if(!art) return;
+      setSec(secOf(art));
+      setFavMode(false);
+      if(archived.includes(key)) setShowArch(true);
+      setNavTarget(key);
+    };
+    const pending=takePendingKnowArt();
+    if(pending) apply(pending);
+    return subscribeKnowNav(apply);
+  },[]);
   const archList=KNOWLEDGE.filter(a=>isArch(a.key));
   const pinList=KNOWLEDGE.filter(a=>isPin(a.key) && !isArch(a.key) && inSec(a));
   const favList=KNOWLEDGE.filter(a=>isFav(a.key) && !isArch(a.key));
@@ -5298,6 +5342,7 @@ function KnowledgeView(){
   const psyOther=KNOWLEDGE.filter(a=>a.tag==='Tâm lý' && !PSY_INSUB.has(a.key) && !isArch(a.key) && !isPin(a.key));
   const tacOther=KNOWLEDGE.filter(a=>a.tag==='Chiến thuật' && !TAC_INSUB.has(a.key) && !isArch(a.key) && !isPin(a.key));
   const physOther=KNOWLEDGE.filter(a=>secOf(a)==='phys' && !PHYS_INSUB.has(a.key) && !isArch(a.key) && !isPin(a.key));
+  const coThuList=KNOWLEDGE.filter(a=>a.tag==='Cơ thủ' && !isArch(a.key) && !isPin(a.key));
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Kiến thức bi-a</div>
@@ -5312,11 +5357,12 @@ function KnowledgeView(){
             {favList.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}
           </div>
         : <>
-            <div className="catbar" style={{marginTop:2,marginBottom:4}}>
+            <div className="catbar wrap" style={{marginTop:2,marginBottom:4}}>
+              <button className={'chip'+(sec==='psy'?' on':'')} onClick={()=>setSec('psy')}>🧠 Tâm lý</button>
+              <button className={'chip'+(sec==='coThu'?' on':'')} onClick={()=>setSec('coThu')}>🎙️ Cơ thủ</button>
               <button className={'chip'+(sec==='tactic'?' on':'')} onClick={()=>setSec('tactic')}>🎯 Tư duy & chiến thuật</button>
               <button className={'chip'+(sec==='tech'?' on':'')} onClick={()=>setSec('tech')}>🎯 Kỹ thuật & điều bi</button>
               <button className={'chip'+(sec==='phys'?' on':'')} onClick={()=>setSec('phys')}>💪 Thể chất & dinh dưỡng</button>
-              <button className={'chip'+(sec==='psy'?' on':'')} onClick={()=>setSec('psy')}>🧠 Tâm lý</button>
             </div>
             {pinList.length>0 &&
               <div>
@@ -5367,6 +5413,13 @@ function KnowledgeView(){
                       </div>
                     </div>}
                 </>
+              : sec==='coThu'
+              ? <div>
+                  <div className="h2">🎙️ Học từ cơ thủ đỉnh cao</div>
+                  {coThuList.length
+                    ? <div className="list">{coThuList.map(a=><KnowCard key={a.key} a={a} {...cardProps(a)}/>)}</div>
+                    : <div className="tsub" style={{marginTop:2}}>Chưa có bài nào — routine hằng ngày sẽ tự thêm dần.</div>}
+                </div>
               : sec==='phys'
               ? <>
                   {PHYS_SUBCATS.map(sc=>{
@@ -5417,7 +5470,7 @@ function KnowledgeView(){
                 {showArch
                   ? <>
                       <div className="list">
-                        {secArch.map(a=><KnowCard key={a.key} a={a} onArchive={()=>toggleArch(a.key)} archived={true}/>)}
+                        {secArch.map(a=><KnowCard key={a.key} a={a} onArchive={()=>toggleArch(a.key)} archived={true} navKey={navTarget}/>)}
                       </div>
                       <button className="btn ghost wide" style={{marginTop:8}} onClick={()=>setArchived(prev=>prev.filter(k=>!secArch.some(a=>a.key===k)))}>↺ Bỏ lưu trữ tất cả ({secArch.length})</button>
                     </>
@@ -5469,7 +5522,7 @@ function KnowReview(){
             <div style={{fontWeight:800,fontSize:18,color:'var(--soft)',margin:'10px 0 6px',lineHeight:1.35}}>{card.front}</div>
             {!flip
               ? <div className="muted" style={{marginTop:'auto',fontSize:13,fontStyle:'italic'}}>Nhớ lại trong đầu… rồi chạm để xem đáp án 👇</div>
-              : <div className="preline" style={{fontSize:13.5,lineHeight:1.6,marginTop:4}}>{card.back}</div>}
+              : <div className="preline" style={{fontSize:13.5,lineHeight:1.6,marginTop:4}}>{renderKnowText(card.back)}</div>}
           </div>
           {flip
             ? <div className="rowbtns" style={{marginTop:12}}>
@@ -5483,7 +5536,8 @@ function KnowReview(){
 }
 function KnowTab(){
   const opts=orderedOpts('know');
-  const [seg,setSeg]=useState(opts[0][0]);
+  const [seg,setSeg]=useState(()=>takePendingSeg('know', opts[0][0]));
+  useEffect(()=>{ _setKnowSeg=setSeg; return ()=>{ if(_setKnowSeg===setSeg) _setKnowSeg=null; }; },[]);
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <Seg val={seg} set={setSeg} opts={opts}/>
