@@ -50,3 +50,24 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
 
 ## Skills dùng chung
 Repo có `.claude/skills/` (13 skill từ plugin vibe-pwa-kit): bigfile-nav, local-store, data-backup, web-push, pwa-healthcheck, scaffold-vibe-pwa, supabase-sync, deploy-static, theme-pack, lock-static-app, doc-single-file-app, smoke-test, supabase-security-audit.
+
+## Routine tự động (LaunchAgent) — mục Kiến thức > Tâm lý > "Học từ cơ thủ đỉnh cao"
+Huy chốt 08/08/2026: mỗi ngày nghiên cứu thêm một cơ thủ, mỗi tuần rà bổ sung tin mới vào bài
+sẵn có. Cả hai chạy **Sonnet** qua `claude -p` headless (rẻ), phần nghiên cứu/phán xét nội
+dung giao subagent `nghien-cuu-tam-ly-co-thu` chạy **Opus** (mục 23 CLAUDE.md gốc).
+
+| | Hằng ngày | Hằng tuần |
+|---|---|---|
+| LaunchAgent | `com.huy.routine-nghien-cuu-co-thu` (07:15) | `com.huy.routine-tong-hop-kien-thuc-co-thu-tuan` (CN 09:30) |
+| Wrapper | `routine-nghien-cuu-co-thu.py` | `routine-tong-hop-kien-thuc-co-thu-tuan.py` |
+| SKILL.md | `~/.claude/scheduled-tasks/nghien-cuu-co-thu/` | `~/.claude/scheduled-tasks/tong-hop-kien-thuc-co-thu-tuan/` |
+| Việc | Viết bài `psy_pro_*` MỚI cho 1 cơ thủ lấy từ hàng chờ | Soát các bài `psy_pro_*` đã có, bổ sung `{h,p}` nếu có tin mới thật, đáng kể |
+
+- **Hàng chờ cơ thủ**: `co-thu-nghien-cuu-hang-cho.json` (cùng thư mục) — `hang_cho` rỗng thì
+  routine tự bổ sung cơ thủ mới từ BXH công khai, không dừng.
+- **Hồ sơ đầy đủ** (nguồn, trích dẫn nguyên văn + dịch) nằm ở file `<Tên>-tam-ly-tu-phong-van.md`
+  cùng thư mục — bản tóm tắt trong `index.html` phải khớp với bản đầy đủ này khi có bổ sung.
+- Điểm chèn bài mới trong `index.html`: neo `{key:'fitness', tag:'Thể lực', ...}` (chèn NGAY
+  TRƯỚC nó) + mảng `keys` của nhóm `{label:'🎙️ Học từ cơ thủ đỉnh cao', ...}` trong `PSY_SUBCATS`.
+- ⛔ **Cấm bịa trích dẫn** — luật số một trong `nghien-cuu-tam-ly-co-thu.md`. Không đủ tư liệu
+  công khai thật thì routine bỏ qua cơ thủ đó, ghi vào `khong_du_tu_lieu`, KHÔNG viết hồ sơ giả.
