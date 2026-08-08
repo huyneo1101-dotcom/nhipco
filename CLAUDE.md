@@ -4,7 +4,7 @@ App tĩnh một-file: toàn bộ UI + logic + CSS trong `index.html` (~5.611 dò
 
 ## Quy tắc làm việc với file này
 - **KHÔNG đọc cả `index.html` (~5.000 dòng)** — dùng grep định vị rồi Read cửa sổ nhỏ (xem skill `bigfile-nav`).
-- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v36`).
+- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v37`).
 - Babel transpile trong trình duyệt: lỗi cú pháp là trắng màn hình, không báo terminal. Kiểm tra Console sau khi sửa.
 
 ## Dữ liệu (localStorage, tiền tố `nc.`)
@@ -33,7 +33,7 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
   - `log` 📓 **Nhật ký** → `MatchLog` (MatchForm, SummaryView).
   - `train` 📈 **Rèn luyện** → `Training` (DRILLS, PROBLEMS, STRETCHES).
   - `know` 📚 **Kiến thức** → `KnowTab`.
-- **Kiến thức**: mảng `KNOWLEDGE` (~3895) là nguồn thật duy nhất. `KnowledgeView` chia **4 mục** qua `secOf`: `tactic` (tag `Chiến thuật`, 22 bài, nhóm con `TAC_SUBCATS`) · `tech` (tag `Kỹ thuật`, 24 bài, nhóm con `TECH_SUBCATS`) · `phys` (`Thể trạng`/`Dinh dưỡng`/`Thể lực`, 4 bài, phẳng theo tag) · `psy` (tag `Tâm lý`, 41 bài, nhóm con `PSY_SUBCATS`). Tổng 91 bài.
+- **Kiến thức**: mảng `KNOWLEDGE` (~3895) là nguồn thật duy nhất. `KnowledgeView` chia **4 mục** qua `secOf`: `tactic` (tag `Chiến thuật`, 22 bài, nhóm con `TAC_SUBCATS`) · `tech` (tag `Kỹ thuật`, 24 bài, nhóm con `TECH_SUBCATS`) · `phys` (`Thể trạng`/`Dinh dưỡng`/`Thể lực`, 4 bài, phẳng theo tag) · `psy` (tag `Tâm lý`, 44 bài, nhóm con `PSY_SUBCATS`). Tổng 94 bài.
   - Thêm tag mới thì phải sửa **4 chỗ**: `KNOW_CATS` · `secOf` · nút trong `catbar` · bộ lọc nhánh `phys` (nếu không loại trừ, tag mới bị mục Thể chất nuốt).
   - ⚠️ Thêm bài mới vào 3 mục có nhóm con thì phải khai key vào `TAC_SUBCATS`/`TECH_SUBCATS`/`PSY_SUBCATS`, nếu không bài rơi vào rổ "🗂️ Khác" ở cuối mục.
   - Trỏ chéo giữa các bài dùng 3 khuôn hợp lệ: `(Xem "tên BÀI".)` · `(Xem "tên GẠCH" trong "tên BÀI".)` · `(Xem bài tập "tên" ở tab Rèn luyện.)`. Tránh dấu ngoặc đơn bên trong cụm `(Xem …)`.
