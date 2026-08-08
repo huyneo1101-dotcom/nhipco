@@ -1,9 +1,21 @@
 {
-  "_ghi_chu": "Hàng chờ cho routine hằng ngày 'nghien-cuu-co-thu'. da_xong = đã có bài trong mục Kiến thức > Cơ thủ của app CueZen (khoá key trong index.html). hang_cho = thứ tự ưu tiên nghiên cứu tiếp, là mảng CHUỖI TÊN thuần (routine lấy phần tử ĐẦU). Hết hang_cho thì routine tự chọn thêm cơ thủ mới từ BXH công khai và tự nối vào cuối, không dừng routine.",
+  "_ghi_chu": "Hàng chờ cho routine hằng ngày 'nghien-cuu-co-thu'. da_xong = đã có bài trong mục Kiến thức > Cơ thủ của app CueZen (khoá key trong index.html). hang_cho = mảng CHUỖI TÊN thuần, routine lấy phần tử ĐẦU. GIỮ hang_cho LUÔN ĐỦ 50 NGƯỜI: mỗi người rời hàng chờ (sang da_xong hoặc khong_du_tu_lieu) thì nối thêm một người vào cuối, lấy theo đúng hạng kế tiếp trong bang_xep_hang_fargorate.bang_hang, bỏ qua ai đã có trong da_xong/khong_du_tu_lieu. Hết bảng thì đọc tiếp Top 100 World của FargoRate.",
   "_nguon_danh_sach": "Top 100 World của FargoRate (fargorate.com/top-ten-lists), đọc bằng trình duyệt ngày 08/08/2026. Huy chốt: chỉ cơ thủ pool 9 bi, lấy 50 hạng đầu, xếp hàng chờ đúng thứ tự hạng. FargoRate xếp theo rating đối kháng, KHÔNG xét độ phủ truyền thông — cơ thủ hạng sau (nhất là Philippines, Trung Quốc, Đài Loan) có thể thiếu phỏng vấn công khai tiếng Anh, khi đó routine ghi vào khong_du_tu_lieu và bỏ qua.",
   "da_xong": [
-    {"ten": "Joshua Filler", "key": "psy_pro_filler", "ngay": "2026-08-08", "hang_fargo": 1, "rating": 865},
-    {"ten": "Fedor Gorst", "key": "psy_pro_gorst", "ngay": "2026-08-08", "hang_fargo": 2, "rating": 850}
+    {
+      "ten": "Joshua Filler",
+      "key": "psy_pro_filler",
+      "ngay": "2026-08-08",
+      "hang_fargo": 1,
+      "rating": 865
+    },
+    {
+      "ten": "Fedor Gorst",
+      "key": "psy_pro_gorst",
+      "ngay": "2026-08-08",
+      "hang_fargo": 2,
+      "rating": 850
+    }
   ],
   "hang_cho": [
     "Ko Pin-Yi",
@@ -53,64 +65,436 @@
     "Oliver Villafuerte",
     "Skyler Woodward",
     "Paolo Gallito",
-    "Kyle Amoroto"
+    "Kyle Amoroto",
+    "Denis Grabe",
+    "John Albert Refulle"
   ],
   "khong_du_tu_lieu": [],
   "bang_xep_hang_fargorate": {
     "_do_ngay": "2026-08-08",
     "_nguon": "https://fargorate.com/top-ten-lists — mục Top 100 World",
-    "_khuon": "hang | ten_chuan (tên dùng trong hang_cho) | ten_tren_fargorate | quoc_gia | rating",
-    "top50": [
-      [1, "Joshua Filler", "Joshua Filler", "DEU", 865],
-      [2, "Fedor Gorst", "Fedor Gorst", "USA", 850],
-      [3, "Ko Pin-Yi", "Pin-Yi Ko", "TWN", 849],
-      [4, "Ko Ping-Chung", "Ping-Chung Ko", "TWN", 847],
-      [5, "Francisco Sánchez Ruiz", "Francisco Sanchez Ruiz", "ESP", 847],
-      [6, "Shane Van Boening", "Shane Van Boening", "USA", 847],
-      [7, "Aloysius Yapp", "Aloysius Yapp", "SGP", 843],
-      [8, "Ameer Ali", "Ameer Ali", "IRQ", 842],
-      [9, "Chang Jung-Lin", "Jung Lin Chang", "TWN", 842],
-      [10, "Johann Chua", "Johann Chua", "PHL", 840],
-      [11, "Carlo Biado", "Carlo Biado", "PHL", 839],
-      [12, "Jayson Shaw", "Jayson Shaw", "SCT", 836],
-      [13, "Albin Ouschan", "Albin Ouschan", "AUT", 835],
-      [14, "Wojciech Szewczyk", "Wojciech Szewczyk", "POL", 835],
-      [15, "Wiktor Zieliński", "Wiktor Zielinski", "POL", 832],
-      [16, "Anton Raga", "Anton Raga", "PHL", 832],
-      [17, "Eklent Kaçi", "Eklent Kaci", "ALB", 832],
-      [18, "Dương Quốc Hoàng", "Quoc Hoang Duong", "VNM", 831],
-      [19, "Naoyuki Oi", "Naoyuki Oi", "JPN", 830],
-      [20, "Jonas Magpantay", "Jonas Magpantay", "PHL", 828],
-      [21, "Dennis Orcollo", "Dennis Orcollo", "PHL", 827],
-      [22, "Wu Kun-Lin", "Kun Lin Wu", "TWN", 826],
-      [23, "Alex Kazakis", "Alex Kazakis", "GRC", 824],
-      [24, "Niels Feijen", "Niels Feijen", "NLD", 823],
-      [25, "Dang Jinhu", "Jin-Hu Dang", "CHN", 822],
-      [26, "Oliver Szolnoki", "Oliver Szolnoki", "HUN", 822],
-      [27, "Robbie Capito", "Robbie Capito", "HKG", 821],
-      [28, "Daniel Maciol", "Daniel Maciol", "POL", 821],
-      [29, "Jundel Mazon", "Jundel Mazon", "PHL", 820],
-      [30, "David Alcaide", "David Alcaide", "ESP", 820],
-      [31, "Xue Zhenqi", "XUE ZHENQI", "CHN", 820],
-      [32, "Lee Vann Corteza", "Lee Van Corteza", "PHL", 820],
-      [33, "Moritz Neuhausen", "Moritz Neuhausen", "DEU", 819],
-      [34, "Alex Pagulayan", "Alex Pagulayan", "CAN", 818],
-      [35, "Max Lechner", "Max Lechner", "AUT", 818],
-      [36, "Fu Jianbo", "Jianbo Fu", "CHN", 817],
-      [37, "Jeffrey Roda", "Jeffrey Roda", "PHL", 816],
-      [38, "Jeffrey Ignacio", "Jeffrey Ignacio", "PHL", 816],
-      [39, "Mario He", "Mario He", "AUT", 815],
-      [40, "Chang Yu-Lung", "Yu-Lung Chang", "TWN", 815],
-      [41, "Pijus Labutis", "Pijus Labutis", "LTU", 814],
-      [42, "Sanjin Pehlivanović", "Sanjin Pehlivanovic", "BIH", 814],
-      [43, "Kledio Kaçi", "Kledio Kaci", "ALB", 813],
-      [44, "Bernie Regalario", "Bernie Regalario", "PHL", 813],
-      [45, "Edwin Gamas", "Edwin Gamas", "PHL", 811],
-      [46, "James Aranas", "James Aranas", "PHL", 811],
-      [47, "Oliver Villafuerte", "Oliver Villafuerte", "PHL", 811],
-      [48, "Skyler Woodward", "Skyler Woodward", "USA", 811],
-      [49, "Paolo Gallito", "Paolo Gallito", "PHL", 809],
-      [50, "Kyle Amoroto", "Kyle Amoroto", "PHL", 809]
+    "_khuon": "hang | ten_chuan (tên dùng trong hang_cho) | ten_tren_fargorate | quoc_gia | rating — hiện có hạng 1-60, cần sâu hơn thì đọc tiếp Top 100 World rồi nối vào đây kèm ngày đo",
+    "bang_hang": [
+      [
+        1,
+        "Joshua Filler",
+        "Joshua Filler",
+        "DEU",
+        865
+      ],
+      [
+        2,
+        "Fedor Gorst",
+        "Fedor Gorst",
+        "USA",
+        850
+      ],
+      [
+        3,
+        "Ko Pin-Yi",
+        "Pin-Yi Ko",
+        "TWN",
+        849
+      ],
+      [
+        4,
+        "Ko Ping-Chung",
+        "Ping-Chung Ko",
+        "TWN",
+        847
+      ],
+      [
+        5,
+        "Francisco Sánchez Ruiz",
+        "Francisco Sanchez Ruiz",
+        "ESP",
+        847
+      ],
+      [
+        6,
+        "Shane Van Boening",
+        "Shane Van Boening",
+        "USA",
+        847
+      ],
+      [
+        7,
+        "Aloysius Yapp",
+        "Aloysius Yapp",
+        "SGP",
+        843
+      ],
+      [
+        8,
+        "Ameer Ali",
+        "Ameer Ali",
+        "IRQ",
+        842
+      ],
+      [
+        9,
+        "Chang Jung-Lin",
+        "Jung Lin Chang",
+        "TWN",
+        842
+      ],
+      [
+        10,
+        "Johann Chua",
+        "Johann Chua",
+        "PHL",
+        840
+      ],
+      [
+        11,
+        "Carlo Biado",
+        "Carlo Biado",
+        "PHL",
+        839
+      ],
+      [
+        12,
+        "Jayson Shaw",
+        "Jayson Shaw",
+        "SCT",
+        836
+      ],
+      [
+        13,
+        "Albin Ouschan",
+        "Albin Ouschan",
+        "AUT",
+        835
+      ],
+      [
+        14,
+        "Wojciech Szewczyk",
+        "Wojciech Szewczyk",
+        "POL",
+        835
+      ],
+      [
+        15,
+        "Wiktor Zieliński",
+        "Wiktor Zielinski",
+        "POL",
+        832
+      ],
+      [
+        16,
+        "Anton Raga",
+        "Anton Raga",
+        "PHL",
+        832
+      ],
+      [
+        17,
+        "Eklent Kaçi",
+        "Eklent Kaci",
+        "ALB",
+        832
+      ],
+      [
+        18,
+        "Dương Quốc Hoàng",
+        "Quoc Hoang Duong",
+        "VNM",
+        831
+      ],
+      [
+        19,
+        "Naoyuki Oi",
+        "Naoyuki Oi",
+        "JPN",
+        830
+      ],
+      [
+        20,
+        "Jonas Magpantay",
+        "Jonas Magpantay",
+        "PHL",
+        828
+      ],
+      [
+        21,
+        "Dennis Orcollo",
+        "Dennis Orcollo",
+        "PHL",
+        827
+      ],
+      [
+        22,
+        "Wu Kun-Lin",
+        "Kun Lin Wu",
+        "TWN",
+        826
+      ],
+      [
+        23,
+        "Alex Kazakis",
+        "Alex Kazakis",
+        "GRC",
+        824
+      ],
+      [
+        24,
+        "Niels Feijen",
+        "Niels Feijen",
+        "NLD",
+        823
+      ],
+      [
+        25,
+        "Dang Jinhu",
+        "Jin-Hu Dang",
+        "CHN",
+        822
+      ],
+      [
+        26,
+        "Oliver Szolnoki",
+        "Oliver Szolnoki",
+        "HUN",
+        822
+      ],
+      [
+        27,
+        "Robbie Capito",
+        "Robbie Capito",
+        "HKG",
+        821
+      ],
+      [
+        28,
+        "Daniel Maciol",
+        "Daniel Maciol",
+        "POL",
+        821
+      ],
+      [
+        29,
+        "Jundel Mazon",
+        "Jundel Mazon",
+        "PHL",
+        820
+      ],
+      [
+        30,
+        "David Alcaide",
+        "David Alcaide",
+        "ESP",
+        820
+      ],
+      [
+        31,
+        "Xue Zhenqi",
+        "XUE ZHENQI",
+        "CHN",
+        820
+      ],
+      [
+        32,
+        "Lee Vann Corteza",
+        "Lee Van Corteza",
+        "PHL",
+        820
+      ],
+      [
+        33,
+        "Moritz Neuhausen",
+        "Moritz Neuhausen",
+        "DEU",
+        819
+      ],
+      [
+        34,
+        "Alex Pagulayan",
+        "Alex Pagulayan",
+        "CAN",
+        818
+      ],
+      [
+        35,
+        "Max Lechner",
+        "Max Lechner",
+        "AUT",
+        818
+      ],
+      [
+        36,
+        "Fu Jianbo",
+        "Jianbo Fu",
+        "CHN",
+        817
+      ],
+      [
+        37,
+        "Jeffrey Roda",
+        "Jeffrey Roda",
+        "PHL",
+        816
+      ],
+      [
+        38,
+        "Jeffrey Ignacio",
+        "Jeffrey Ignacio",
+        "PHL",
+        816
+      ],
+      [
+        39,
+        "Mario He",
+        "Mario He",
+        "AUT",
+        815
+      ],
+      [
+        40,
+        "Chang Yu-Lung",
+        "Yu-Lung Chang",
+        "TWN",
+        815
+      ],
+      [
+        41,
+        "Pijus Labutis",
+        "Pijus Labutis",
+        "LTU",
+        814
+      ],
+      [
+        42,
+        "Sanjin Pehlivanović",
+        "Sanjin Pehlivanovic",
+        "BIH",
+        814
+      ],
+      [
+        43,
+        "Kledio Kaçi",
+        "Kledio Kaci",
+        "ALB",
+        813
+      ],
+      [
+        44,
+        "Bernie Regalario",
+        "Bernie Regalario",
+        "PHL",
+        813
+      ],
+      [
+        45,
+        "Edwin Gamas",
+        "Edwin Gamas",
+        "PHL",
+        811
+      ],
+      [
+        46,
+        "James Aranas",
+        "James Aranas",
+        "PHL",
+        811
+      ],
+      [
+        47,
+        "Oliver Villafuerte",
+        "Oliver Villafuerte",
+        "PHL",
+        811
+      ],
+      [
+        48,
+        "Skyler Woodward",
+        "Skyler Woodward",
+        "USA",
+        811
+      ],
+      [
+        49,
+        "Paolo Gallito",
+        "Paolo Gallito",
+        "PHL",
+        809
+      ],
+      [
+        50,
+        "Kyle Amoroto",
+        "Kyle Amoroto",
+        "PHL",
+        809
+      ],
+      [
+        51,
+        "Denis Grabe",
+        "Denis Grabe",
+        "EST",
+        809
+      ],
+      [
+        52,
+        "John Albert Refulle",
+        "John Albert Refulle",
+        "PHL",
+        809
+      ],
+      [
+        53,
+        "Marco Teutscher",
+        "Marco Teutscher",
+        "NLD",
+        809
+      ],
+      [
+        54,
+        "Aleksa Pecelj",
+        "Aleksa Pecelj",
+        "SRB",
+        808
+      ],
+      [
+        55,
+        "Roland Garcia",
+        "Roland Garcia",
+        "PHL",
+        808
+      ],
+      [
+        56,
+        "Stefan Kasper",
+        "Stefan Kasper",
+        "DEU",
+        806
+      ],
+      [
+        57,
+        "Chris Melling",
+        "Chris Melling",
+        "GBR",
+        806
+      ],
+      [
+        58,
+        "Hayato Hijikata",
+        "Hayato Hijikata",
+        "JPN",
+        806
+      ],
+      [
+        59,
+        "Mieszko Fortunski",
+        "Mieszko Fortunski",
+        "POL",
+        805
+      ],
+      [
+        60,
+        "Mike Dechaine",
+        "Mike Dechaine",
+        "USA",
+        805
+      ]
     ]
   }
 }
