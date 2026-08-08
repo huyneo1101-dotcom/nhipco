@@ -15,3 +15,6 @@
 
 # Rác macOS
 .DS_Store
+
+# Rác Python sinh lại khi chạy phép đo
+__pycache__/
