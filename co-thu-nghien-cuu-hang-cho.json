@@ -1,0 +1,18 @@
+{
+  "_ghi_chu": "Hàng chờ cho routine hằng ngày 'nghien-cuu-co-thu'. da_xong = đã có bài trong mục Kiến thức > Tâm lý > Học từ cơ thủ đỉnh cao (khoá key trong index.html). hang_cho = thứ tự ưu tiên nghiên cứu tiếp. Routine tự dequeue đầu hang_cho, nghiên cứu xong thì chuyển sang da_xong. Hết hang_cho thì routine tự chọn thêm cơ thủ mới từ BXH công khai (Fargo Rate / WPA / Matchroom) và tự nối vào cuối, không dừng routine.",
+  "da_xong": [
+    {"ten": "Joshua Filler", "key": "psy_pro_filler", "ngay": "2026-08-08"},
+    {"ten": "Fedor Gorst", "key": "psy_pro_gorst", "ngay": "2026-08-08"}
+  ],
+  "hang_cho": [
+    "Francisco Sánchez Ruiz",
+    "Shane Van Boening",
+    "Eklent Kaçi",
+    "Jayson Shaw",
+    "Ko Pin-Yi",
+    "Albin Ouschan",
+    "Aloysius Yapp",
+    "Dương Quốc Hoàng"
+  ],
+  "khong_du_tu_lieu": []
+}
