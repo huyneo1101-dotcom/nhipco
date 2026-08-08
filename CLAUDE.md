@@ -33,6 +33,10 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
   - `log` 📓 **Nhật ký** → `MatchLog` (MatchForm, SummaryView).
   - `train` 📈 **Rèn luyện** → `Training` (DRILLS, PROBLEMS, STRETCHES).
   - `know` 📚 **Kiến thức** → `KnowTab`.
+- **Kiến thức**: mảng `KNOWLEDGE` (~3895) là nguồn thật duy nhất. `KnowledgeView` chia **4 mục** qua `secOf`: `tactic` (tag `Chiến thuật`, 18 bài, phẳng) · `tech` (tag `Kỹ thuật`, 24 bài, nhóm con `TECH_SUBCATS`) · `phys` (`Thể trạng`/`Dinh dưỡng`/`Thể lực`, 4 bài) · `psy` (tag `Tâm lý`, 30 bài, nhóm con `PSY_SUBCATS`).
+  - Thêm tag mới thì phải sửa **4 chỗ**: `KNOW_CATS` · `secOf` · nút trong `catbar` · bộ lọc nhánh `phys` (nếu không loại trừ, tag mới bị mục Thể chất nuốt).
+  - `KNOW_CARDS` (~4663) tự sinh thẻ ôn luyện từ mọi mục `body` — thêm bài là tab Ôn luyện tự có thẻ, không phải sửa gì.
+  - ⚠️ `data/knowledge.js` (178 KB) là **bản chết**, không được `index.html` hay `sw.js` nạp; đừng sửa nó, cũng đừng lấy làm chuẩn.
 - Đồng bộ đám mây: `cloudInit`/`cloudPush`/`cloudApply`/`cloudSnap` (~764–791); `Settings` (~1761) chứa auth + backup.
 - 9 theme qua `body.theme-*` (midnight/coffee/court/racing/neon/peach/sage/periwinkle/color) — xem skill `theme-pack`.
 
