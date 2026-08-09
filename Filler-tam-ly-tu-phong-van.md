@@ -182,6 +182,26 @@ Về việc học one-pocket trong thời gian phong toả vì dịch, và tác 
 
 ---
 
+## Bổ sung 09/08/2026 — Florida Open 2026: ý nghĩ "mình thua rồi" vẫn tới
+
+**Nguồn:** World Nineball Tour, bản tin ngày 08/08/2026 *"Yapp and Biado Stunned as Van Boening Steps Closer to Florida Open Redemption | 2026 Florida Open Pool Championship"* (bài báo của ban tổ chức, có trích dẫn trực tiếp; AZBilliards đăng lại cùng ngày). Đây là bài báo, không phải video phỏng vấn.
+
+Bối cảnh: Florida Open 2026 (Caribe Royale Resort, Orlando, 04-09/08/2026). Ở trận tranh vé vào vòng 16, Filler bị Sanjin Pehlivanovic dẫn 4-2 rồi lật ngược.
+
+> *"I've played solid in both matches. Against Sanjin, I was 4-2 down and for a moment I thought I was out, but I found my rhythm and from there I played almost perfect. From there I didn't miss much, and I took my chances to get the win."*
+> (Tôi đã chơi chắc chắn trong cả hai trận. Gặp Sanjin, tôi bị dẫn 4-2 và có một lúc tôi đã nghĩ mình xong rồi, nhưng rồi tôi tìm lại được nhịp của mình, và từ đó tôi chơi gần như hoàn hảo. Từ lúc đó tôi không trượt mấy, và tôi tận dụng được các cơ hội để giành chiến thắng.)
+
+Điểm đáng ghi là chỗ này **đính chính một nét đã ghi ở mục 3** của hồ sơ. Ở mục đó Filler mô tả kỷ luật giữ đầu óc trống rỗng: *"hễ nghĩ tới điều gì sai, nó sẽ xảy ra sai"*. Lời khai lần này cho thấy ý nghĩ tiêu cực **vẫn tới**, kể cả với người đang giữ phong độ cao nhất — thứ anh mô tả không phải một cái đầu không bao giờ nghĩ bậy, mà là một cái đầu không để ý nghĩ đó ở lại. Và cơ chế gỡ mà anh nêu không phải nỗ lực đè ý nghĩ xuống, mà là **tìm lại nhịp chơi** — tức đi qua hành động chứ không qua ý chí.
+
+Cùng bản tin, khi được hỏi về khả năng đoạt danh hiệu Major thứ hai trong năm:
+
+> *"It would be fantastic. I know I'm capable of winning this title, and it would be the perfect foundation for me to go on and win a second US Open."*
+> (Sẽ tuyệt vời. Tôi biết mình đủ sức thắng danh hiệu này, và nó sẽ là nền móng hoàn hảo để tôi đi tiếp và đoạt chức vô địch US Open thứ hai.)
+
+Câu này khớp đúng khuôn "tự tin dựng có chủ đích" ở mục 1, nhưng có thêm một nét: anh **xâu chuỗi** giải đang đánh thành bàn đạp cho giải sau (US Open 25-30/08/2026), thay vì chỉ đặt mục tiêu trạng thái như cách anh mô tả năm 2024 ở mục 10. Cách đọc này là suy luận của người lập hồ sơ, không phải lời Filler nói ra.
+
+---
+
 ## Về ba điều rút ra được cho người tập
 
 1. **Sự tự tin có thể là thứ dựng lên có chủ đích.** Filler không chờ cảm giác tự tin đến rồi mới thi đấu tốt; anh tuyên bố nó với chính mình như một điều kiện làm việc, đồng thời vẫn giữ riêng một bản đánh giá tỉnh táo về xác suất thật.
