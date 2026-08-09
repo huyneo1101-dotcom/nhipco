@@ -15,10 +15,16 @@
       "ngay": "2026-08-08",
       "hang_fargo": 2,
       "rating": 850
+    },
+    {
+      "ten": "Ko Pin-Yi",
+      "key": "psy_pro_kopinyi",
+      "ngay": "2026-08-09",
+      "hang_fargo": 3,
+      "rating": 849
     }
   ],
   "hang_cho": [
-    "Ko Pin-Yi",
     "Ko Ping-Chung",
     "Francisco Sánchez Ruiz",
     "Shane Van Boening",
@@ -67,7 +73,8 @@
     "Paolo Gallito",
     "Kyle Amoroto",
     "Denis Grabe",
-    "John Albert Refulle"
+    "John Albert Refulle",
+    "Marco Teutscher"
   ],
   "khong_du_tu_lieu": [],
   "bang_xep_hang_fargorate": {
