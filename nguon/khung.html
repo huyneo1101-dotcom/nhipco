@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0d2b22" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icon.svg" />
+<link rel="apple-touch-icon" href="./icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CueZen" />
+<title>CueZen — bạn đồng hành khi đứng bàn bi-a</title>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#0a241c; --bg2:#0d2b22; --card:#103a2e; --card2:#0e3328;
+  --line:#1d5743; --text:#eafff5; --muted:#8fc7b2; --soft:#bfe9d6;
+  --gold:#f4c95d; --on-gold:#1a1206; --accent:#34d399; --accent2:#10b981;
+  --warn:#fbbf24; --danger:#f87171; --ok:#34d399;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --r:18px;
+}
+body.theme-midnight{
+  --bg:#0b1020; --bg2:#0e1530; --card:#161f3d; --card2:#131b35;
+  --line:#293561; --text:#eaf0ff; --muted:#93a0cf; --soft:#c3cdf2;
+  --gold:#9db4ff; --on-gold:#0b1020; --accent:#7c9bff; --accent2:#5d7cf0;
+}
+body.theme-coffee{
+  --bg:#1b120c; --bg2:#231811; --card:#33241a; --card2:#2c2016;
+  --line:#5a4230; --text:#fbeede; --muted:#c8a98a; --soft:#e7d2b8;
+  --gold:#e6a44e; --on-gold:#241405; --accent:#e0995a; --accent2:#c97f3e;
+}
+body.theme-court{ /* light */
+  --bg:#eef4f0; --bg2:#e3ede8; --card:#ffffff; --card2:#f4f8f6;
+  --line:#d4e3da; --text:#11302a; --muted:#5b7a70; --soft:#23463d;
+  --gold:#0f9d6b; --on-gold:#ffffff; --accent:#10b981; --accent2:#059669;
+  --shadow:0 8px 24px rgba(16,60,48,.12);
+}
+body.theme-racing{
+  --bg:#161311; --bg2:#1d1815; --card:#241d1a; --card2:#1f1815;
+  --line:#3d322d; --text:#fbeeea; --muted:#c4a99f; --soft:#e6cfc6;
+  --gold:#ff8a5b; --on-gold:#161311; --accent:#e2483c; --accent2:#c43a30;
+}
+body.theme-neon{
+  --bg:#0c1408; --bg2:#111c0b; --card:#15210f; --card2:#111a0c;
+  --line:#2a3d1c; --text:#eafce0; --muted:#9fc488; --soft:#c9e6b4;
+  --gold:#b6ff5a; --on-gold:#0c1408; --accent:#7ddb3a; --accent2:#5fb82a;
+}
+body.theme-peach{ /* light */
+  --bg:#fff1ea; --bg2:#ffe6db; --card:#ffffff; --card2:#fff7f3;
+  --line:#f6d8c8; --text:#4a2a1c; --muted:#9c7261; --soft:#6b4434;
+  --gold:#e2733e; --on-gold:#ffffff; --accent:#f08a5a; --accent2:#d96a38;
+  --shadow:0 8px 24px rgba(120,60,30,.12);
+}
+body.theme-sage{ /* light */
+  --bg:#eef6ee; --bg2:#e3efe2; --card:#ffffff; --card2:#f4f9f3;
+  --line:#d8e8d6; --text:#1d3a22; --muted:#5e7d61; --soft:#2e5234;
+  --gold:#4f9d52; --on-gold:#ffffff; --accent:#5fb56a; --accent2:#469a51;
+  --shadow:0 8px 24px rgba(30,70,40,.12);
+}
+body.theme-periwinkle{ /* light */
+  --bg:#eef0fc; --bg2:#e3e6f7; --card:#ffffff; --card2:#f5f6fd;
+  --line:#dadff5; --text:#232a4a; --muted:#6670a0; --soft:#353e6b;
+  --gold:#4f5fd6; --on-gold:#ffffff; --accent:#6b7bf0; --accent2:#4f5fd6;
+  --shadow:0 8px 24px rgba(40,50,120,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  background:radial-gradient(120% 90% at 50% -10%,var(--bg2),var(--bg));
+  color:var(--text);
+  font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+}
+#root{min-height:100%;display:flex;flex-direction:column}
+.app{max-width:520px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) 0 0 0}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 6px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--gold),#d8a83b);color:var(--on-gold);
+  font-weight:900;font-size:18px;box-shadow:var(--shadow)}
+.brand b{font-size:18px;letter-spacing:.3px}
+.brand small{display:block;color:var(--muted);font-size:11px;font-weight:600;margin-top:1px}
+.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--text);
+  width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer;display:grid;place-items:center}
+.iconbtn:active{transform:scale(.94)}
+
+.notifwrap{position:relative}
+.notifbadge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 3px;border-radius:999px;
+  background:var(--danger);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;line-height:1;box-shadow:var(--shadow)}
+.notifbackdrop{position:fixed;inset:0;z-index:45;background:transparent}
+.notifpanel{position:absolute;top:48px;right:0;z-index:46;width:282px;max-width:78vw;
+  background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow);padding:8px;display:flex;flex-direction:column;gap:4px}
+.notifhead{font-weight:800;font-size:12.5px;color:var(--muted);padding:4px 6px 2px;text-transform:uppercase;letter-spacing:.4px}
+.notifempty{padding:10px 8px;font-size:13px;color:var(--text);line-height:1.4}
+.notifitem{display:block;width:100%;text-align:left;background:var(--card2);border:1px solid var(--line);
+  border-radius:10px;padding:9px 10px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+.notifitem:active{transform:scale(.98)}
+
+.body{flex:1;padding:6px 16px 14px;display:flex;flex-direction:column}
+
+.tabs{display:flex;gap:5px;padding:8px 8px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,var(--bg) 72%,transparent);position:sticky;bottom:0;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1 1 auto;min-width:60px;border:1px solid var(--line);background:var(--card2);color:var(--muted);
+  border-radius:12px;padding:8px 7px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:3px;font-size:10px;font-weight:700;transition:.15s;white-space:nowrap}
+.tab .ico{font-size:18px;line-height:1}
+.tab.on{background:linear-gradient(160deg,var(--card),var(--card2));color:var(--text);
+  border-color:var(--gold);box-shadow:var(--shadow)}
+.tab.on .ico{filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
+.tab:active{transform:scale(.96)}
+.resetBtn{border:none;border-radius:11px;padding:9px 12px;font-size:13px;font-weight:800;cursor:pointer;
+  background:linear-gradient(160deg,var(--accent),var(--accent2));color:#04231a;white-space:nowrap}
+.resetBtn:active{transform:scale(.95)}
+.reorder{display:flex;flex-direction:column;gap:6px}
+.rrow{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:11px;background:var(--card2)}
+.rico{font-size:17px;width:22px;text-align:center}
+.rlab{flex:1;font-weight:700;font-size:14px}
+.rbtn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:15px;font-weight:800;cursor:pointer}
+.rbtn:disabled{opacity:.3}
+.musicgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.musicCard{display:flex;flex-direction:column;gap:2px;padding:14px;border:1px solid var(--line);border-radius:14px;
+  background:linear-gradient(165deg,var(--card),var(--card2));text-decoration:none;color:var(--text)}
+.musicCard b{font-size:15px;font-weight:800;margin-top:4px}
+.musicCard small{color:var(--muted);font-size:11.5px;font-weight:600}
+.musicCard:active{transform:scale(.97)}
+.resetLine{font-size:20px;font-weight:800;text-align:center;max-width:88%;line-height:1.45;color:var(--soft)}
+.mbar{height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+.mbar>div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--gold))}
+.musicRow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.musicLink{flex:1;min-width:0;color:var(--text);text-decoration:none;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xbtn{background:transparent;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:2px 6px;flex:none}
+.archbtn{border:none;background:transparent;color:var(--muted);padding:6px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;line-height:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+.archbtn:hover{color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent)}
+.archbtn:active{transform:scale(.88)}
+.archbtn svg{width:18px;height:18px;display:block}
+.archbtn.on{color:var(--gold)}
+.kacts{display:flex;align-items:center;gap:1px;flex:none}
+.rnnum{width:21px;height:21px;border-radius:50%;background:var(--gold);color:var(--on-gold);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.rnstep{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-top:6px;cursor:pointer}
+.rnstep.on{border-color:var(--gold)}
+.poslegend{display:flex;gap:14px;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0;flex-wrap:wrap}
+.posdot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.35)}
+
+.card{background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--line);
+  border-radius:var(--r);box-shadow:var(--shadow)}
+.h{font-size:13px;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.8px}
+.muted{color:var(--muted)}
+.btn{border:none;border-radius:14px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;
+  background:linear-gradient(160deg,var(--gold),#dca93c);color:var(--on-gold)}
+.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.btn.acc{background:linear-gradient(160deg,var(--accent),var(--accent2));color:#04231a}
+.btn:active{transform:scale(.97)}
+.btn.wide{width:100%}
+.chip{border:1px solid var(--line);background:var(--card2);color:var(--soft);border-radius:999px;
+  padding:7px 13px;font-weight:700;font-size:13px;cursor:pointer}
+.chip.on{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+
+/* ----- Metronome / shared ----- */
+.metro{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:0}
+.pendwrap{width:200px;height:200px;position:relative;flex:none}
+.pend{position:absolute;bottom:16px;left:50%;margin-left:-3px;transform-origin:bottom center}
+.arm{width:6px;height:150px;background:linear-gradient(var(--accent),var(--accent2));border-radius:6px}
+.bob{width:32px;height:32px;border-radius:50%;background:var(--gold);position:absolute;top:-14px;left:50%;
+  transform:translateX(-50%);box-shadow:0 0 22px -4px var(--gold)}
+.pivot{position:absolute;bottom:10px;left:50%;width:18px;height:18px;border-radius:50%;background:var(--accent);
+  transform:translateX(-50%);box-shadow:0 0 16px -2px var(--accent)}
+.bpmbox{display:flex;align-items:center;gap:18px}
+.bpmbox button{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:var(--card);
+  color:var(--text);font-size:26px;font-weight:800;cursor:pointer}
+.bpmbox button:active{transform:scale(.92)}
+.bpmnum{text-align:center;min-width:90px}
+.bpmnum b{font-size:46px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.bpmnum small{display:block;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:1px;margin-top:2px}
+.metro input[type=range]{width:100%;max-width:320px;accent-color:var(--gold)}
+.clockbtns{display:flex;gap:10px;width:100%;max-width:330px}
+.clockbtns .btn{flex:1}
+.presets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.modeseg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.modeseg button{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:13px;
+  padding:7px 14px;border-radius:9px;cursor:pointer}
+.modeseg button.on{background:var(--gold);color:var(--on-gold)}
+
+/* ----- Breathing ----- */
+.breathe{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+.orb{width:min(70vw,260px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,var(--accent),var(--accent2));
+  color:#04231a;box-shadow:0 0 60px -10px var(--accent);transition:transform 1s linear,background .4s}
+.orb .ph{font-size:22px;font-weight:900;text-align:center}
+.orb .ct{font-size:46px;font-weight:900;font-variant-numeric:tabular-nums}
+.breathe .sub{color:var(--muted);text-align:center;max-width:300px;font-size:14px;line-height:1.5}
+
+/* ----- Routine ----- */
+.steps{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.step{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid var(--line);
+  border-radius:14px;background:var(--card2);cursor:pointer;transition:.15s}
+.step .n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:900;
+  background:var(--card);border:1px solid var(--line);color:var(--muted);flex:none;font-size:14px}
+.step .tx{flex:1;font-weight:700}
+.step .tx small{display:block;color:var(--muted);font-weight:600;font-size:12px;margin-top:2px}
+.step.done{border-color:var(--accent);background:linear-gradient(160deg,var(--card),var(--card2))}
+.step.done .n{background:var(--accent);color:#04231a;border-color:var(--accent)}
+.step.done .tx{text-decoration:line-through;opacity:.65}
+.step.cur{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.step.cur .n{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+.rowbtns{display:flex;gap:10px;margin-top:14px}
+.rowbtns .btn{flex:1}
+
+/* ----- Cue cards ----- */
+.cue{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.cuecard{width:100%;min-height:220px;padding:28px 24px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;text-align:center;cursor:pointer}
+.cuecard .q{font-size:40px}
+.cuecard .t{font-size:21px;font-weight:800;line-height:1.45}
+.cuecard .tag{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}
+.mqhero{position:relative;overflow:hidden;width:100%;min-height:clamp(240px,42vh,340px);padding:26px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;cursor:pointer;
+  background:linear-gradient(160deg,var(--card),var(--card2));border:1.5px solid var(--gold);box-shadow:0 10px 34px -10px rgba(0,0,0,.55)}
+.mqhero:active{transform:scale(.995)}
+.mqhero::before{content:"⚔";position:absolute;right:-26px;bottom:-54px;font-size:220px;line-height:1;opacity:.055;pointer-events:none}
+.mqhero .mqlabel{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);z-index:1}
+.mqhero .mqtext{font-size:clamp(23px,6.3vw,33px);font-weight:900;line-height:1.28;letter-spacing:-.3px;color:var(--text);z-index:1}
+.mqhero .mqhint{font-size:11.5px;color:var(--muted);letter-spacing:.4px;z-index:1}
+
+/* ----- Lists / match journal + training ----- */
+.list{display:flex;flex-direction:column;gap:10px;margin-top:10px;padding-bottom:6px}
+.preline{white-space:pre-wrap}
+.klink{color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.mcard{padding:13px;display:flex;flex-direction:column;gap:7px;cursor:pointer}
+.mtop{display:flex;align-items:center;gap:10px}
+.rbadge{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-weight:900;
+  font-size:14px;flex:none}
+.rbadge.W{background:var(--ok);color:#04231a} .rbadge.L{background:var(--danger);color:#3b0a0a}
+.rbadge.D{background:var(--line);color:var(--text)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag2{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--card2);
+  border:1px solid var(--line);color:var(--muted)}
+.statstrip{display:flex;gap:8px;margin:12px 0 4px}
+.stat{flex:1;text-align:center;padding:10px 4px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.stat b{display:block;font-size:21px;line-height:1.1} .stat small{color:var(--muted);font-size:11px;font-weight:700}
+.small{font-size:12px}
+.h2{font-size:13px;font-weight:800;color:var(--gold);margin:18px 0 0;letter-spacing:.3px}
+.drill{padding:14px;display:flex;flex-direction:column;gap:6px}
+.drow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.drow .warn{color:var(--warn);font-size:15px}
+.dt{font-weight:800;font-size:15px}
+.dd{font-size:13.5px;line-height:1.5}
+.drow2{display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap}
+.okbadge{font-size:12px;font-weight:700;color:var(--ok)}
+.btn.sm{padding:9px 14px;font-size:13px;border-radius:11px}
+.lesson{padding:13px;display:flex;flex-direction:column;gap:5px}
+.lesson .lz{font-size:14px;line-height:1.5;white-space:pre-wrap}
+/* training — plan + library + ghost */
+.tsub{color:var(--muted);font-size:13px;margin:2px 0 0;line-height:1.5}
+.plan{margin-top:8px;padding:4px 4px}
+.planrow{display:flex;align-items:center;gap:11px;padding:11px 10px;border-bottom:1px solid var(--line)}
+.planrow:last-child{border-bottom:none}
+.planrow .pi{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;
+  font-size:15px;background:var(--card2);border:1px solid var(--line)}
+.planrow .pt{flex:1;min-width:0}
+.planrow .pt b{font-weight:800;font-size:14px}
+.planrow .pt small{display:block;color:var(--muted);font-size:11.5px;font-weight:600;margin-top:1px}
+.catbar{display:flex;gap:7px;overflow-x:auto;padding:9px 0 3px;scrollbar-width:none}
+.catbar.wrap{flex-wrap:wrap;overflow-x:visible}
+.catbar::-webkit-scrollbar{display:none}
+.catbar .chip{flex:none}
+.drillC{padding:0;overflow:hidden;margin-top:0}
+.drillH{display:flex;align-items:center;gap:9px;padding:12px 14px;cursor:pointer}
+.drillH .dn{flex:1;min-width:0}
+.drillH .dn b{font-weight:800;font-size:14.5px}
+.drillH .dn small{display:block;color:var(--muted);font-size:11.5px;font-weight:600;margin-top:1px}
+.drillH .sc{text-align:right;flex:none}
+.drillH .sc b{font-size:17px;line-height:1;font-variant-numeric:tabular-nums}
+.drillH .sc small{display:block;color:var(--muted);font-size:10px;font-weight:700}
+.catpill{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;text-transform:uppercase;
+  letter-spacing:.4px;background:transparent;flex:none}
+.drillB{padding:2px 14px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.kv{font-size:13px;line-height:1.55}
+.kv b{color:var(--soft);font-weight:800}
+.statline{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:700}
+.statline b{color:var(--text)}
+.oav{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:17px;
+  background:var(--card2);border:1px solid var(--line);color:var(--gold);flex:none;text-transform:uppercase}
+.hh{display:flex;gap:14px;align-items:center;font-size:13px;font-weight:800;margin-top:2px}
+.hh .w{color:var(--ok)} .hh .l{color:var(--danger)} .hh .d{color:var(--muted)}
+.chartcap{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.chartcap b{color:var(--text);font-size:13px}
+/* shot clock fullscreen */
+.scOverlay{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:10px;padding:24px;text-align:center;transition:background .3s;user-select:none}
+.scClose{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;width:42px;height:42px;
+  border-radius:50%;border:1px solid var(--line);background:rgba(0,0,0,.2);color:var(--text);font-size:20px;cursor:pointer}
+.scStep{font-size:13px;font-weight:800;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.scPhase{font-size:30px;font-weight:900;line-height:1.15;max-width:90%}
+.scSub{font-size:15px;color:var(--muted);font-weight:600;margin-top:-2px;max-width:88%}
+.scNum{font-size:34vw;font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;margin:6px 0}
+.scBar{width:min(82vw,360px);height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.scHint{font-size:13px;color:var(--muted);font-weight:600}
+@keyframes scpulse{0%,100%{opacity:1}50%{opacity:.35}}
+.scNum.pulse{animation:scpulse .5s steps(1) infinite}
+.mtable{width:100%;max-width:380px;align-self:center;border-radius:7px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.cueball{width:148px;height:148px;align-self:center;touch-action:none;cursor:pointer;margin-top:6px}
+.dbspin-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.ncspin{width:28px;height:28px;border:3px solid rgba(0,0,0,.18);border-top-color:var(--gold);border-radius:50%;animation:ncspin .8s linear infinite}
+@keyframes ncspin{to{transform:rotate(360deg)}}
+/* Bàn run-out: to nhất có thể, cách dòng trên/dưới; nút + overlay fullscreen */
+.rnboardwrap{position:relative;margin:12px auto 14px;width:100%;max-width:min(96vw,560px)}
+.rnboard{width:100%;display:block;border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.32)}
+.rnfull{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:8px;padding:2px 9px;font-size:16px;cursor:pointer;line-height:1.2}
+.rnfullov{position:fixed;inset:0;z-index:80;background:rgba(8,10,12,.93);display:flex;align-items:center;justify-content:flex-start;padding:12px 12px 12px 16px}
+.rnfullinner{width:100%;max-width:min(calc(96vw - 250px),calc(92vh*1.667))}
+.rnfulltable{width:100%;display:block;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.55)}
+.rntipfs{position:absolute;right:calc(14px + env(safe-area-inset-right));top:50%;transform:translateY(-50%);z-index:2;
+  background:rgba(16,20,22,.86);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px 14px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;max-width:232px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.rntipfs .rntiplbl{font-size:12.5px;color:#eaf1ec;line-height:1.4;font-weight:800}
+.rntipfs .rntiplbl small{color:#a2b5ac;font-weight:600}
+.rncur{display:flex;align-items:center;gap:14px;padding:12px 14px;margin-top:8px;border:1px solid var(--gold)}
+.rncur .rncurinfo{flex:1;min-width:0;font-size:14px;line-height:1.5}
+.rncur .rncurhead{display:flex;align-items:center;gap:8px;font-size:14.5px}
+.ghostform{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px}
+.dot.W{background:var(--ok)} .dot.L{background:var(--danger)}
+.stepper{display:flex;align-items:center;gap:18px;justify-content:center;margin:8px 0 4px}
+.stepper button{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);
+  background:var(--card);color:var(--text);font-size:24px;font-weight:800;cursor:pointer}
+.stepper button:active{transform:scale(.92)}
+.stepper .sv{font-size:42px;font-weight:900;min-width:96px;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
+.stepper .sv small{display:block;font-size:12px;color:var(--muted);font-weight:700}
+
+/* ----- Sheets / modal ----- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;
+  justify-content:center;z-index:40}
+.sheet{width:100%;max-width:520px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));
+  box-shadow:0 -10px 40px rgba(0,0,0,.4);max-height:82vh;overflow:auto}
+.sheet h3{margin:2px 0 14px;font-size:17px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;font-weight:700;color:var(--soft)}
+.field input,.field select,.field textarea{background:var(--card2);border:1px solid var(--line);color:var(--text);
+  border-radius:11px;padding:11px 12px;font-size:15px;font-family:inherit}
+.field textarea{resize:vertical;min-height:88px;line-height:1.5}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:46px;height:46px;border-radius:12px;cursor:pointer;border:2px solid transparent;position:relative}
+.sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--gold)}
+.editrow{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.editrow input{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--text);
+  border-radius:10px;padding:9px 11px;font-size:14px;font-family:inherit}
+.editrow .x{background:transparent;border:none;color:var(--danger);font-size:20px;cursor:pointer;padding:4px 6px}
+.diag{position:fixed;inset:0;background:#0a241c;color:#eafff5;padding:30px;font-family:monospace;
+  font-size:13px;z-index:99;display:none}
+
+/* ===== Nâng cấp giao diện — đợt 6: nền tảng chuyển động ===== */
+:root{ --r-sm:12px; --dur:.16s; --ease:cubic-bezier(.4,0,.2,1); }
+.btn,.chip,.tab,.card,.step,.musicCard,.iconbtn,.rbtn,.stat,.mcard{
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease),border-color var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.chip:active{transform:scale(.95)}
+@media(hover:hover){
+  .chip:hover{border-color:var(--gold);color:var(--text)}
+  .btn:hover{filter:brightness(1.06)}
+  .card:hover{border-color:color-mix(in srgb,var(--gold) 38%,var(--line))}
+  .mcard:hover,.musicCard:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(0,0,0,.28)}
+  .iconbtn:hover,.rbtn:hover:not(:disabled){border-color:var(--gold)}
+}
+
+/* ===== đợt 7: empty states ===== */
+.empty{text-align:center;padding:44px 20px 30px;color:var(--muted);animation:emp .3s var(--ease)}
+@keyframes emp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.empty-ic{width:76px;height:76px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;
+  font-size:38px;background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);box-shadow:var(--shadow)}
+.empty-t{font-weight:800;font-size:16.5px;color:var(--soft);margin-bottom:6px}
+.empty-s{font-size:13px;line-height:1.55;max-width:300px;margin:0 auto}
+
+/* ===== đợt 8: chỉ số & thanh tiến độ ===== */
+.stat{background:linear-gradient(160deg,var(--card),var(--card2))}
+.stat b{font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.statstrip{gap:9px}
+.mbar{background:color-mix(in srgb,var(--line) 65%,transparent)}
+.mbar>div{transition:width .55s var(--ease)}
+.tag2{transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
+
+/* ===== đợt 9: chip + nút đồng nhất ===== */
+.modeseg button{transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
+.modeseg button.on{box-shadow:0 2px 8px color-mix(in srgb,var(--gold) 42%,transparent)}
+.btn{letter-spacing:.2px}
+.btn.ghost:active{transform:scale(.97)}
+.chip.on{box-shadow:0 2px 8px color-mix(in srgb,var(--gold) 32%,transparent)}
+@media(hover:hover){ .modeseg button:hover:not(.on){color:var(--text)} }
+
+/* ===== đợt 10: thanh tab dưới ===== */
+.tabs{gap:6px}
+.tab .ico{transition:transform var(--dur) var(--ease)}
+.tab.on{transform:translateY(-2px)}
+.tab.on .ico{transform:scale(1.1)}
+@media(hover:hover){ .tab:hover:not(.on){border-color:color-mix(in srgb,var(--gold) 40%,var(--line));color:var(--text)} }
+
+/* ===== đợt 11: header + tiêu đề mục ===== */
+.logo{box-shadow:0 4px 16px -2px color-mix(in srgb,var(--gold) 52%,transparent)}
+.brand b{letter-spacing:.4px;font-size:19px}
+.h2{font-size:13.5px;margin-top:20px}
+.h{letter-spacing:.9px}
+.tsub{max-width:520px}
+
+/* ===== đợt 13: chuyển tab ===== */
+.tabfade{flex:1;display:flex;flex-direction:column;min-height:0;animation:tabf .22s var(--ease)}
+@keyframes tabf{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ===== đợt 15: hoàn thiện ===== */
+.sheet{animation:sheetup .26s var(--ease)}
+@keyframes sheetup{from{transform:translateY(26px);opacity:.5}to{transform:none;opacity:1}}
+.scrim{animation:scrimin .2s var(--ease)}
+@keyframes scrimin{from{opacity:0}to{opacity:1}}
+.catbar{gap:8px}
+.empty-ic{transition:transform var(--dur) var(--ease)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="diag" class="diag"></div>
+<script>
+/* chống nháy theme + báo lỗi nếu thiếu thư viện */
+(function(){
+  try{var t=localStorage.getItem('nc.theme');if(t)document.body.className='theme-'+t;}catch(e){}
+  window.addEventListener('error',function(ev){
+    var d=document.getElementById('diag');
+    if(d){d.style.display='block';d.textContent='Lỗi tải app:\n'+(ev.message||ev.error)+'\n\nKiểm tra mạng (CDN React/Babel) rồi mở lại.';}
+  });
+  setTimeout(function(){
+    if(!window.React||!window.ReactDOM){
+      var d=document.getElementById('diag');
+      d.style.display='block';
+      d.textContent='Không tải được React/Babel từ CDN.\nApp cần Internet ở lần mở đầu tiên.\nKiểm tra kết nối rồi tải lại trang.';
+    }
+  },4000);
+})();
+</script>
+<!-- Engine Điều bi (SI) cho Web Worker inline; nội dung inject từ DieuBi/engine_inline.js bằng inject-dieubi.js -->
+<script type="text/js-worker" id="dieubi-engine">
+/*DIEUBI-ENGINE-START*/
+// Self-contained engine + solver (no require/module) for embedding in the widget. SI units.
+var R=0.028575, Mm=0.163, gg=9.81, MU_SLIDE=0.20, MU_ROLL=0.010, MU_SPIN=0.022, E_BALL=0.96, E_RAIL=0.80, MU_RAIL=0.20, Iw=0.4*Mm*R*R;
+function muBall(v){ return 0.06+0.05*Math.exp(-v/0.6); }
+function ad(a,b){return[a[0]+b[0],a[1]+b[1]];} function sb(a,b){return[a[0]-b[0],a[1]-b[1]];}
+function ml(a,s){return[a[0]*s,a[1]*s];} function dt2(a,b){return a[0]*b[0]+a[1]*b[1];}
+function ln(a){return Math.hypot(a[0],a[1]);} function nm(a){var l=ln(a)||1;return[a[0]/l,a[1]/l];}
+function pp(a){return[-a[1],a[0]];} var DEG=180/Math.PI;
+function reachDist(L,shotDir,felt){ // khoảng VỚI ĐÚNG: người đứng ở BĂNG GẦN NHẤT mà bắn được rồi vươn VUÔNG GÓC tới bi cái. Không tính băng mà bắn thẳng vào nó (dot(normal_trong,hướng bắn)<0 → bắn vào lưng người → loại)
+ var rails=[[1,0,L[0]-felt[0]],[-1,0,felt[1]-L[0]],[0,1,L[1]-felt[2]],[0,-1,felt[3]-L[1]]],best=9; // [normal_trong_x, _y, khoảng vuông góc tới băng đó]
+ for(var i=0;i<4;i++){if(rails[i][0]*shotDir[0]+rails[i][1]*shotDir[1]>=-1e-6&&rails[i][2]<best)best=rails[i][2];} // băng đứng được = hướng bắn KHÔNG chọc vào băng đó; vươn = khoảng vuông góc
+ return best;}
+function reachPen(L,nb,felt){var d=sb(nb,L);if(ln(d)<1e-6)return 0;var rc=reachDist(L,nm(d),felt);return rc>0.70?Math.min(rc-0.70,0.7)*8:0;} // VỚI: để bắn bi kế nb từ chỗ dừng L, người 1m74 vươn thoải mái ~0.70m (tựa băng gần nhất); xa hơn = với (cap 0.7m để không lấn át pot/kẹt)
+var SQUIRT=0.06; // squirt/deflection: bi cái văng LỆCH khỏi đường cơ, NGƯỢC phía vê (~1.7° ở nửa-tip; đo thực 0.5–2.3°, Dr.Dave). aimToPot tự bù → vẫn pot, nhưng hướng ra bi thực hơn.
+function launchSpin(speed,dir,bx,by){var u=nm(dir),sq=-bx*SQUIRT,cs=Math.cos(sq),sn=Math.sin(sq),ud=[u[0]*cs-u[1]*sn,u[0]*sn+u[1]*cs],k=2.5*by*speed/R;return{p:null,v:ml(ud,speed),w:[k*(-ud[1]),k*(ud[0]),2.5*bx*speed/R]};}
+function slip(b){return[b.v[0]-R*b.w[1], b.v[1]+R*b.w[0]];}
+function clothStep(b,dt){var s=slip(b),sl=ln(s);
+ if(sl>1e-4){var fd=ml(s,-1/sl),a=MU_SLIDE*gg;b.v=ad(b.v,ml(fd,a*dt));var Fx=Mm*a*fd[0],Fy=Mm*a*fd[1];b.w[0]+=(R*Fy)/Iw*dt;b.w[1]+=(-R*Fx)/Iw*dt;}
+ else{var v=ln(b.v);if(v>1e-4){var vd=nm(b.v),a=MU_ROLL*gg,nv=Math.max(0,v-a*dt);b.v=ml(vd,nv);}else b.v=[0,0];b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;}
+ if(Math.abs(b.w[2])>1e-3){var dz=(MU_SPIN*gg/R)*dt*2.5;b.w[2]-=Math.sign(b.w[2])*Math.min(Math.abs(b.w[2]),dz);}
+ b.p=ad(b.p,ml(b.v,dt));}
+function atRest(b){return ln(b.v)<4e-3 && ln(slip(b))<0.03;}
+function ballCollide(cue,obj){var n=nm(sb(obj.p,cue.p)),t=pp(n),vn=dt2(cue.v,n),vt=dt2(cue.v,t);
+ var cueN=(1-E_BALL)/2*vn,objN=(1+E_BALL)/2*vn,wc=cue.w;
+ var surf=[wc[2]*R*n[1],-wc[2]*R*n[0]],csv=[cue.v[0]+surf[0],cue.v[1]+surf[1]],slipT=dt2(csv,t),vs=Math.abs(slipT);
+ // ↑ vận tốc mặt bi cái do english (w[2]) tại điểm chạm — ĐÃ SỬA DẤU 2026-07-05: throw giờ khớp squirt & thực tế (đầu cơ phải → ném bi mục tiêu sang TRÁI). Trước đây ngược.
+ var mub=muBall(vs),Jn=objN,cap=mub*Math.abs(Jn)+1e-9,throwV=Math.sign(slipT)*cap*Math.tanh((vs/2)/cap);
+ obj.v=ad(ml(n,objN),ml(t,throwV));obj.w=[0,0,0];cue.v=ad(ml(n,cueN),ml(t,vt-throwV));}
+function cushionCollide(b,rt){var n;if(rt=='x0')n=[1,0];else if(rt=='x1')n=[-1,0];else if(rt=='y0')n=[0,1];else n=[0,-1];
+ var t=pp(n),vn=dt2(b.v,n),vt=dt2(b.v,t);if(vn>=0)return;var eng=MU_RAIL*(b.w[2]*R);if(vt*eng<-1e-9&&Math.abs(vt)>0.15)b.rev=(b.rev||0)+1;vt+=eng;vn=-E_RAIL*vn;vt=vt*0.95;b.v=ad(ml(n,vn),ml(t,vt)); // eng NGƯỢC chiều bi chạy dọc băng = ÁP PHÊ NGHỊCH (đếm để phạt ở run-out)
+ b.w[2]*=0.7;b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;} // re-establish natural roll after bank (un-reflected topspin would otherwise create a large artificial slip → unnatural curve back toward rail)
+function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,cush=!!opts.cushions,noPath=!!opts.noPath,dt=opts.dt||1e-4,maxT=opts.maxT||12,obs=opts.obs||(opts.tenBall?[opts.tenBall]:null);
+ var cue=launchSpin(speed,dir,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]};
+ var path=noPath?null:[cue.p.slice()],t=0,collided=false,obsHit=obs?obs.map(function(){return false;}):null,rails=0,objV0=0;
+ var mc=!!opts.mc,MCP=mc?[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]]:null,nineMin=Infinity; // mc: theo dõi con 9 có tới lỗ đích không + scratch bi cái
+ while(t<maxT){
+  if(!collided){if(ln(sb(cue.p,obj.p))<=2*R){ballCollide(cue,obj);collided=true;objV0=ln(obj.v);}}
+  if(obs)for(var oi=0;oi<obs.length;oi++){if(!obsHit[oi]&&ln(sb(cue.p,obs[oi]))<=2*R){ballCollide(cue,{p:obs[oi].slice(),v:[0,0],w:[0,0,0]});obsHit[oi]=true;}} // other balls are physical obstacles: cue bounces off them (never drawn passing through)
+  var inside=!f||(cue.p[0]>f[0]+R-1e-6&&cue.p[0]<f[1]-R+1e-6&&cue.p[1]>f[2]+R-1e-6&&cue.p[1]<f[3]-R+1e-6);
+  if(inside&&ln(slip(cue))<0.03&&ln(cue.v)>2e-3){var s=ln(cue.v),d=nm(cue.v),a=MU_ROLL*gg,D=s*s/(2*a),L=Infinity;
+   if(!collided){var rel=sb(cue.p,O),b1=dt2(rel,d),c1=dt2(rel,rel)-4*R*R,disc=b1*b1-c1;if(disc>=0){var tt=-b1-Math.sqrt(disc);if(tt>1e-6)L=tt;}}
+   if(obs)for(var oj=0;oj<obs.length;oj++){if(obsHit[oj])continue;var rl2=sb(cue.p,obs[oj]),b2=dt2(rl2,d),c2=dt2(rl2,rl2)-4*R*R,ds2=b2*b2-c2;if(ds2>=0){var t2=-b2-Math.sqrt(ds2);if(t2>1e-6&&t2<L)L=t2;}} // stop analytic roll at any obstacle so the step-collision fires
+   if(f){var cd=[];if(d[0]>1e-9)cd.push((f[1]-R-cue.p[0])/d[0]);if(d[0]<-1e-9)cd.push((f[0]+R-cue.p[0])/d[0]);if(d[1]>1e-9)cd.push((f[3]-R-cue.p[1])/d[1]);if(d[1]<-1e-9)cd.push((f[2]+R-cue.p[1])/d[1]);for(var i=0;i<cd.length;i++)if(cd[i]>1e-6&&cd[i]<L)L=cd[i];}
+   if(D<=L){var rest=ad(cue.p,ml(d,D));if(!f||(rest[0]>=f[0]+R-1e-3&&rest[0]<=f[1]-R+1e-3&&rest[1]>=f[2]+R-1e-3&&rest[1]<=f[3]-R+1e-3)){cue.p=rest;cue.v=[0,0];cue.w=[0,0,0];break;}}
+   var jmp=Math.max(0,L-1e-4),s2=Math.sqrt(Math.max(0,s*s-2*a*jmp));cue.p=ad(cue.p,ml(d,jmp));cue.v=ml(d,s2);cue.w[0]=-cue.v[1]/R;cue.w[1]=cue.v[0]/R;cue.w[2]*=Math.exp(-jmp*1.5);if(path&&path.length<4000)path.push(cue.p.slice());}
+  clothStep(cue,dt);if(collided){clothStep(obj,dt);if(mc){var dn9=ln(sb(obj.p,opts.pocket));if(dn9<nineMin)nineMin=dn9;}} // theo đường con 9 → khoảng gần lỗ đích nhất
+  if(cush&&f){if(cue.p[0]<f[0]+R){cue.p[0]=f[0]+R;cushionCollide(cue,'x0');rails++;}if(cue.p[0]>f[1]-R){cue.p[0]=f[1]-R;cushionCollide(cue,'x1');rails++;}if(cue.p[1]<f[2]+R){cue.p[1]=f[2]+R;cushionCollide(cue,'y0');rails++;}if(cue.p[1]>f[3]-R){cue.p[1]=f[3]-R;cushionCollide(cue,'y1');rails++;}}
+  if(path&&t>0&&path.length<4000&&ln(sb(cue.p,path[path.length-1]))>0.008)path.push(cue.p.slice());
+  t+=dt;if(atRest(cue))break;}
+ if(path&&(path.length===0||ln(sb(path[path.length-1],cue.p))>1e-4))path.push(cue.p.slice()); // ensure path ends exactly at rest (analytic roll-to-rest jump didn't record its endpoint)
+ if(mc&&collided){var gg2=0,ndt=4e-4;while(gg2++<10000){var dnn=ln(sb(obj.p,opts.pocket));if(dnn<nineMin)nineMin=dnn;if(nineMin<=1.4*R||atRest(obj))break;if(f&&(obj.p[0]<f[0]-3*R||obj.p[0]>f[1]+3*R||obj.p[1]<f[2]-3*R||obj.p[1]>f[3]+3*R))break;clothStep(obj,ndt);}} // lăn NỐT con 9 tới lỗ/nghỉ: cue có thể nghỉ trước (stun) → đừng cắt sớm. dt thô 4e-4 đủ cho pass/fail (con 9 lăn thẳng)
+ var out={cueRest:cue.p.slice(),cuePath:path,rails:rails,rev:cue.rev||0,objV0:objV0};
+ if(mc){var cuePk=Infinity,restPk=Infinity,pI,pK;if(path)for(pI=0;pI<path.length;pI++)for(pK=0;pK<6;pK++){var dP=ln(sb(path[pI],MCP[pK]));if(dP<cuePk)cuePk=dP;}for(pK=0;pK<6;pK++){var dR=ln(sb(cue.p,MCP[pK]));if(dR<restPk)restPk=dR;} // con 9 vào lỗ (đường đi trong ~1.4R tâm lỗ) · scratch (đường/điểm dừng bi cái sát miệng lỗ) · chạm bi khác
+  out.ninePotted=nineMin<=1.4*R;out.cueScratch=(cuePk<0.06||restPk<0.07);out.cueHitObs=obsHit?obsHit.indexOf(true)>=0:false;}
+ return out;}
+// ---- solver ----
+function ghostBall(O,pk){return sb(O,ml(nm(sb(pk,O)),2*R));}
+function signedAng(a,b){var A=nm(a),B=nm(b);return Math.atan2(A[0]*B[1]-A[1]*B[0],A[0]*B[0]+A[1]*B[1]);}
+function collideOnly(A,speed,aim,bx,by,O){var cue=launchSpin(speed,aim,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]},dt=5e-4,dmin=Infinity,side=0,prev=Infinity;
+ for(var t=0;t<3;t+=dt){var rel=sb(obj.p,cue.p),d=ln(rel);if(d<=2*R){ballCollide(cue,obj);return{objDir:nm(obj.v),ok:true};}
+  if(d<dmin){dmin=d;var dir=nm(cue.v);side=Math.sign(dir[0]*rel[1]-dir[1]*rel[0]);}
+  if(d>prev+1e-9)break;prev=d;clothStep(cue,dt);if(ln(cue.v)<4e-3)break;} // path (by=0) is ~straight → once receding from the 9, closest approach is behind us: stop (don't roll the whole table)
+ return{objDir:null,ok:false,side:side,missDist:dmin};}
+function aimToPot(A,O,pocket,bx,speed){var G=ghostBall(O,pocket),des=nm(sb(pocket,O)),base=Math.atan2(sb(G,A)[1],sb(G,A)[0]),eb=null;
+ function cost(th){var c=collideOnly(A,speed,[Math.cos(th),Math.sin(th)],bx,0,O);if(c.ok){var e=signedAng(c.objDir,des);if(!eb||Math.abs(e)<Math.abs(eb.err))eb={aim:[Math.cos(th),Math.sin(th)],err:e};return Math.abs(e);}return 3+20*Math.max(0,(c.missDist||0.2)-2*R);}
+ var lo=base-0.30,hi=base+0.30,gr=0.6180339887,c1=hi-gr*(hi-lo),c2=lo+gr*(hi-lo),f1=cost(c1),f2=cost(c2);
+ for(var it=0;it<13;it++){if(f1<f2){hi=c2;c2=c1;f2=f1;c1=hi-gr*(hi-lo);f1=cost(c1);}else{lo=c1;c1=c2;f1=f2;c2=lo+gr*(hi-lo);f2=cost(c2);}if(hi-lo<1e-3)break;}
+ cost((lo+hi)/2);return eb;}
+// ---- Monte-Carlo robustness (gieo sai số tay người) ----
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};} // PRNG có seed → tái lập (không nhấp nháy khi re-solve lúc kéo)
+function gaussStream(rnd){var have=false,g=0;return function(){if(have){have=false;return g;}var u=rnd();if(u<1e-9)u=1e-9;var v=rnd(),m=Math.sqrt(-2*Math.log(u)),a=2*Math.PI*v;g=m*Math.sin(a);have=true;return m*Math.cos(a);};} // Box-Muller: 2 số ngẫu nhiên đều → 2 Gaussian
+function mcHash(){var h=2166136261>>>0;for(var i=0;i<arguments.length;i++){var q=Math.round(arguments[i]*1000)|0;h^=(q&0xffff);h=Math.imul(h,16777619);h^=((q>>>16)&0xffff);h=Math.imul(h,16777619);}return h>>>0;} // FNV-1a trên toạ độ/đầu-cơ/lực làm tròn → seed
+function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.quick3)opts.quick=true;var felt=opts.felt||null,others=opts.others||(opts.ten?[opts.ten]:null),dt=opts.quick?2e-4:1e-4; // run-out(quick): dt thô 2e-4 cho nhanh (đủ cm cho hướng dẫn); Cố vấn: 1e-4 chính xác. others[] = bi phải né
+ var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]];
+ var bxG=opts.quick3?[-0.2,0,0.2]:opts.quick2?[-0.22,0,0.22]:opts.quick?[-0.3,-0.12,0,0.12,0.3]:[-0.42,-0.28,-0.14,0,0.14,0.28,0.42],byG=opts.quick3?[-0.3,0,0.3]:opts.quick2?[-0.3,-0.1,0,0.1,0.3]:opts.quick?[-0.4,-0.2,-0.08,0,0.08,0.2,0.4]:[-0.45,-0.3,-0.18,-0.08,0,0.08,0.18,0.3,0.45],spG=opts.quick3?[1.5,2.5]:opts.quick2?[1.0,1.7,2.5]:[0.7,1.1,1.6,2.1,2.6,3.2]; // Cố vấn: mịn; run-out(quick): thô; quick2: nước-2; quick3: SIÊU thô 18 điểm (phương án phụ, không refine/probe)
+ function cl(v,a,b){return Math.max(a,Math.min(b,v));}
+ var tgtPk=Infinity;for(var q=0;q<6;q++){var dq=ln(sb(Tt,POCK[q]));if(dq<tgtPk)tgtPk=dq;} // nearest pocket to the user's target
+ var tgtRail=felt?Math.min(Tt[0]-felt[0],felt[1]-Tt[0],Tt[1]-felt[2],felt[3]-Tt[1]):9; // đích cách băng gần nhất (nếu đích cố ý sát băng thì đừng phạt rest sát băng)
+ var potFrag=potFragility(ln(sb(pocket,nine)),ln(sb(nine,cue)),Math.max(0.05,dt2(nm(sb(nine,cue)),nm(sb(pocket,nine))))); // độ khó PHA ĂN con 9 (báo người dùng: dễ/vừa/khó)
+ var POT_K=12/(49*MU_SLIDE*gg)+25/(98*MU_ROLL*gg),dPotReach=ln(sb(nine,pocket))-1.4*R; // CỔNG "BI TỚI LỖ": bi mục tiêu rời va chạm KHÔNG xoáy → trượt-rồi-lăn được POT_K·objV0² m; phải ≥ khoảng tới lỗ mới THỰC SỰ ăn (khớp mc.ninePotted). Ngăn run-out chọn cú lê/rút quá nhẹ "đúng đường nhưng bi chết giữa bàn"
+ function hazardPen(path,rest){var minD=Infinity,minR=Infinity,minT=Infinity,minTR=Infinity,i,k;for(i=0;i<path.length;i++){for(k=0;k<6;k++){var d=ln(sb(path[i],POCK[k]));if(d<minD)minD=d;}if(others){for(var oc=0;oc<others.length;oc++){var dtt=ln(sb(path[i],others[oc]));if(dtt<minT)minT=dtt;}}}for(k=0;k<6;k++){var d2=ln(sb(rest,POCK[k]));if(d2<minR)minR=d2;}if(others){for(k=0;k<others.length;k++){var dr=ln(sb(rest,others[k]));if(dr<minTR)minTR=dr;}}
+  var pen=0;if(minD<0.06)pen+=2.5;if(minR<0.07)pen+=2.2; // real scratch (path over pocket mouth / cue resting in the jaw) — ALWAYS forbidden
+  if(others&&minTR<0.11)pen+=(0.11-minTR)*2.0; // bi cái dừng SÁT bi khác = cò tay / khó bắc cầu → phạt (né vị trí bí)
+  if(tgtPk>0.20){if(minD>=0.06&&minD<0.15)pen+=(0.15-minD)*3.5;if(minR>=0.07&&minR<0.17)pen+=(0.17-minR)*2.5;} // soft "keep off the pocket" only when the user did NOT deliberately park near a pocket
+  if(felt&&tgtRail>0.16){var rr=Math.min(rest[0]-felt[0],felt[1]-rest[0],rest[1]-felt[2],felt[3]-rest[1]);if(rr<0.10)pen+=(0.10-rr)*2.2;} // #4: bi cái dừng SÁT BĂNG = khó bắc cầu cú sau (chỉ phạt khi đích không cố ý sát băng)
+  if(others){if(minT<2.2*R)pen+=80;if(minT<3*R)pen+=(3*R-minT)/R*8;}return pen;} // TRAFFIC RẤT NẶNG: đường bi cái CHẠM bi khác (nảy, <2.2R) → +80 = CẤM (chỉ chọn nếu KHÔNG còn cách nào, vd gãi thế díu); đi trong ~1R bề mặt bi khác (<3R) → phạt nặng tăng dần
+ var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
+ function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,rev:r.rev,objReach:(POT_K*r.objV0*r.objV0>=dPotReach),scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
+ function score(e){ if(!e) return Infinity; if(opts.quick&&e.objReach===false) return Infinity; // run-out: CẤM cú bi mục tiêu không tới lỗ (Cố vấn đã có MC/potRate lo)
+   return ln(sb(e.cueRest,Tt)) // ĐÍCH là chính; các phạt dưới đây NHẸ (chỉ nghiêng chọn, không lấn độ chính xác)
+   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045+Math.abs(e.bx)*0.07+0.6*Math.max(0,e.rails-1):0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): phạt ÁP PHÊ NGHỊCH (rev) + KHÔNG SIDE (|bx|) + PHẠT NẶNG ĐIỀU BI ≥2 BĂNG (đường dội nhiều băng để "tới" leave là phi thực tế/dễ scratch — ưu tiên leave tới được sạch 0-1 băng, hợp "điều bi tối giản"); draw/follow tự do; CỐ VẤN (non-quick): giữ nguyên (đã có MC/potRate lo). Chặn miscue (>0.46R)
+ function stabCost(e){return (e.sensitivity||0)+0.10*Math.abs(e.bx)+0.04*Math.max(0,-e.by-0.32)+0.05*e.rails+0.10*Math.max(0,1.5-e.sp)+0.08*Math.max(0,e.sp-2.4)+0.25*Math.max(0,Math.hypot(e.bx,e.by)-0.46);} // "chi phí bất ổn": nhạy + côn side + rút RẤT sâu + băng (nhẹ) + lực + gần-miscue
+ function techKey(e){return (e.by>0.14?'F':e.by<-0.14?'D':'S')+(e.bx>0.12?'R':e.bx<-0.12?'L':'C');} // Follow/Stun/Draw × Right/Center/Left
+ function missObj(e){return e?ln(sb(e.cueRest,Tt))+e.scr:Infinity;} // độ chính xác THUẦN + né lỗ/bi (KHÔNG phạt english/lực) — để giữ cú chính xác dù cần english cao
+ function refineFrom(seed,obj){obj=obj||score;var cur=seed,curD=obj(seed),sBx=0.12,sBy=0.15,sSp=0.5;
+  for(var it=0;it<8;it++){var imp=false,tr=[[sBx,0,0],[-sBx,0,0],[0,sBy,0],[0,-sBy,0],[0,0,sSp],[0,0,-sSp]];
+   for(var m=0;m<tr.length;m++){var bx=cl(cur.bx+tr[m][0],-0.48,0.48),by=cl(cur.by+tr[m][1],-0.5,0.5),sp=cl(cur.sp+tr[m][2],0.5,3.3),e=evalC(bx,by,sp),d=obj(e);if(e&&d<curD-1e-4){curD=d;cur=e;imp=true;}}
+   if(!imp){sBx*=0.5;sBy*=0.5;sSp*=0.5;if(sBx<0.02)break;}}
+  return cur;}
+ // grid → collect every candidate that pots the 9
+ var pool=[];
+ for(var i=0;i<bxG.length;i++)for(var j=0;j<spG.length;j++){var a=getAim(bxG[i],spG[j]);if(!a||Math.abs(a.err)>0.03)continue;for(var k=0;k<byG.length;k++){var e=evalC(bxG[i],byG[k],spG[j]);if(e)pool.push(e);}}
+ if(!pool.length)return{potFail:true};
+ if(opts.quick&&!pool.some(function(e){return e.objReach;}))return{potFail:true}; // KHÔNG cú nào đủ lực đưa bi tới lỗ → báo potFail (run-out sẽ thử lỗ khác / báo kẹt) thay vì gợi cú lê chết bi
+ pool.sort(function(a,b){return score(a)-score(b);});
+ // refine the best representative of up to 4 distinct techniques → diverse options
+ var maxSeeds=opts.quick?1:4; var seeds=[],seen={};for(var p=0;p<pool.length&&seeds.length<maxSeeds;p++){var kk=techKey(pool[p]);if(seen[kk])continue;seen[kk]=1;seeds.push(pool[p]);} // quick=1 seed (run-out chỉ cần cú tốt nhất, khỏi phí đa phương án)
+ var missSeeds=[]; if(!opts.quick){var byMiss=pool.slice().sort(function(a,b){return ln(sb(a.cueRest,Tt))-ln(sb(b.cueRest,Tt));});for(var m2=0;m2<3&&m2<byMiss.length;m2++)missSeeds.push(byMiss[m2]);} // cú SÁT ĐÍCH nhất (kể cả english cao) → refine theo độ CHÍNH XÁC thuần, khỏi bị phạt english kéo trôi
+ var refined=opts.quick3?seeds.slice():seeds.map(function(s){return refineFrom(s,score);}).concat(missSeeds.map(function(s){return refineFrom(s,missObj);})); // quick3: KHÔNG refine (siêu nhanh)
+ var nextBall=(!opts.quick&&others&&others.length)?others[0]:null; // #5: "bi kế" để chấm GÓC LEAVE (Cố vấn: con 10)
+ function leaveAng(rest){ if(!nextBall) return 0.4; var rest2=others.filter(function(o){return o!==nextBall;}),pk=pickPocket(rest,nextBall,rest2); if(pk<0)return 1.4; var a=nm(sb(nextBall,rest)),b=nm(sb(POCK[pk],nextBall)); return Math.acos(Math.max(-1,Math.min(1,dt2(a,b)))); } // góc cắt trên bi kế nếu để cue ở rest
+ function leavePen(a){ return Math.max(0,0.16-a)*4 + Math.max(0,a-0.95)*3; } // quá thẳng(<9°, chỉ stun được) hoặc quá mỏng(>54°) = khó điều cú kế
+ var MC_N=36,MC_DT=1e-4; // N mẫu "đánh thử" mô phỏng sai số tay; dt mịn (KHÔNG 2e-4 kẻo cú rút "nổ tung" giả)
+ function robustness(e){ // gieo sai số tay THẬT quanh cú e → % con 9 vào + độ tản bi cái + scratch. Seed cố định theo thế → tái lập.
+  var seed=mcHash(cue[0],cue[1],nine[0],nine[1],pocket[0],pocket[1],Tt[0],Tt[1],Math.round(e.bx*100)/100,Math.round(e.by*100)/100,Math.round(e.sp*10)/10);
+  var rnd=mulberry32(seed),G=gaussStream(rnd),pots=0,risk=0,cloud=[],sx=0,sy=0;
+  for(var s=0;s<MC_N;s++){
+   var da=G()*0.007,sp=Math.max(0.4,e.sp*(1+G()*0.11)); // ngắm lệch ~0.4° · lực ±11%
+   var bx=cl(e.bx+G()*0.022,-0.5,0.5),by=cl(e.by+G()*0.022,-0.5,0.5),h=Math.hypot(bx,by);if(h>0.5){bx*=0.5/h;by*=0.5/h;} // english lệch, kẹp né miscue
+   var c=Math.cos(da),n2=Math.sin(da),aim=[e.aim[0]*c-e.aim[1]*n2,e.aim[0]*n2+e.aim[1]*c];
+   var r=simulate(cue,sp,aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:MC_DT,obs:others,mc:true,pocket:pocket});
+   if(r.ninePotted)pots++;if(r.cueScratch||r.cueHitObs)risk++;cloud.push(r.cueRest);sx+=r.cueRest[0];sy+=r.cueRest[1];}
+  var mx=sx/MC_N,my=sy/MC_N,ss=0;for(var q2=0;q2<cloud.length;q2++){var ex=cloud[q2][0]-mx,ey=cloud[q2][1]-my;ss+=ex*ex+ey*ey;}
+  return{potRate:pots/MC_N,posSpread:Math.sqrt(ss/MC_N),riskHit:risk/MC_N,cloud:cloud};} // posSpread = RMS tản vị trí bi cái (m)
+ function finalize(e){
+  if(opts.quick){var probes=[];if(!opts.quick3)for(var a2 of[-0.06,0.06])for(var s2 of[-0.25,0.25]){var pe=evalC(cl(e.bx+a2,-0.48,0.48),e.by,cl(e.sp+s2,0.5,3.3));if(pe)probes.push(ln(sb(pe.cueRest,e.cueRest)));} // run-out: giữ probe THÔ (rẻ) — MC quá tốn cho cả bàn
+   e.sensitivity=probes.length?probes.reduce(function(a,b){return a+b;},0)/probes.length:0;e.posSpread=e.sensitivity;e.potRate=null;e.riskHit=0;e.cloud=null;}
+  else{var rb=robustness(e);e.potRate=rb.potRate;e.posSpread=rb.posSpread;e.riskHit=rb.riskHit;e.cloud=rb.cloud;e.sensitivity=rb.posSpread;} // Cố vấn: MC thật; sensitivity=posSpread (vùng ra bi, m)
+  e.leaveAng=leaveAng(e.cueRest);
+  e.missBy=ln(sb(e.cueRest,Tt));e.onTarget=e.missBy<2*R;e.reachable=e.missBy<5*R;e.potted=Math.abs(e.potErr)<0.03;e.speed=e.sp;
+  var v=e.by>0.14?'lê':e.by<-0.14?'rút':'stun',s=e.bx>0.12?' phải':e.bx<-0.12?' trái':'',pw=e.sp<1.3?'nhẹ':e.sp<2.3?'vừa':'chắc';e.label=v+s+' · '+pw;return e;}
+ refined.forEach(finalize);
+ // XẾP HẠNG: miss là CHÍNH (gộp thùng 2.5cm), trong cùng thùng thì ưu tiên ỔN ĐỊNH (stabCost thấp) — "tới đích, rồi chọn cú chắc tay nhất"
+ function rankKey(e){var potPen=1-(e.potRate==null?1:e.potRate); // MISS là chính (gộp thùng 2.5cm); rồi ĂN CHẮC con 9 (potPen NẶNG, có thể nhảy thùng) + vùng ra bi nhỏ (posSpread) + ít scratch
+  return Math.round((e.missBy+e.scr*0.02)/0.025)*0.025 + 0.30*potPen + 0.60*(e.posSpread||0) + 0.06*(e.riskHit||0) + 0.02*stabCost(e) + 0.015*leavePen(e.leaveAng);} // + #5: leave GÓC ĐẸP bi kế
+ refined.sort(function(a,b){return rankKey(a)-rankKey(b);});
+ // dedup options that share technique AND land in the same spot; keep reachable alternatives (primary always kept)
+ var opts=[];for(var r2=0;r2<refined.length;r2++){var o=refined[r2],dup=false;for(var z=0;z<opts.length;z++)if(techKey(opts[z])===techKey(o)){dup=true;break;}if(!dup)opts.push(o);} // one option per distinct technique (best-scoring of each)
+ var REACH=5*R;var kept=opts.filter(function(o,idx){return idx===0||o.missBy<REACH;}).slice(0,3); // primary always kept; alternatives only if they genuinely reach near the target
+ var b=kept[0];
+ return{reachable:b.reachable,onTarget:b.onTarget,potted:b.potted,bx:b.bx,by:b.by,speed:b.speed,aim:b.aim,cueRest:b.cueRest,missBy:b.missBy,sensitivity:b.sensitivity,posSpread:b.posSpread,potRate:b.potRate,riskHit:b.riskHit,cloud:b.cloud,rails:b.rails,rev:b.rev||0,path:b.path,scr:b.scr,potFrag:potFrag,
+  options:kept.map(function(o){return{bx:o.bx,by:o.by,speed:o.speed,aim:o.aim,cueRest:o.cueRest,missBy:o.missBy,onTarget:o.onTarget,sensitivity:o.sensitivity,posSpread:o.posSpread,potRate:o.potRate,riskHit:o.riskHit,cloud:o.cloud,rails:o.rails,path:o.path,scr:o.scr,label:o.label};})};}
+// ---- RUN-OUT: chuỗi dọn bàn (chọn lỗ từng viên · né MỌI bi còn lại · nối cue: điểm dừng cú i = cue cú i+1) ----
+function distSeg(p,a,b){var ab=sb(b,a),d2=dt2(ab,ab)||1e-9,t=Math.max(0,Math.min(1,dt2(sb(p,a),ab)/d2));return ln(sb(p,ad(a,ml(ab,t))));}
+function potFragility(dOP,dCO,cutCos){return dOP*(0.45+0.4*dCO)/Math.max(0.28,cutCos);} // DUNG SAI PHA POT: xa lỗ × xa cue / độ dày cắt (cutCos~1=thẳng dễ, ~0=mỏng khó). Nhỏ = pot dễ/tha lỗi.
+function pickPocket(cue,ball,others){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],best=-1,bs=Infinity;
+ if(cue){for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return -1;} // #6: bi khác trong ~1R đường CUE→BI → không ngắm sạch được (kẹt)
+ var dCO=cue?ln(sb(ball,cue)):0.6;
+ for(var k=0;k<6;k++){var toP=nm(sb(POCK[k],ball)),cc=1;
+  if(cue){cc=dt2(nm(sb(ball,cue)),toP);if(cc<0.22)continue;} // cut > ~77° → bỏ lỗ này
+  var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,POCK[k])<2.9*R){blk=true;break;} // bi khác trong ~1R đường bi→lỗ (pot-line) → bỏ lỗ này
+  if(blk)continue;var frag=potFragility(ln(sb(POCK[k],ball)),dCO,cc);
+  if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));} // #2: LỖ GIỮA khó hơn lỗ góc (miệng hẹp), và RẤT khó nếu bi vào chếch (app=|thành phần vuông rail|; vào thẳng app~1, chếch app nhỏ → phạt mạnh)
+  if(frag<bs){bs=frag;best=k;}} // chọn lỗ có PHA POT dễ nhất → ưu tiên lỗ GÓC
+ return best;} // -1 = không lỗ nào ăn được
+var RN_POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]];
+function rnMakeable(cue,ball,others){var out=[],dCO=cue?ln(sb(ball,cue)):0.6; // các lỗ ĂN ĐƯỢC (ngắm sạch + đường bi→lỗ sạch), xếp theo độ dễ pot
+ if(cue)for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return out; // cue→bi bị chắn → không lỗ nào
+ for(var k=0;k<6;k++){var toP=nm(sb(RN_POCK[k],ball)),cc=cue?dt2(nm(sb(ball,cue)),toP):1;if(cc<0.22)continue;
+  var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,RN_POCK[k])<2.9*R){blk=true;break;}if(blk)continue;
+  var frag=potFragility(ln(sb(RN_POCK[k],ball)),dCO,cc);if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));}
+  out.push({pk:k,frag:frag});}
+ out.sort(function(a,b){return a.frag-b.frag;});return out;}
+function rnLeaves(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?RN_POCK[npk]:[1.27,0.635],C=[1.27,0.635]; // TOP-3 chỗ để bi AN TOÀN & KHÁC NHAU (giữa bàn, né băng/lỗ, cách vừa) → 2-3 PHƯƠNG ÁN
+ var back=nm(sb(nb,npos)),perp=[-back[1],back[0]];
+ var mk=function(a,sd,D){var cs=Math.cos(a),sn=Math.sin(a),d=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];return[Math.max(felt[0]+2*R,Math.min(felt[1]-2*R,nb[0]+d[0]*D)),Math.max(felt[2]+2*R,Math.min(felt[3]-2*R,nb[1]+d[1]*D))];};
+ var clr=function(t){for(var q=0;q<after.length;q++){if(ln(sb(after[q],t))<3*R)return false;if(distSeg(after[q],t,nb)<2.9*R)return false;}return true;};
+ var last=after.length===0,angs=last?[0.04,0.09,0.15]:[0.22,0.35,0.48],dists=[0.3,0.42,0.55],cand=[],any=[]; // BI CUỐI CÙNG: để THẲNG TẮP (~2-9°, không cần góc đẹp vì hết bi kế) → pot chắc nhất; bi thường: góc đẹp 13-27° để điều bi tiếp
+ for(var ai=0;ai<3;ai++)for(var sd=-1;sd<=1;sd+=2)for(var di=0;di<3;di++){var t=mk(angs[ai],sd,dists[di]);if(!clr(t))continue;
+  var sc=ln(sb(t,C))*1.5,k,dp; // ƯU TIÊN GIỮA BÀN
+  var rail=Math.min(t[0]-felt[0],felt[1]-t[0],t[1]-felt[2],felt[3]-t[1]);if(rail<0.18)sc+=(0.18-rail)*12; // sát băng → cò/với
+  var mp=Infinity;for(k=0;k<6;k++){dp=ln(sb(t,RN_POCK[k]));if(dp<mp)mp=dp;}if(mp<0.18)sc+=(0.18-mp)*16; // sát lỗ → đui
+  var dnb=ln(sb(t,nb));if(dnb>0.62)sc+=(dnb-0.62)*4;if(dnb<0.26)sc+=(0.26-dnb)*5; // quá xa/gần bi kế
+  sc+=reachPen(t,nb,felt); // VỚI: né chỗ để bi mà 1m74 không vươn tới bắn bi kế thoải mái (xa băng-đứng theo hướng ngắm)
+  var e={t:t,sc:sc};any.push(e);if(pickPocket(t,nb,after)>=0)cand.push(e);} // CHỈ giữ chỗ mà BI KẾ ĂN ĐƯỢC (KHÔNG điều ra kẹt)
+ var pool=cand.length?cand:any;pool.sort(function(a,b){return a.sc-b.sc;}); // không chỗ nào thoáng bi kế → best-effort (thế bí thật)
+ var out=[];for(var ci=0;ci<pool.length&&out.length<3;ci++){var tt=pool[ci].t,dup=false;for(var z=0;z<out.length;z++)if(ln(sb(out[z],tt))<0.16){dup=true;break;}if(!dup)out.push(tt);} // top-3 KHÁC NHAU (cách ≥16cm)
+ return out.length?out:[mk(0.26,1,0.42)];}
+function rnLeave(nb,after,felt){return rnLeaves(nb,after,felt)[0];}
+function circInt(c1,r1,c2,r2){var dx=c2[0]-c1[0],dy=c2[1]-c1[1],D=Math.hypot(dx,dy); // giao 2 đường tròn → 2 điểm (hoặc null)
+ if(D>r1+r2||D<Math.abs(r1-r2)||D<1e-9)return null;var a=(r1*r1-r2*r2+D*D)/(2*D),h2=r1*r1-a*a;if(h2<0)return null;var h=Math.sqrt(h2);
+ var xm=c1[0]+a*dx/D,ym=c1[1]+a*dy/D;return[[xm+h*dy/D,ym-h*dx/D],[xm-h*dy/D,ym+h*dx/D]];}
+function rnCarom(cue,ball,others,felt,nb,after){ // KẸT → GÃI (carom): bi mục tiêu gãi vào bi B rồi lăn vào lỗ = POT CHÍNH bi kẹt (hợp lệ 9-bi); tối ưu đầu cơ/lực để bi cái ra chỗ đẹp cho cú kế
+ for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return null; // cue→bi bị chắn
+ var cands=[];
+ for(var bi=0;bi<others.length;bi++){var B=others[bi],rest=others.filter(function(_,ii){return ii!==bi;});
+  for(var k=0;k<6;k++){var P=RN_POCK[k],d=ln(sb(P,B));if(d<4*R)continue; // B quá sát lỗ
+   var Xs=circInt(B,2*R,[(B[0]+P[0])/2,(B[1]+P[1])/2],d/2);if(!Xs)continue; // X = tâm bi mục tiêu khi chạm B, sao cho gãi B → lăn vào P (góc B-X-P=90°, quy tắc tiếp tuyến)
+   for(var xi=0;xi<2;xi++){var X=Xs[xi];
+    if(X[0]<felt[0]+R||X[0]>felt[1]-R||X[1]<felt[2]+R||X[1]>felt[3]-R)continue; // X ngoài mặt bàn
+    var keep=dt2(nm(sb(X,ball)),nm(sb(P,X)));if(keep<0.5)continue; // gãi quá dày → bi mục tiêu mất lực, không tới lỗ
+    var okB=true;for(var o=0;o<rest.length;o++){if(distSeg(rest[o],ball,X)<2.6*R){okB=false;break;}if(distSeg(rest[o],X,P)<2.6*R){okB=false;break;}}if(!okB)continue; // bi→X hoặc X→lỗ bị bi thứ 3 chắn
+    cands.push({B:B,Bidx:bi,pk:k,X:X,frag:(1-keep)*2.2+ln(sb(X,ball))+d*0.7});}}}
+ if(!cands.length)return null;cands.sort(function(a,b){return a.frag-b.frag;});var C=cands[0]; // thế gãi dễ nhất
+ var Lt=nb?rnLeave(nb,after,felt):[1.27,0.635],best=null,bestSc=Infinity; // TỐI ƯU: quét đầu cơ/lực → bi cái văng ra GẦN chỗ để bi cho bi kế, không cò/scratch
+ var bxs=[-0.2,0,0.2],bys=[-0.32,0,0.32],sps=[2.2,2.8,3.4];
+ for(var xa=0;xa<bxs.length;xa++)for(var ya=0;ya<bys.length;ya++)for(var sa=0;sa<sps.length;sa++){
+  var a=aimToPot(cue,ball,C.X,bxs[xa],sps[sa]);if(!a||Math.abs(a.err)>0.03)continue; // ngắm chuẩn để bi mục tiêu tới đúng X
+  var r=simulate(cue,sps[sa],a.aim,bxs[xa],bys[ya],ball,{cushions:true,felt:felt,dt:1e-4,obs:others});
+  var sc=ln(sb(r.cueRest,Lt)),mR=Infinity,mP=Infinity,o,pp;
+  for(o=0;o<others.length;o++){var dd=ln(sb(r.cueRest,others[o]));if(dd<mR)mR=dd;}if(mR<3*R)sc+=(3*R-mR)*8; // cue dừng sát bi khác → phạt
+  for(pp=0;pp<6;pp++){var dp=ln(sb(r.cueRest,RN_POCK[pp]));if(dp<mP)mP=dp;}if(mP<0.06)sc+=3; // né scratch (cue dừng sát lỗ)
+  if(sc<bestSc){bestSc=sc;best={bx:bxs[xa],by:bys[ya],sp:sps[sa],r:r};}}
+ if(!best)return null;
+ return {B:C.B,Bidx:C.Bidx,pk:C.pk,pocket:RN_POCK[C.pk],X:C.X,cueRest:best.r.cueRest,path:best.r.cuePath,bx:best.bx,by:best.by,speed:best.sp};}
+function rnCombo(cue,ball,others,felt){ // COMBO DỌN CHẮN: bi mục tiêu KẸT vì bi B chắn → đẩy B vào lỗ (hợp lệ: chạm bi mục tiêu TRƯỚC), dọn B để bi mục tiêu thông; tối ưu cue để bắn bi mục tiêu (đã dời) tiếp
+ for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return null; // cue→bi bị chắn
+ var best=null,bf=Infinity;
+ for(var bi=0;bi<others.length;bi++){var B=others[bi],rest=others.filter(function(_,ii){return ii!==bi;});
+  var frees=false; // B có phải bi CHẮN dọn-được: tồn tại lỗ mà bi mục tiêu→lỗ CHỈ bị B chắn (dọn B → thông)
+  for(var k0=0;k0<6;k0++){if(dt2(nm(sb(ball,cue)),nm(sb(RN_POCK[k0],ball)))<0.25)continue;
+   if(distSeg(B,ball,RN_POCK[k0])>=2.2*R)continue;var ob=false;for(var o1=0;o1<rest.length;o1++)if(distSeg(rest[o1],ball,RN_POCK[k0])<2.2*R){ob=true;break;}if(!ob){frees=true;break;}}
+  if(!frees)continue; // dọn B không mở được lỗ nào cho bi mục tiêu → combo vô ích, bỏ
+  for(var k=0;k<6;k++){var toP=nm(sb(RN_POCK[k],B)),blkP=false;
+   for(var o2=0;o2<rest.length;o2++)if(distSeg(rest[o2],B,RN_POCK[k])<2.6*R){blkP=true;break;}if(blkP)continue; // B→lỗ bị chắn
+   var Bghost=sb(B,ml(toP,2*R)),cutB=dt2(nm(sb(Bghost,ball)),toP);if(cutB<0.35)continue; // bi mục tiêu cắt B quá mỏng
+   var blkI=false;for(var o3=0;o3<rest.length;o3++)if(distSeg(rest[o3],ball,Bghost)<2.6*R){blkI=true;break;}if(blkI)continue; // bi→B bị bi thứ 3 chắn
+   var frag=ln(sb(RN_POCK[k],B))+ln(sb(B,ball))*0.5+(1-cutB)*0.8;if(frag<bf){bf=frag;best={B:B,pk:k,Bghost:Bghost};}}}
+ if(!best)return null;
+ var restB=others.filter(function(b){return b!==best.B;}),Lt=rnLeave(best.Bghost,restB,felt),bc=null,bsc=Infinity; // sau combo bi mục tiêu ở ~Bghost → tối ưu cue để bắn nó tiếp
+ var bxs=[-0.2,0,0.2],bys=[-0.32,0,0.32],sps=[2.0,2.6,3.2];
+ for(var xa=0;xa<3;xa++)for(var ya=0;ya<3;ya++)for(var sa=0;sa<3;sa++){
+  var a=aimToPot(cue,ball,best.Bghost,bxs[xa],sps[sa]);if(!a||Math.abs(a.err)>0.04)continue;
+  var r=simulate(cue,sps[sa],a.aim,bxs[xa],bys[ya],ball,{cushions:true,felt:felt,dt:1e-4,obs:others});
+  var sc=ln(sb(r.cueRest,Lt)),mR=Infinity,mP=Infinity,o4,pp;
+  for(o4=0;o4<others.length;o4++){var dd=ln(sb(r.cueRest,others[o4]));if(dd<mR)mR=dd;}if(mR<3*R)sc+=(3*R-mR)*8;
+  for(pp=0;pp<6;pp++){var dp=ln(sb(r.cueRest,RN_POCK[pp]));if(dp<mP)mP=dp;}if(mP<0.06)sc+=3;
+  if(sc<bsc){bsc=sc;bc={bx:bxs[xa],by:bys[ya],sp:sps[sa],r:r};}}
+ if(!bc)return null;
+ return {B:best.B,pk:best.pk,pocket:RN_POCK[best.pk],Bghost:best.Bghost,cueRest:bc.r.cueRest,path:bc.r.cuePath,bx:bc.bx,by:bc.by,speed:bc.sp};}
+function rnAltShot(cue,ball,pocket,leave,others,felt){var s=solveFast(cue,ball,pocket,leave,{felt:felt,others:others,quick2:true});if(s.potFail)return{potFail:true};return{bx:s.bx,by:s.by,speed:s.speed,path:s.path,landing:s.cueRest,rails:s.rails};} // BẤM-MỚI-TÍNH: giải 1 cú tới VÙNG ĐỂ BI phụ (lưới quick2 cho NHANH ~0.5s; cú phụ chỉ để so sánh)
+function placeBIH(seq,felt){ // BI CẦM TAY: chọn chỗ đặt bi cái TỐI ƯU cho hình bi mới — cú 1 DÀY (không mỏng/đui) + để bi cho bi 2 đẹp (không mỏng/đui). Chạy trong worker.
+ var nb=seq[0]; if(!nb)return[1.27,0.635];
+ var after=[],i; for(i=1;i<seq.length;i++)after.push(seq[i]); var nb2=after[0]||null,after2=after.slice(1);
+ var angs=[0.30,0.44,0.55],dists=[0.38,0.52,0.66],best=null,bestSc=1e9; // góc cắt ~17-32° (góc tự nhiên/nửa bi), khoảng cách vừa
+ for(var pk=0;pk<6;pk++){var pocket=RN_POCK[pk]; if(ln(sb(nb,pocket))<0.25)continue; // bi 1 quá sát lỗ → bỏ lỗ đó
+  var back=nm(sb(nb,pocket)),perp=[-back[1],back[0]];
+  for(var ai=0;ai<3;ai++)for(var sd=-1;sd<=1;sd+=2)for(var di=0;di<3;di++){
+   var a=angs[ai],cs=Math.cos(a),sn=Math.sin(a),D=dists[di],dir=[back[0]*cs+perp[0]*sd*sn,back[1]*cs+perp[1]*sd*sn];
+   var C=[nb[0]+dir[0]*D,nb[1]+dir[1]*D];
+   if(C[0]<felt[0]+2*R||C[0]>felt[1]-2*R||C[1]<felt[2]+2*R||C[1]>felt[3]-2*R)continue; // trong bàn
+   var bad=false,q; for(q=0;q<after.length;q++){if(ln(sb(after[q],C))<2.2*R||distSeg(after[q],C,nb)<2.2*R){bad=true;break;}} if(bad)continue; // C không đè bi & đường C→bi1 SẠCH
+   var pkc=pickPocket(C,nb,after); if(pkc<0)continue; // bi 1 phải ĂN ĐƯỢC từ C (không đui)
+   var cut=Math.max(0.05,dt2(nm(sb(nb,C)),nm(sb(RN_POCK[pkc],nb))));
+   var tgt=nb2?rnLeave(nb2,after2,felt):nb;
+   var s1=solveFast(C,nb,RN_POCK[pkc],tgt,{felt:felt,others:after,quick3:true}); if(s1.potFail)continue;
+   var L1=s1.cueRest,look=0;
+   if(nb2){var pk2=pickPocket(L1,nb2,after2);
+    if(pk2<0)look=20; // CẤM để đui bi 2
+    else{var cut2=Math.max(0.05,dt2(nm(sb(nb2,L1)),nm(sb(RN_POCK[pk2],nb2))));look=Math.max(0,0.62-cut2)*6+reachPen(L1,nb2,felt)+(cut2<0.5?7:0);}} // bi 2 KHÔNG mỏng + với được
+   var thin1=cut<0.60?(0.60-cut)*14:0; // CẤM cú 1 mỏng (phạt nặng → luôn ưu tiên góc dày nếu có)
+   var sc=look+thin1+s1.missBy*3+s1.scr+reachPen(C,nb,felt)+(s1.rev||0)*0.4;
+   if(sc<bestSc){bestSc=sc;best=C;}}}
+ return best||[1.27,0.635];}
+function runoutRoute(layout,felt){var seq=layout.balls.map(function(b){return b.slice();}),N=seq.length,potted=[],z; for(z=0;z<N;z++)potted.push(false); var cue=(layout.bih?placeBIH(seq,felt):layout.cue.slice()),steps=[],guard=0;
+ while(guard++<N*2){
+  var i=-1,q;for(q=0;q<N;q++){if(!potted[q]){i=q;break;}}if(i<0)break; // bi thấp nhất CHƯA ăn = mục tiêu (9-bi: chạm nó trước)
+  var ball=seq[i],others=[];for(q=0;q<N;q++){if(!potted[q]&&q!==i)others.push(seq[q]);} var last=(others.length===0);
+  var remain=[];for(q=0;q<N;q++){if(!potted[q])remain.push({p:seq[q].slice(),n:q+1});} var ballPos=ball.slice(); // TRẠNG THÁI BÀN cho step (vẽ đúng dù combo ăn ngoài thứ tự / dời bi mục tiêu)
+  var nbi=-1;for(q=i+1;q<N;q++){if(!potted[q]){nbi=q;break;}} var nb=nbi>=0?seq[nbi]:null;
+  var nb2i=-1;if(nbi>=0)for(q=nbi+1;q<N;q++){if(!potted[q]){nb2i=q;break;}} var nb2=nb2i>=0?seq[nb2i]:null;
+  var after=[],after2=[];for(q=0;q<N;q++){if(potted[q]||q===i)continue;if(q!==nbi)after.push(seq[q]);if(q!==nbi&&q!==nb2i)after2.push(seq[q]);}
+  if(last){var pk=pickPocket(cue,ball,others);
+   if(pk<0){var cm0=rnCarom(cue,ball,others,felt,null,[]);if(cm0){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'carom',comboB:cm0.B,comboBn:seq.indexOf(cm0.B)+1,caromX:cm0.X,pk:cm0.pk,pocket:cm0.pocket,path:cm0.path,bx:cm0.bx,by:cm0.by,speed:cm0.speed,landing:cm0.cueRest,last:true});potted[i]=true;break;}steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,potFail:true,reason:'kẹt'});break;}
+   var sL=solveFast(cue,ball,RN_POCK[pk],ball,{felt:felt,others:others,quick:true});
+   steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[pk],pk:pk,path:sL.potFail?null:sL.path,bx:sL.bx,by:sL.by,speed:sL.speed,rails:sL.rails,landing:sL.potFail?null:sL.cueRest,last:true,potFail:sL.potFail});potted[i]=true;break;}
+  var pockets=rnMakeable(cue,ball,others),done=false;
+  if(pockets.length){var leaves=rnLeaves(nb,after,felt);
+   var evalP=function(P,frag,tgt){var s1=solveFast(cue,ball,RN_POCK[P],tgt,{felt:felt,others:others,quick:true});if(s1.potFail)return null;
+    var L1=s1.cueRest,look=0,pk1=pickPocket(L1,nb,after);
+    if(pk1<0)look=14; // 1 NƯỚC: bi kế KẸT từ chỗ dừng → PHẠT NẶNG (đừng bao giờ điều ra kẹt nếu còn cách khác)
+    else{var cutNb=Math.max(0.05,dt2(nm(sb(nb,L1)),nm(sb(RN_POCK[pk1],nb))));var frag1=potFragility(ln(sb(RN_POCK[pk1],nb)),ln(sb(nb,L1)),cutNb);var thin=Math.max(0,0.62-cutNb)*5.5;var pos2=0; // TRÁNH ĐỂ LẠI CÚ CẮT MỎNG (rất dễ trượt): phạt cắt bi kế >~52° (cutNb<0.62) mạnh
+     if(nb2){var s2=solveFast(L1,nb,RN_POCK[pk1],rnLeave(nb2,after2,felt),{felt:felt,others:after,quick2:true}); // ĐÀO SÂU 2-BI: GIẢI cú bi kế (từ chỗ dừng) → chấm CHẤT LƯỢNG vị trí bi kế-kế
+      if(s2.potFail)pos2=4; else{var L2=s2.cueRest,pk2=pickPocket(L2,nb2,after2);
+       if(pk2<0)pos2=4; else{var cut2=Math.max(0.05,dt2(nm(sb(nb2,L2)),nm(sb(RN_POCK[pk2],nb2))));pos2=potFragility(ln(sb(RN_POCK[pk2],nb2)),ln(sb(nb2,L2)),cut2)*0.3+Math.max(0,0.58-cut2)*2.8+ln(sb(L2,[1.27,0.635]))*0.5+s2.missBy*2.5;}}} // vị trí bi kế-kế: dễ pot + góc đẹp (KHÔNG mỏng, phạt >~54°) + giữa bàn + tới được thật
+     look=frag1*0.4+thin+pos2;} // 2 NƯỚC SÂU (giải thật cú kế)
+    var ctr=ln(sb(L1,[1.27,0.635]))*0.7; // ƯU TIÊN landing GIỮA BÀN (dễ bắn, không với)
+    var reach=reachPen(L1,nb,felt); // VỚI: chỗ dừng L1 phải VƯƠN TỚI được để bắn bi kế (1m74+gậy), tránh điều ra xa băng-đứng theo hướng ngắm
+    var cutThis=dt2(nm(sb(ball,cue)),nm(sb(RN_POCK[P],ball))),thinNow=Math.max(0,0.5-cutThis)*2.2; // cắt bi HIỆN TẠI mỏng → khó hãm/kiểm soát cue (mạo hiểm, sai kỳ vọng)
+    var revPen=(s1.rev||0)*0.5; // chỉ phạt ÁP PHÊ NGHỊCH (english NGƯỢC chiều bi chạy trên băng — hãm bất định); running english (cùng chiều) KHÔNG phạt vì nó giúp điều bi
+    var risk=(s1.sensitivity||0)*0.4; // RỦI RO: cú NHẠY (sai lực/tay nhẹ → vị trí lệch nhiều: quá lực/thiếu lực) → phạt, ưu tiên cú CHỊU-run-tay (traffic/chạm bi đã lo ở s1.scr)
+    var cplx=Math.max(0,Math.abs(s1.bx)-0.25)*1.3+Math.max(0,s1.speed-2.6)*0.7+Math.max(0,(s1.rails||0)-2)*0.6; // CÚ PHỨC TẠP: nhiều áp phê ngang + lực mạnh + nhiều băng(3+) → DẸP, thà cú đơn giản (thà má đẹp hơn là gần mà phải bắn khó)
+    var farNb=ln(sb(L1,nb)),farPen=farNb>0.82?(farNb-0.82)*1.6:0; // HẠN CHẾ QUÁ XA bi kế (trung bình OK, gần KHÔNG cần) — để xa thì khó dàn/ngắm/điều tiếp
+    return {s1:s1,P:P,tgt:tgt,sc:s1.missBy+s1.scr+frag*0.25+look+ctr+reach+thinNow+revPen+risk+cplx+farPen,look:look};};
+   var bestC=evalP(pockets[0].pk,pockets[0].frag,leaves[0]); // lỗ dễ nhất + chỗ để bi #1
+   if(leaves.length>1){var cL=evalP(pockets[0].pk,pockets[0].frag,leaves[1]);if(cL&&(!bestC||cL.sc<bestC.sc))bestC=cL;} // SO chỗ để bi #2: nếu cú tới #1 phức tạp/với/xa → chọn #2 (cú đơn giản hơn) — má đẹp > gần
+   if((!bestC||bestC.look>=1.5)&&pockets.length>1){var c2=evalP(pockets[1].pk,pockets[1].frag,leaves[0]);if(c2&&(!bestC||c2.sc<bestC.sc))bestC=c2;} // lỗ-1 làm bi kế kẹt/khó → thử lỗ-2
+   if(bestC){var zAlts=[];for(var li=0;li<leaves.length&&zAlts.length<2;li++){if(ln(sb(leaves[li],bestC.tgt))>0.12&&ln(sb(leaves[li],bestC.s1.cueRest))>0.16)zAlts.push(leaves[li]);} // VÙNG ĐỂ BI KHÁC (các chỗ còn lại ngoài chỗ đã chọn) = phương án điều bi thay thế
+    steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,pocket:RN_POCK[bestC.P],pk:bestC.P,target:bestC.tgt,path:bestC.s1.path,bx:bestC.s1.bx,by:bestC.s1.by,speed:bestC.s1.speed,rails:bestC.s1.rails,rev:bestC.s1.rev||0,missBy:bestC.s1.missBy,landing:bestC.s1.cueRest,leaveAlts:zAlts,last:false});cue=bestC.s1.cueRest.slice();potted[i]=true;done=true;}}
+  if(done)continue;
+  var cm=rnCarom(cue,ball,others,felt,nb,after); // KẸT → GÃI (carom, ăn CHÍNH bi mục tiêu)
+  if(cm){steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'carom',comboB:cm.B,comboBn:seq.indexOf(cm.B)+1,caromX:cm.X,pk:cm.pk,pocket:cm.pocket,path:cm.path,bx:cm.bx,by:cm.by,speed:cm.speed,landing:cm.cueRest,last:false});cue=cm.cueRest.slice();potted[i]=true;continue;}
+  var cb=rnCombo(cue,ball,others,felt); // rồi COMBO (đẩy bi chắn B vào lỗ, dọn chắn; bi mục tiêu Ở LẠI, dời tới ~chạm, bắn tiếp)
+  if(cb){var gB=seq.indexOf(cb.B);steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,isCombo:true,comboMode:'combo',comboB:cb.B,comboBn:gB+1,comboGhost:cb.Bghost,pk:cb.pk,pocket:cb.pocket,path:cb.path,bx:cb.bx,by:cb.by,speed:cb.speed,landing:cb.cueRest,last:false});potted[gB]=true;seq[i]=cb.Bghost.slice();cue=cb.cueRest.slice();continue;}
+  steps.push({n:i+1,cue:cue.slice(),ballPos:ballPos,remain:remain,potFail:true,reason:'kẹt (bi chắn/góc>77°) — cần safety'});break;
+ }
+ return steps;}
+/*DIEUBI-ENGINE-END*/
+self.onmessage=function(e){var d=e.data;try{var res=d.type==='runout'?runoutRoute(d.layout,d.felt):d.type==='altshot'?rnAltShot(d.cue,d.ball,d.pocket,d.leave,d.others,d.felt):solveFast(d.cue,d.nine,d.pocket,d.target,{felt:d.felt,others:d.others,ten:d.ten});self.postMessage({gen:d.gen,res:res});}catch(err){self.postMessage({gen:d.gen,res:d.type==='runout'?[]:{potFail:true,err:String(err&&err.message||err)}});}};
+</script>
+<!--@@APP@@-->
+<script>
+/* PWA: đăng ký service worker khi chạy trên web https (bỏ qua khi mở bằng file://) */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function () {});
+  });
+}
+</script>
+
+<!-- pwa-update-banner: tự phát hiện bản mới (so ETag/Last-Modified index.html) -->
+<script>
+(function(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('sw.js').then(function(reg){
+        setInterval(function(){ try{ reg.update(); }catch(e){} }, 300000);
+      }).catch(function(){});
+    });
+  }
+  if(location.protocol==='file:') return;
+  var pageUrl=location.href.split('#')[0].split('?')[0], baseTag=null, shown=false;
+  function getTag(cb){ fetch(pageUrl,{method:'HEAD',cache:'no-store'}).then(function(r){ cb(r.headers.get('etag')||r.headers.get('last-modified')||null); }).catch(function(){ cb(null); }); }
+  function showBanner(){
+    if(shown||!document.body) return; shown=true;
+    var b=document.createElement('div');
+    b.textContent='🔄 Có bản CueZen mới — chạm để cập nhật';
+    b.style.cssText='position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:2147483647;background:#111827;color:#fff;padding:11px 16px;border-radius:13px;text-align:center;font-family:system-ui,-apple-system,sans-serif;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;line-height:1.35';
+    b.setAttribute('role','button');
+    b.onclick=function(){ b.textContent='Đang cập nhật…'; try{ if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){ navigator.serviceWorker.getRegistration().then(function(reg){ try{ if(reg) reg.update(); }catch(e){} setTimeout(function(){ location.reload(); },500); }); return; } }catch(e){} location.reload(); };
+    document.body.appendChild(b);
+  }
+  getTag(function(t){ baseTag=t; });
+  function check(){ if(baseTag==null){ getTag(function(t){ baseTag=t; }); return; } getTag(function(t){ if(t&&t!==baseTag) showBanner(); }); }
+  setInterval(check, 180000);
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') check(); });
+})();
+</script>
+</body>
+</html>
