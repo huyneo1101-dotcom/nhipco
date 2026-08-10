@@ -22,10 +22,16 @@
       "ngay": "2026-08-09",
       "hang_fargo": 3,
       "rating": 849
+    },
+    {
+      "ten": "Ko Ping-Chung",
+      "key": "psy_pro_kopingchung",
+      "ngay": "2026-08-10",
+      "hang_fargo": 4,
+      "rating": 847
     }
   ],
   "hang_cho": [
-    "Ko Ping-Chung",
     "Francisco Sánchez Ruiz",
     "Shane Van Boening",
     "Aloysius Yapp",
@@ -74,7 +80,8 @@
     "Kyle Amoroto",
     "Denis Grabe",
     "John Albert Refulle",
-    "Marco Teutscher"
+    "Marco Teutscher",
+    "Aleksa Pecelj"
   ],
   "khong_du_tu_lieu": [],
   "bang_xep_hang_fargorate": {
