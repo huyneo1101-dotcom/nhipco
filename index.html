@@ -2705,7 +2705,16 @@ function shiftDiaY(dia, dy) {
 }
 DRILLS.forEach(d => shiftDiaY(d.dia, 3));
 PROBLEMS.forEach(p => shiftDiaY(p.dia, 3));
-const todayStr = () => new Date().toISOString().slice(0, 10);
+
+/* Ngày HÔM NAY theo giờ MÁY, không phải giờ UTC.
+   toISOString() trả giờ UTC, mà Việt Nam là UTC+7 — nên từ 00:00 tới 06:59 giờ Việt Nam
+   nó khai ngày HÔM TRƯỚC (đo 12/08/2026: lúc 00:30 ngày 12/8 nó trả "2026-08-11").
+   Buổi tập đêm sẽ bị ghi sang hôm trước, và không lỗi nào phát ra. */
+const _p2 = n => String(n).padStart(2, '0');
+const todayStr = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' + _p2(d.getMonth() + 1) + '-' + _p2(d.getDate());
+};
 const nowHM = () => new Date().toTimeString().slice(0, 5);
 const fmtDate = s => {
   if (!s) return '';
