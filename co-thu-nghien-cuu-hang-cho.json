@@ -29,10 +29,16 @@
       "ngay": "2026-08-10",
       "hang_fargo": 4,
       "rating": 847
+    },
+    {
+      "ten": "Francisco Sánchez Ruiz",
+      "key": "psy_pro_sanchezruiz",
+      "ngay": "2026-08-13",
+      "hang_fargo": 5,
+      "rating": 847
     }
   ],
   "hang_cho": [
-    "Francisco Sánchez Ruiz",
     "Shane Van Boening",
     "Aloysius Yapp",
     "Ameer Ali",
@@ -81,7 +87,8 @@
     "Denis Grabe",
     "John Albert Refulle",
     "Marco Teutscher",
-    "Aleksa Pecelj"
+    "Aleksa Pecelj",
+    "Roland Garcia"
   ],
   "khong_du_tu_lieu": [],
   "bang_xep_hang_fargorate": {
