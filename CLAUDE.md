@@ -28,8 +28,12 @@ App tĩnh một-file: toàn bộ UI + logic + CSS trong `index.html` (~5.611 dò
 
 ## Quy tắc làm việc với file này
 - **KHÔNG đọc cả `index.html` (~5.000 dòng)** — dùng grep định vị rồi Read cửa sổ nhỏ (xem skill `bigfile-nav`).
-- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v38`).
+- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v45`).
 - Babel transpile trong trình duyệt: lỗi cú pháp là trắng màn hình, không báo terminal. Kiểm tra Console sau khi sửa.
+- ⛔ **CẤM viết cỡ chữ bằng `px`** — dùng `rem` (`font-size:0.8125rem` thay `13px`, `style={{fontSize:'0.8125rem'}}` thay `fontSize:13`). Từ 14/08/2026 người dùng chọn được cỡ chữ ở Cài đặt, cơ chế là đổi `font-size` của thẻ `<html>` (14/16/18/20px) nên **chỉ cỡ chữ viết bằng rem mới đổi theo**. Một chỗ viết px vẫn hiện đúng ở cỡ Vừa, không lỗi nào phát ra — mãi tới khi người dùng chọn cỡ khác mới lộ ra là chỗ đó đứng im. Quy đổi: chia cho 16.
+  - **Ngoại lệ đúng**: `fontSize=` trong `<svg>` (đơn vị là toạ độ viewBox, không phải cỡ chữ trang) · `font-size:34vw` của đồng hồ bấm giờ toàn màn hình · `html{font-size:16px}` ở đầu `khung.html` (chính là cỡ nền) · chữ mẫu "A" trong nút chọn cỡ chữ (phải bày 4 cỡ cạnh nhau).
+  - ⚠️ **Ô nhập trong hàng flex phải có `min-width:0`** — `<input>` mặc định rộng theo 20 ký tự, ở cỡ Lớn/Rất lớn bề rộng tối thiểu ấy đẩy cả hàng tràn ngang ra ngoài màn hình. Đã vấp ở `.editrow input`.
+  - Nghiệm thu sau khi thêm giao diện mới: mở app rồi chạy phép soi tràn ngang ở **cả 4 cỡ** (đặt `document.documentElement.style.fontSize` rồi so `scrollWidth` với `clientWidth`).
 
 ## Dữ liệu (localStorage, tiền tố `nc.`)
 Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)`. Mỗi `set` một khoá `nc.*` tự lên lịch đẩy đồng bộ (`schedulePush`).
@@ -46,7 +50,7 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
 | `nc.customcues` `nc.customDrills` `nc.customMistakes` `nc.customProblems` | Nội dung người dùng tự thêm | mảng |
 | `nc.knowfav` `nc.knowpin` `nc.knowarchive` `nc.knowrev` | Trạng thái tab Kiến thức | mảng/object |
 
-(Khoá phụ bỏ qua: `nc.theme`, `nc.taborder`, `nc.segorder`, `nc.bpm`, `nc._syncAt`, …)
+(Khoá phụ bỏ qua: `nc.theme`, `nc.fontsize`, `nc.taborder`, `nc.segorder`, `nc.bpm`, `nc._syncAt`, …)
 
 - Đồng bộ Supabase: **có** (auth email/password + sync bảng theo user). Danh sách khoá đồng bộ nằm trong `SYNC_KEYS` (dòng ~756); sao lưu/xuất-nhập dùng chung danh sách này. Không có SCHEMA_VERSION — migration khi đổi cấu trúc: xem skill `local-store`.
 
@@ -67,6 +71,7 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
   - ⚠️ `data/knowledge.js` (178 KB) là **bản chết**, không được `index.html` hay `sw.js` nạp; đừng sửa nó, cũng đừng lấy làm chuẩn.
 - Đồng bộ đám mây: `cloudInit`/`cloudPush`/`cloudApply`/`cloudSnap` (~764–791); `Settings` (~1761) chứa auth + backup.
 - 9 theme qua `body.theme-*` (midnight/coffee/court/racing/neon/peach/sage/periwinkle/color) — xem skill `theme-pack`.
+- 4 cỡ chữ qua `FONT_SIZES` + `applyFontSize()` (ngay dưới `applyTheme`), ghi vào `document.documentElement.style.fontSize`. **Không đặt class trên `body`** — `applyTheme()` gán đè nguyên `body.className` nên class cỡ chữ để ở đó sẽ bị xoá mỗi lần đổi theme. Cỡ chữ áp ngay lúc nạp mã (trước khi React vẽ) để không nháy một nhịp cỡ mặc định.
 
 ## Thư viện (đã pin version)
 - react@18.2.0, react-dom@18.2.0, @babel/standalone@7.23.6, @supabase/supabase-js@2.45.4 (tất cả qua cdn.jsdelivr.net).
@@ -78,16 +83,20 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
 Repo có `.claude/skills/` (13 skill từ plugin vibe-pwa-kit): bigfile-nav, local-store, data-backup, web-push, pwa-healthcheck, scaffold-vibe-pwa, supabase-sync, deploy-static, theme-pack, lock-static-app, doc-single-file-app, smoke-test, supabase-security-audit.
 
 ## Routine tự động (LaunchAgent) — mục Kiến thức > Tâm lý > "Học từ cơ thủ đỉnh cao"
-Huy chốt 08/08/2026: mỗi ngày nghiên cứu thêm một cơ thủ, mỗi tuần rà bổ sung tin mới vào bài
+Huy chốt 08/08/2026: mỗi ngày nghiên cứu thêm cơ thủ mới, mỗi tuần rà bổ sung tin mới vào bài
 sẵn có. Cả hai chạy **Sonnet** qua `claude -p` headless (rẻ), phần nghiên cứu/phán xét nội
 dung giao subagent `nghien-cuu-tam-ly-co-thu` chạy **Opus** (mục 23 CLAUDE.md gốc).
 
 | | Hằng ngày | Hằng tuần |
 |---|---|---|
-| LaunchAgent | `com.huy.routine-nghien-cuu-co-thu` (07:15) | `com.huy.routine-tong-hop-kien-thuc-co-thu-tuan` (CN 09:30) |
+| LaunchAgent | `com.huy.routine-nghien-cuu-co-thu` (19:00) | `com.huy.routine-tong-hop-kien-thuc-co-thu-tuan` (CN 09:30) |
 | Wrapper | `routine-nghien-cuu-co-thu.py` | `routine-tong-hop-kien-thuc-co-thu-tuan.py` |
 | SKILL.md | `~/.claude/scheduled-tasks/nghien-cuu-co-thu/` | `~/.claude/scheduled-tasks/tong-hop-kien-thuc-co-thu-tuan/` |
-| Việc | Viết bài `psy_pro_*` MỚI cho 1 cơ thủ lấy từ hàng chờ | Soát các bài `psy_pro_*` đã có, bổ sung `{h,p}` nếu có tin mới thật, đáng kể |
+| Việc | Viết bài `psy_pro_*` MỚI cho **03 cơ thủ** lấy từ hàng chờ, gộp một commit | Soát các bài `psy_pro_*` đã có, bổ sung `{h,p}` nếu có tin mới thật, đáng kể |
+
+⚠️ **Giờ chạy 19:00 do Huy chốt 14/08/2026** — mốc cũ 07:15 nằm trong cửa sổ hạn mức 5 giờ mà
+mốc quét tin 04:30 đã mở, nên hai việc giành hạn mức của nhau. Đổi giờ thì sửa bảng `BANG_LICH`
+trong `HeThong/don-lich-routine.py` rồi chạy `--lam`, đừng sửa thẳng plist.
 
 - **Hàng chờ cơ thủ**: `co-thu-nghien-cuu-hang-cho.json` (cùng thư mục) — `hang_cho` rỗng thì
   routine tự bổ sung cơ thủ mới từ BXH công khai, không dừng. Nạp 08/08/2026: **top 50 Fargo

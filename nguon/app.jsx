@@ -19,13 +19,13 @@ const onCloud=(f)=>{ cloudSubs.push(f); return ()=>{ const i=cloudSubs.indexOf(f
 const cloudNotify=()=>cloudSubs.forEach(f=>{ try{f();}catch(e){} });
 const setStatus=(s)=>{ cloudStatus=s; cloudNotify(); };
 const getCloudUser=()=>cloudUser, getCloudStatus=()=>cloudStatus;
-const SYNC_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
+const SYNC_KEYS=['nc.theme','nc.fontsize','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine',
   'nc.matches','nc.mistakes','nc.positions','nc.music','nc.musicMatch','nc.tips','nc.warvotes','nc.cuevotes','nc.customcues','nc.mindsetquotes',
   'nc.plans','nc.customDrills','nc.customProblems','nc.hiddenDrills','nc.hiddenProblems','nc.weakHidden',
   'nc.ghostTypes','nc.training','nc.ghost','nc.liveTally','nc.customMistakes','nc.knowrev','nc.weekplan','nc.knowarchive','nc.knowpin','nc.knowfav','nc.readtable'];
 // Nguồn duy nhất cho danh sách key. PREF = cài đặt/giao diện (giữ khi xoá dữ liệu);
 // DATA = dữ liệu người dùng (trận, thế bi, lỗi, tập luyện...) + vài key ngày-cục-bộ không đồng bộ.
-const PREF_KEYS=['nc.theme','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
+const PREF_KEYS=['nc.theme','nc.fontsize','nc.taborder','nc.segorder','nc.breath','nc.bpm','nc.metroSound','nc.shotTotal','nc.shotPhases','nc.routine','nc.music','nc.musicMatch'];
 const DATA_KEYS=SYNC_KEYS.filter(k=>!PREF_KEYS.includes(k)).concat(['nc.planAdd','nc.planHidden']);
 const cloudSnap=()=>{ const d={}; SYNC_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null) d[k]=v; }); return d; };
 const cloudApply=(data)=>{ if(!data) return; Object.keys(data).forEach(k=>{ if(k.indexOf('nc.')===0 && k!=='nc._syncAt'){ const v=data[k]; try{ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }catch(e){} } }); };
@@ -78,6 +78,21 @@ const THEMES=[
   {key:'periwinkle', name:'Tử đinh hương', c:'#eef0fc', g:'#4f5fd6'},
 ];
 function applyTheme(k){ document.body.className = k==='felt' ? '' : 'theme-'+k; store.set('nc.theme',k); }
+
+// Cỡ chữ: mọi cỡ chữ trong CSS và style inline đều viết bằng rem, nên chỉ cần đổi
+// font-size của <html> là cả app to/nhỏ theo. Ghi vào style của <html> chứ không đặt
+// class trên body — applyTheme() ghi đè nguyên body.className nên class ở đó sẽ mất.
+const FONT_SIZES=[
+  {key:'s',  name:'Nhỏ',     px:14, vd:'A'},
+  {key:'m',  name:'Vừa',     px:16, vd:'A'},
+  {key:'l',  name:'Lớn',     px:18, vd:'A'},
+  {key:'xl', name:'Rất lớn', px:20, vd:'A'},
+];
+const FS_MAC_DINH='m';
+function fsPx(k){ const f=FONT_SIZES.find(x=>x.key===k); return (f||FONT_SIZES[1]).px; }
+function applyFontSize(k){ document.documentElement.style.fontSize=fsPx(k)+'px'; store.set('nc.fontsize',k); }
+// Áp ngay lúc nạp mã, trước khi React vẽ — tránh nháy một nhịp cỡ chữ mặc định.
+try{ document.documentElement.style.fontSize=fsPx(store.get('nc.fontsize',FS_MAC_DINH))+'px'; }catch(e){}
 
 const DEFAULT_ROUTINE=[
   {t:'Đọc bàn',        s:'Bi nào dễ? Có chùm bi cần phá không?'},
@@ -798,12 +813,14 @@ function App(){
   const [order,setOrder]=useState(()=>mergeOrder(store.get('nc.taborder',null)));
   const [tab,setTab]=useState(()=>mergeOrder(store.get('nc.taborder',null))[0]);
   const [theme,setTheme]=useState(store.get('nc.theme','felt'));
+  const [fsize,setFsize]=useState(store.get('nc.fontsize',FS_MAC_DINH));
   const [settings,setSettings]=useState(false);
   const [reset,setReset]=useState(false);
   const [cuser,setCuser]=useState(getCloudUser());
   const [cstatus,setCstatus]=useState(getCloudStatus());
   const tabRef=useRef(null);
   useEffect(()=>{applyTheme(theme);},[theme]);
+  useEffect(()=>{applyFontSize(fsize);},[fsize]);
   useEffect(()=>{ const el=tabRef.current&&tabRef.current.querySelector('.tab.on'); if(el&&el.scrollIntoView) el.scrollIntoView({inline:'center',block:'nearest'}); },[tab,order]);
   useEffect(()=>{ const off=onCloud(()=>{ setCuser(getCloudUser()); setCstatus(getCloudStatus()); }); cloudInit(); return off; },[]);
   const saveOrder=(o)=>{ setOrder(o); store.set('nc.taborder',o); };
@@ -829,7 +846,7 @@ function App(){
         {order.map(id=>{ const d=TAB_DEFS.find(t=>t.id===id); return d&&<TabBtn key={id} id={id} cur={tab} set={setTab} ico={d.ico} lab={d.lab}/>; })}
       </div>
 
-      {settings && <Settings theme={theme} setTheme={setTheme} order={order} setOrder={saveOrder} cuser={cuser} cstatus={cstatus} close={()=>setSettings(false)}/>}
+      {settings && <Settings theme={theme} setTheme={setTheme} fsize={fsize} setFsize={setFsize} order={order} setOrder={saveOrder} cuser={cuser} cstatus={cstatus} close={()=>setSettings(false)}/>}
       {reset && <ResetOverlay close={()=>setReset(false)}/>}
     </div>
   );
@@ -922,7 +939,7 @@ function Metronome(){
         <button className="btn acc" onClick={()=>setOn(o=>!o)}>{on?'⏸ Dừng':'▶ Bắt đầu'}</button>
         <button className="btn ghost" onClick={()=>setSound(s=>!s)}>{sound?'🔊 Tiếng':'🔇 Tắt tiếng'}</button>
       </div>
-      <div className="muted" style={{fontSize:13,textAlign:'center',maxWidth:320,lineHeight:1.5}}>
+      <div className="muted" style={{fontSize:'0.8125rem',textAlign:'center',maxWidth:320,lineHeight:1.5}}>
         Đưa cơ theo tiếng tách để nhịp tay đều và mượt. Chậm (50–60) cho cú chuẩn xác.
       </div>
     </div>
@@ -1076,7 +1093,7 @@ function Cue(){
         {isCustom && <button className="chip" style={{marginTop:8}} onClick={()=>delCustom(cur.t)}>🗑 Xoá câu của tôi</button>}
       </> : (
         <div className="card" style={{padding:18,textAlign:'center'}}>
-          <div className="muted" style={{fontSize:14,marginBottom:10}}>Bạn đã bỏ hết câu nhắc.</div>
+          <div className="muted" style={{fontSize:'0.875rem',marginBottom:10}}>Bạn đã bỏ hết câu nhắc.</div>
           {hidden>0 && <button className="btn ghost wide" onClick={restore}>↺ Khôi phục {hidden} câu đã bỏ</button>}
         </div>
       )}
@@ -1089,13 +1106,13 @@ function Cue(){
         <button className="btn ghost wide" style={{marginTop:10}} onClick={()=>setAddOpen(true)}>＋ Tạo câu nhắc nhở</button>
       )}
       {hidden>0 && pool.length>0 && <button className="chip" style={{marginTop:8}} onClick={restore}>↺ Bỏ ẩn {hidden} câu</button>}
-      <div className="muted" style={{fontSize:13,marginTop:8}}>Chạm thẻ để đổi câu · 👎 Bỏ câu là tự ẩn khỏi danh sách.</div>
+      <div className="muted" style={{fontSize:'0.8125rem',marginTop:8}}>Chạm thẻ để đổi câu · 👎 Bỏ câu là tự ẩn khỏi danh sách.</div>
     </div>
   );
 }
 
 /* ================= Settings ================= */
-function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
+function Settings({theme,setTheme,fsize,setFsize,order,setOrder,cuser,cstatus,close}){
   const fileRef=useRef(null);
   const [email,setEmail]=useState(''); const [pass,setPass]=useState(''); const [amsg,setAmsg]=useState(''); const [busy,setBusy]=useState(false);
   const [showPass,setShowPass]=useState(false);
@@ -1201,14 +1218,14 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
                     <button className="btn ghost" style={{flex:1}} onClick={cloudPullManual}>⟳ Tải dữ liệu mây về</button>
                     <button className="btn ghost" onClick={cloudSignOut}>Đăng xuất</button>
                   </div>
-                  <div className="muted" style={{fontSize:11.5,marginTop:6,lineHeight:1.5}}>Dữ liệu tự lưu lên mây khi bạn thay đổi. Đăng nhập cùng email trên máy khác để dùng chung.</div>
+                  <div className="muted" style={{fontSize:'0.71875rem',marginTop:6,lineHeight:1.5}}>Dữ liệu tự lưu lên mây khi bạn thay đổi. Đăng nhập cùng email trên máy khác để dùng chung.</div>
                   {!chOpen
-                    ? <button className="btn ghost" style={{marginTop:8,fontSize:13}} onClick={()=>{setChOpen(true);setNpMsg('');}}>🔑 Đổi mật khẩu</button>
+                    ? <button className="btn ghost" style={{marginTop:8,fontSize:'0.8125rem'}} onClick={()=>{setChOpen(true);setNpMsg('');}}>🔑 Đổi mật khẩu</button>
                     : <div style={{marginTop:8,padding:10,border:'1px solid var(--line)',borderRadius:11,background:'var(--card2)'}}>
                         <div className="muted small" style={{marginBottom:8}}>Đặt mật khẩu mới cho <b style={{color:'var(--soft)'}}>{cuser.email}</b> (không cần mật khẩu cũ). Dùng mật khẩu mới này để đăng nhập trên điện thoại.</div>
                         <div style={{display:'flex',gap:6,alignItems:'stretch',marginBottom:6}}>
                           <input type={showPass?'text':'password'} value={npass} onChange={e=>setNpass(e.target.value)} placeholder="Mật khẩu mới (≥6 ký tự)" style={{flex:1,minWidth:0}}/>
-                          <button type="button" className="btn ghost" onClick={()=>setShowPass(s=>!s)} style={{padding:'0 12px',fontSize:16}} aria-label={showPass?'Ẩn mật khẩu':'Hiện mật khẩu'}>{showPass?'🙈':'👁'}</button>
+                          <button type="button" className="btn ghost" onClick={()=>setShowPass(s=>!s)} style={{padding:'0 12px',fontSize:'1rem'}} aria-label={showPass?'Ẩn mật khẩu':'Hiện mật khẩu'}>{showPass?'🙈':'👁'}</button>
                         </div>
                         <input type={showPass?'text':'password'} value={npass2} onChange={e=>setNpass2(e.target.value)} placeholder="Nhập lại mật khẩu mới" style={{width:'100%'}}/>
                         <div style={{display:'flex',gap:8,marginTop:8}}>
@@ -1223,7 +1240,7 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
                   <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" style={{marginBottom:6}}/>
                   <div style={{display:'flex',gap:6,alignItems:'stretch'}}>
                     <input type={showPass?'text':'password'} value={pass} onChange={e=>setPass(e.target.value)} placeholder="Mật khẩu (≥6 ký tự)" style={{flex:1,minWidth:0}}/>
-                    <button type="button" className="btn ghost" onClick={()=>setShowPass(s=>!s)} style={{padding:'0 12px',fontSize:16}} aria-label={showPass?'Ẩn mật khẩu':'Hiện mật khẩu'}>{showPass?'🙈':'👁'}</button>
+                    <button type="button" className="btn ghost" onClick={()=>setShowPass(s=>!s)} style={{padding:'0 12px',fontSize:'1rem'}} aria-label={showPass?'Ẩn mật khẩu':'Hiện mật khẩu'}>{showPass?'🙈':'👁'}</button>
                   </div>
                   <button className="btn acc wide" style={{marginTop:8}} disabled={busy} onClick={doAuth}>{busy?'…':'Đăng nhập / Tạo tài khoản'}</button>
                   {amsg && <div className="muted small" style={{marginTop:6}}>{amsg}</div>}
@@ -1237,11 +1254,27 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
                 style={{background:`linear-gradient(145deg,${t.c},${t.g})`}}
                 title={t.name} onClick={()=>setTheme(t.key)}/>)}
           </div>
-          <div className="muted" style={{fontSize:12,marginTop:6}}>{THEMES.find(t=>t.key===theme)?.name}</div>
+          <div className="muted" style={{fontSize:'0.75rem',marginTop:6}}>{THEMES.find(t=>t.key===theme)?.name}</div>
+        </div>
+        <div className="field">
+          <label>🔠 Cỡ chữ</label>
+          <div className="fsrow">
+            {FONT_SIZES.map(f=>
+              <button key={f.key} type="button" className={'fsbtn'+(fsize===f.key?' on':'')}
+                onClick={()=>setFsize(f.key)} aria-pressed={fsize===f.key} aria-label={'Cỡ chữ '+f.name}>
+                {/* Chữ mẫu để px, không phải rem — 4 nút phải bày ra 4 cỡ khác nhau cùng lúc.
+                    Nhân 1.6 để giữ đúng tỷ lệ giữa 4 cỡ mà mắt vẫn phân biệt được ngay. */}
+                <span className="fsa" style={{fontSize:(f.px*1.6)+'px'}}>{f.vd}</span>
+                <small>{f.name}</small>
+              </button>)}
+          </div>
+          <div className="muted" style={{fontSize:'0.75rem',marginTop:8,lineHeight:1.5}}>
+            Đổi cỡ chữ cho toàn app. Cỡ đang dùng: <b style={{color:'var(--soft)'}}>{FONT_SIZES.find(f=>f.key===fsize)?.name} ({fsPx(fsize)}px)</b> — đoạn này to nhỏ theo ngay để bạn thấy trước khi đóng.
+          </div>
         </div>
         <div className="field">
           <label>🔀 Thứ tự tab (thanh dưới)</label>
-          <div className="muted" style={{fontSize:12,marginBottom:8}}>Dùng ↑ ↓ để đổi vị trí. Tab đầu danh sách sẽ mở khi vào app.</div>
+          <div className="muted" style={{fontSize:'0.75rem',marginBottom:8}}>Dùng ↑ ↓ để đổi vị trí. Tab đầu danh sách sẽ mở khi vào app.</div>
           <div className="reorder">
             {order.map((id,i)=>{ const d=TAB_DEFS.find(t=>t.id===id); if(!d) return null; return (
               <div key={id} className="rrow">
@@ -1254,10 +1287,10 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
         </div>
         <div className="field">
           <label>🔀 Thứ tự mục con (trong từng tab)</label>
-          <div className="muted" style={{fontSize:12,marginBottom:8}}>Đổi vị trí các mục bên trong mỗi tab. Mục đầu danh sách sẽ mở trước.</div>
+          <div className="muted" style={{fontSize:'0.75rem',marginBottom:8}}>Đổi vị trí các mục bên trong mỗi tab. Mục đầu danh sách sẽ mở trước.</div>
           {Object.keys(SEG_DEFS).map(g=>{ const list=segOrderOf(g); const map={}; SEG_DEFS[g].items.forEach(it=>{ map[it[0]]=it[1]; }); return (
             <div key={g} style={{marginBottom:12}}>
-              <div style={{fontSize:12,fontWeight:800,color:'var(--soft)',margin:'0 0 6px'}}>{SEG_DEFS[g].lab}</div>
+              <div style={{fontSize:'0.75rem',fontWeight:800,color:'var(--soft)',margin:'0 0 6px'}}>{SEG_DEFS[g].lab}</div>
               <div className="reorder">
                 {list.map((k,i)=>(
                   <div key={k} className="rrow">
@@ -1270,7 +1303,7 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
         </div>
         <div className="field">
           <label>💾 Sao lưu dữ liệu</label>
-          <div className="muted" style={{fontSize:12,marginBottom:8,lineHeight:1.5}}>Dữ liệu lưu trên máy này. Xuất file để giữ an toàn hoặc chuyển sang máy/điện thoại khác.</div>
+          <div className="muted" style={{fontSize:'0.75rem',marginBottom:8,lineHeight:1.5}}>Dữ liệu lưu trên máy này. Xuất file để giữ an toàn hoặc chuyển sang máy/điện thoại khác.</div>
           <div style={{display:'flex',gap:10}}>
             <button className="btn ghost" style={{flex:1}} onClick={exportData}>⬇️ Xuất file</button>
             <button className="btn ghost" style={{flex:1}} onClick={()=>fileRef.current&&fileRef.current.click()}>⬆️ Nhập file</button>
@@ -1279,13 +1312,13 @@ function Settings({theme,setTheme,order,setOrder,cuser,cstatus,close}){
         </div>
         <div className="field">
           <label>🎲 Dữ liệu mẫu</label>
-          <div className="muted" style={{fontSize:12,marginBottom:8,lineHeight:1.5}}>Nạp vài trận & thế bi mẫu để xem app hoạt động thế nào. Hoặc xoá sạch để bắt đầu lại.</div>
+          <div className="muted" style={{fontSize:'0.75rem',marginBottom:8,lineHeight:1.5}}>Nạp vài trận & thế bi mẫu để xem app hoạt động thế nào. Hoặc xoá sạch để bắt đầu lại.</div>
           <div style={{display:'flex',gap:10}}>
             <button className="btn ghost" style={{flex:1}} onClick={loadDemo}>🎲 Nạp mẫu</button>
             <button className="btn ghost" style={{flex:1,color:'var(--danger)'}} onClick={clearAll}>🗑 Xoá toàn bộ</button>
           </div>
         </div>
-        <div className="muted" style={{fontSize:12,lineHeight:1.6,marginTop:8}}>
+        <div className="muted" style={{fontSize:'0.75rem',lineHeight:1.6,marginTop:8}}>
           <b style={{color:'var(--soft)'}}>Mẹo dùng:</b><br/>
           • <b>Nhịp thở</b>: chọn Hộp hoặc 4-7-8, làm 3–4 vòng khi hồi hộp.<br/>
           • <b>Đếm nhịp</b>: bật tiếng tách, đưa cơ theo nhịp cho đều tay (Gõ nhịp để tự dò BPM).<br/>
@@ -1313,7 +1346,7 @@ function Empty({ico,t,s,cta,onCta}){
 function Bar({label, right, val, max}){
   return (
     <div style={{margin:'7px 0'}}>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700,marginBottom:3}}><span>{label}</span><span className="muted">{right}</span></div>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.8125rem',fontWeight:700,marginBottom:3}}><span>{label}</span><span className="muted">{right}</span></div>
       <div className="mbar"><div style={{width:Math.round(val/(max||1)*100)+'%'}}/></div>
     </div>
   );
@@ -1347,14 +1380,14 @@ function LiveTally({onEnd}){
       <button className="btn acc wide" style={{margin:'10px 0 4px'}} onClick={()=>onEnd(Object.keys(tally),{...tally})}>🏁 Hết trận → Ghi trận</button>
       {ticked.length>0 &&
         <div className="card" style={{padding:'12px 14px',marginTop:8}}>
-          <div className="drow" style={{marginBottom:6}}><b style={{fontSize:14}}>Đã đánh dấu trận này</b><span className="muted small">chạm − / ＋ để chỉnh</span></div>
+          <div className="drow" style={{marginBottom:6}}><b style={{fontSize:'0.875rem'}}>Đã đánh dấu trận này</b><span className="muted small">chạm − / ＋ để chỉnh</span></div>
           {ticked.map(([x,n])=>(
             <div key={x} className="drow" style={{padding:'6px 0',borderTop:'1px solid var(--line)'}}>
-              <span style={{fontSize:13,fontWeight:700,flex:1,minWidth:0}}>{x}</span>
+              <span style={{fontSize:'0.8125rem',fontWeight:700,flex:1,minWidth:0}}>{x}</span>
               <div style={{display:'flex',gap:6,alignItems:'center',flex:'none'}}>
-                <button className="chip" style={{minWidth:34,fontSize:16,padding:'5px 0'}} onClick={()=>bump(x,-1)} aria-label={'Bớt '+x}>−</button>
+                <button className="chip" style={{minWidth:34,fontSize:'1rem',padding:'5px 0'}} onClick={()=>bump(x,-1)} aria-label={'Bớt '+x}>−</button>
                 <b style={{minWidth:22,textAlign:'center',color:'var(--gold)'}}>{n}</b>
-                <button className="chip" style={{minWidth:34,fontSize:16,padding:'5px 0'}} onClick={()=>bump(x,1)} aria-label={'Thêm '+x}>＋</button>
+                <button className="chip" style={{minWidth:34,fontSize:'1rem',padding:'5px 0'}} onClick={()=>bump(x,1)} aria-label={'Thêm '+x}>＋</button>
               </div>
             </div>))}
         </div>}
@@ -1456,7 +1489,7 @@ function MatchLog(){
       {view2==='log' && analysis && (analysis.fresh.length>0||analysis.heavy.length>0||(analysis.detected&&analysis.detected.length>0)) &&
         <div className="card" style={{padding:'12px 14px',marginTop:8,borderColor:'var(--gold)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <b style={{fontSize:14}}>🔎 Phân tích trận vừa ghi</b>
+            <b style={{fontSize:'0.875rem'}}>🔎 Phân tích trận vừa ghi</b>
             <button onClick={()=>setAnalysis(null)} className="xbtn">✕</button>
           </div>
           {analysis.fresh.length>0 && <div className="small" style={{marginTop:6}}>🆕 <b>Lỗi mới:</b> {analysis.fresh.join(', ')}</div>}
@@ -1505,13 +1538,13 @@ function MatchLog(){
                 <div className={'rbadge '+m.result}>{m.result==='W'?'T':m.result==='L'?'B':'H'}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:800}}>{m.opp||'Không rõ đối thủ'}{m.score&&<span className="muted" style={{fontWeight:700}}> · {m.score}</span>}</div>
-                  <div className="muted" style={{fontSize:12,fontWeight:600}}>{fmtDate(m.date)} · {m.game}{m.handicap? ' · '+m.handicap:''}</div>
+                  <div className="muted" style={{fontSize:'0.75rem',fontWeight:600}}>{fmtDate(m.date)} · {m.game}{m.handicap? ' · '+m.handicap:''}</div>
                 </div>
-                {feel&&<div style={{fontSize:22}}>{feel.e}</div>}
+                {feel&&<div style={{fontSize:'1.375rem'}}>{feel.e}</div>}
               </div>
               {(m.mistakes||[]).length>0 &&
                 <div className="tags">{m.mistakes.map(x=><span key={x} className="tag2">{x}</span>)}</div>}
-              {m.note&&<div className="muted preline" style={{fontSize:13}}>“{m.note}”</div>}
+              {m.note&&<div className="muted preline" style={{fontSize:'0.8125rem'}}>“{m.note}”</div>}
             </div>);
           })}
         </div>}
@@ -1549,18 +1582,18 @@ function MatchLog(){
                     <div className="oav">{o.name.slice(0,1)}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:800}}>{o.name}</div>
-                      <div className="muted" style={{fontSize:12,fontWeight:600}}>{o.n} trận · gần nhất {fmtDate(o.last)}{gms.length? ' · '+gms.slice(0,2).join('/'):''}</div>
+                      <div className="muted" style={{fontSize:'0.75rem',fontWeight:600}}>{o.n} trận · gần nhất {fmtDate(o.last)}{gms.length? ' · '+gms.slice(0,2).join('/'):''}</div>
                     </div>
                     <div style={{textAlign:'right'}}>
-                      <b style={{fontSize:20,color:'var(--gold)',display:'block',lineHeight:1}}>{r}%</b>
-                      <small className="muted" style={{fontSize:10,fontWeight:700}}>bạn thắng</small>
+                      <b style={{fontSize:'1.25rem',color:'var(--gold)',display:'block',lineHeight:1}}>{r}%</b>
+                      <small className="muted" style={{fontSize:'0.625rem',fontWeight:700}}>bạn thắng</small>
                     </div>
                   </div>
                   <div className="hh">
                     <span className="w">{o.w} thắng</span><span className="l">{o.l} thua</span>{o.d>0&&<span className="d">{o.d} hòa</span>}
                   </div>
                   {o.hc &&
-                    <div className="muted" style={{fontSize:12.5,fontWeight:600}}>🎯 Kèo gần nhất: <b style={{color:'var(--gold)'}}>{o.hc}</b></div>}
+                    <div className="muted" style={{fontSize:'0.78125rem',fontWeight:600}}>🎯 Kèo gần nhất: <b style={{color:'var(--gold)'}}>{o.hc}</b></div>}
                   {tm.length>0 &&
                     <div className="tags">{tm.map(([x,c])=><span key={x} className="tag2">{x} · {c}×</span>)}</div>}
                 </div>);
@@ -1713,7 +1746,7 @@ function PositionsView(){
     return (
       <div key={p.id} className="card" style={{padding:12,opacity:p.done?0.72:1}}>
         <MiniTable dia={posDia(p)}/>
-        {p.note&&<div className="muted preline" style={{fontSize:13,marginTop:8}}>“{p.note}”</div>}
+        {p.note&&<div className="muted preline" style={{fontSize:'0.8125rem',marginTop:8}}>“{p.note}”</div>}
         <div className="muted small" style={{marginTop:6}}>Bạn đánh: <b style={{color:'var(--accent)'}}>{p.tip?tipLabel(p.tip):'—'}</b> · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
           <span className="muted small">{fmtDate(p.date)}</span>
@@ -1741,7 +1774,7 @@ function PositionsView(){
       </div>
       {todo.length>0 &&
         <div className="card" style={{padding:'12px 14px',marginTop:8}}>
-          <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ &amp; thế bi còn kém</b><span className="muted small">{todo.length} thế cần tập</span></div>
+          <div className="drow" style={{marginBottom:8}}><b style={{fontSize:'0.875rem'}}>📊 Đầu cơ &amp; thế bi còn kém</b><span className="muted small">{todo.length} thế cần tập</span></div>
           {tipRows.map(([l,n])=>(
             <Bar key={l} label={'Đầu cơ: '+l} right={n+' thế'} val={n} max={tMax}/>))}
         </div>}
@@ -1777,9 +1810,9 @@ function SummaryView(){
   const tipRows=Object.entries(tipAgg).sort((a,b)=>b[1]-a[1]); const tMax=Math.max(1,...tipRows.map(r=>r[1]));
   const drillRow=([m,n],mx)=>{ const dr=drillsFor(m); return (
     <div key={m} className="card" style={{padding:'11px 13px'}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:8,marginBottom:4}}><b style={{fontSize:14}}>{m}</b><span className="muted small">{n}×</span></div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:8,marginBottom:4}}><b style={{fontSize:'0.875rem'}}>{m}</b><span className="muted small">{n}×</span></div>
       <div className="mbar" style={{marginBottom:6}}><div style={{width:Math.round(n/mx*100)+'%'}}/></div>
-      {FIX_TIPS[m] && <div className="muted" style={{fontSize:12.5,lineHeight:1.5}}>💡 {FIX_TIPS[m]}</div>}
+      {FIX_TIPS[m] && <div className="muted" style={{fontSize:'0.78125rem',lineHeight:1.5}}>💡 {FIX_TIPS[m]}</div>}
       {dr.length>0 && <div style={{marginTop:7,display:'flex',flexWrap:'wrap',gap:6,alignItems:'center'}}>
         <span className="muted small">🎯 Nên tập:</span>
         {dr.map(name=><span key={name} className="tag2">{name}</span>)}
@@ -1815,7 +1848,7 @@ function SummaryView(){
             <div className="h2">🎱 Thế bi cần tập ({todo.length})</div>
             {tipRows.length>0 &&
               <div className="card" style={{padding:'12px 14px',marginTop:8}}>
-                <div className="drow" style={{marginBottom:8}}><b style={{fontSize:14}}>📊 Đầu cơ còn kém</b><span className="muted small">{todo.length} thế</span></div>
+                <div className="drow" style={{marginBottom:8}}><b style={{fontSize:'0.875rem'}}>📊 Đầu cơ còn kém</b><span className="muted small">{todo.length} thế</span></div>
                 {tipRows.map(([l,n])=>(
                   <Bar key={l} label={'Đầu cơ: '+l} right={n+' thế'} val={n} max={tMax}/>))}
               </div>}
@@ -1825,7 +1858,7 @@ function SummaryView(){
                   style={{padding:10,display:'flex',gap:10,alignItems:'center',cursor:'pointer'}}>
                   <div style={{width:96,flex:'none'}}><MiniTable dia={posDia(p)}/></div>
                   <div style={{flex:1,minWidth:0}}>
-                    {p.note && <div className="preline" style={{fontSize:13,lineHeight:1.4}}>{p.note}</div>}
+                    {p.note && <div className="preline" style={{fontSize:'0.8125rem',lineHeight:1.4}}>{p.note}</div>}
                     <div className="muted small" style={{marginTop:3}}>bạn đánh: {p.tip?tipLabel(p.tip):'—'} · <span style={{color:'var(--gold)'}}>gợi ý: {tipLabel(sug)}</span></div>
                     <div className="muted small" style={{marginTop:2}}>{fmtDate(p.date)} · <span style={{color:'var(--accent)'}}>🎱 Điều bi ›</span></div>
                   </div>
@@ -2008,7 +2041,7 @@ function MatchForm({init,names,lastHc,onSave,onDel,close}){
           : <button type="button" className="chip" style={{alignSelf:'flex-start',marginBottom:8}} onClick={enableTwo}>＋ Ghi thêm trận 2 (cùng đối thủ)</button>)}
         <div className="field"><label>Phong độ của bạn</label>
           <div className="presets" style={{justifyContent:'flex-start'}}>
-            {FEELS.map(f=><button key={f.v} className={'chip'+(m.feel===f.v?' on':'')} style={{fontSize:19}} onClick={()=>set('feel',f.v)}>{f.e}</button>)}
+            {FEELS.map(f=><button key={f.v} className={'chip'+(m.feel===f.v?' on':'')} style={{fontSize:'1.1875rem'}} onClick={()=>set('feel',f.v)}>{f.e}</button>)}
           </div></div>
         <div className="field"><label>Lỗi mắc phải (chọn nhiều){!init.id&&two?' — chung cả 2 trận':''}</label>
           <div className="presets" style={{justifyContent:'flex-start'}}>
@@ -2555,10 +2588,10 @@ function RunoutCoach(){
         <div key={i} className={'card rnstep'+(i===shot?' on':'')} onClick={()=>!s.potFail&&setShot(i)}>
           <div className="rnnum">{s.n}</div>
           {s.potFail
-            ? <div style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.4,color:'var(--danger)'}}><b>Kẹt ở bi {s.n}</b> — {s.reason}. Cần đánh safety / phá thế trước.</div>
+            ? <div style={{flex:1,minWidth:0,fontSize:'0.8125rem',lineHeight:1.4,color:'var(--danger)'}}><b>Kẹt ở bi {s.n}</b> — {s.reason}. Cần đánh safety / phá thế trước.</div>
             : <>
                 {s.isCombo ? <TipFace tip={{x:s.bx,y:-s.by}}/> : <TipFace tip={s.last?null:{x:s.bx,y:-s.by}}/>}
-                <div style={{flex:1,minWidth:0,fontSize:13,lineHeight:1.4}}>
+                <div style={{flex:1,minWidth:0,fontSize:'0.8125rem',lineHeight:1.4}}>
                   {s.isCombo
                     ? <><b>🎯 Bi {s.n} {s.comboMode==='combo'?'combo bi '+s.comboBn:'gãi bi '+s.comboBn} → lỗ {RN_PK[s.pk]}</b> · đầu cơ {tipLabel({x:s.bx,y:-s.by})}<br/><span className="muted">{s.comboMode==='combo'?'kẹt → đẩy bi '+s.comboBn+' vào lỗ (dọn chắn), bi '+s.n+' bắn tiếp':'kẹt → gãi (carom) ăn bi '+s.n} · lực {s.speed<2.3?'vừa':'chắc'}</span></>
                     : s.last
@@ -2808,8 +2841,8 @@ function Training(){
               style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'7px 2px',borderRadius:10,cursor:'pointer',
                 border:'1.5px solid '+(isToday?'var(--gold)':sel?'var(--accent)':'var(--line)'),
                 background:isToday?'var(--card2)':'transparent',color:'var(--text)'}}>
-              <small style={{fontSize:10,fontWeight:800,color:isToday?'var(--gold)':'var(--muted)'}}>{WEEK_DOW[i]}</small>
-              <span style={{fontSize:16,lineHeight:1}}>{done?'✅':d.icon}</span>
+              <small style={{fontSize:'0.625rem',fontWeight:800,color:isToday?'var(--gold)':'var(--muted)'}}>{WEEK_DOW[i]}</small>
+              <span style={{fontSize:'1rem',lineHeight:1}}>{done?'✅':d.icon}</span>
             </button>); })}
         </div>
       </div>
@@ -3013,11 +3046,11 @@ function ShotClock(){
         <div className="drow" style={{margin:'4px 0 8px'}}><b className="h" style={{margin:0}}>Phân bổ {total}s</b><span className="muted small">chỉnh từng bước bằng −/＋</span></div>
         {ph.map((p,i)=>(
           <div key={i} className="planrow" style={{alignItems:'center'}}>
-            <div className="pi" style={{background:p.c,color:'#04231a',borderColor:p.c,width:'auto',minWidth:40,padding:'0 7px',fontSize:13}}>{p.dur}s</div>
+            <div className="pi" style={{background:p.c,color:'#04231a',borderColor:p.c,width:'auto',minWidth:40,padding:'0 7px',fontSize:'0.8125rem'}}>{p.dur}s</div>
             <div className="pt" style={{flex:1}}><b>{p.name}</b><small>{p.sub}</small></div>
             <div style={{display:'flex',gap:6,flex:'none'}}>
-              <button className="chip" style={{minWidth:34,fontSize:16,padding:'6px 0'}} onClick={()=>step(i,-1)} aria-label={'Giảm '+p.name}>−</button>
-              <button className="chip" style={{minWidth:34,fontSize:16,padding:'6px 0'}} onClick={()=>step(i,1)} aria-label={'Tăng '+p.name}>＋</button>
+              <button className="chip" style={{minWidth:34,fontSize:'1rem',padding:'6px 0'}} onClick={()=>step(i,-1)} aria-label={'Giảm '+p.name}>−</button>
+              <button className="chip" style={{minWidth:34,fontSize:'1rem',padding:'6px 0'}} onClick={()=>step(i,1)} aria-label={'Tăng '+p.name}>＋</button>
             </div>
           </div>
         ))}
@@ -3147,7 +3180,7 @@ function ProblemCard({p,onDelete,onEdit}){
       <div className="drillH" onClick={()=>setOpen(o=>!o)}>
         <span className="catpill" style={{border:'1px solid var(--warn)',color:'var(--warn)'}}>{p.tag}</span>
         <div className="dn"><b>{p.name}</b><small>{open?'thu gọn':'xem cách xử lý'}</small></div>
-        <span className="muted" style={{fontSize:16}}>{open?'▾':'▸'}</span>
+        <span className="muted" style={{fontSize:'1rem'}}>{open?'▾':'▸'}</span>
         {onEdit && <button className="chip" onClick={(e)=>{e.stopPropagation();onEdit();}} style={{marginLeft:6,flex:'none'}}>✎</button>}
         {onDelete && <button className="xbtn" onClick={(e)=>{e.stopPropagation();onDelete();}} style={{marginLeft:4}}>✕</button>}
       </div>
@@ -4531,7 +4564,7 @@ function KnowCard({a,defaultOpen,onArchive,archived,onFav,fav,onPin,pinned,navKe
           {onPin && <button className={"archbtn"+(pinned?" on":"")} title={pinned?'Bỏ ghim':'Ghim lên đầu'} aria-label={pinned?'Bỏ ghim':'Ghim lên đầu'} onClick={(e)=>{e.stopPropagation();onPin();}}><IconPin on={pinned}/></button>}
           {onArchive && <button className="archbtn" title={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} aria-label={archived?'Bỏ lưu trữ':'Lưu trữ bài này'} onClick={(e)=>{e.stopPropagation();onArchive();}}>{archived?<IconUnarchive/>:<IconArchive/>}</button>}
         </div>
-        <span className="muted" style={{fontSize:16,flex:'none'}}>{open?'▾':'▸'}</span>
+        <span className="muted" style={{fontSize:'1rem',flex:'none'}}>{open?'▾':'▸'}</span>
       </div>
       {open &&
         <div className="drillB">
@@ -4755,7 +4788,7 @@ function KnowledgeView(){
               <div style={{marginTop:16}}>
                 <div className="h2" style={{cursor:'pointer',display:'flex',alignItems:'center',gap:8}} onClick={()=>setShowArch(s=>!s)}>
                   <span style={{flex:1}}>🗄️ Lưu trữ ({secArch.length})</span>
-                  <span className="muted" style={{fontSize:15}}>{showArch?'▾':'▸'}</span>
+                  <span className="muted" style={{fontSize:'0.9375rem'}}>{showArch?'▾':'▸'}</span>
                 </div>
                 {showArch
                   ? <>
@@ -4801,7 +4834,7 @@ function KnowReview(){
       </div>
       {!card
         ? <div className="card" style={{padding:'28px 18px',textAlign:'center',marginTop:10}}>
-            <div style={{fontSize:40,marginBottom:8}}>🎉</div>
+            <div style={{fontSize:'2.5rem',marginBottom:8}}>🎉</div>
             <div style={{fontWeight:800,color:'var(--soft)',marginBottom:6}}>Xong lượt ôn!</div>
             <div className="muted small" style={{marginBottom:14}}>Ôn lại nhiều lần giúp nhớ sâu và lâu hơn.</div>
             <button className="btn acc" onClick={restart}>🔁 Ôn lại</button>
@@ -4809,10 +4842,10 @@ function KnowReview(){
         : <>
           <div className="card" onClick={()=>setFlip(f=>!f)} style={{padding:18,marginTop:10,minHeight:190,display:'flex',flexDirection:'column',cursor:'pointer'}}>
             <div className="muted small" style={{fontWeight:800}}>{card.cat} · {card.article}</div>
-            <div style={{fontWeight:800,fontSize:18,color:'var(--soft)',margin:'10px 0 6px',lineHeight:1.35}}>{card.front}</div>
+            <div style={{fontWeight:800,fontSize:'1.125rem',color:'var(--soft)',margin:'10px 0 6px',lineHeight:1.35}}>{card.front}</div>
             {!flip
-              ? <div className="muted" style={{marginTop:'auto',fontSize:13,fontStyle:'italic'}}>Nhớ lại trong đầu… rồi chạm để xem đáp án 👇</div>
-              : <div className="preline" style={{fontSize:13.5,lineHeight:1.6,marginTop:4}}>{renderKnowText(card.back)}</div>}
+              ? <div className="muted" style={{marginTop:'auto',fontSize:'0.8125rem',fontStyle:'italic'}}>Nhớ lại trong đầu… rồi chạm để xem đáp án 👇</div>
+              : <div className="preline" style={{fontSize:'0.84375rem',lineHeight:1.6,marginTop:4}}>{renderKnowText(card.back)}</div>}
           </div>
           {flip
             ? <div className="rowbtns" style={{marginTop:12}}>
@@ -4850,7 +4883,7 @@ function PreMatch(){
         {!g ? <>
           <div style={{marginTop:8,display:'flex',flexWrap:'wrap',gap:6}}>
             {STRETCHES.map((s,i)=>(
-              <span key={i} style={{fontSize:12.5,fontWeight:700,padding:'6px 10px',background:'var(--card2)',border:'1px solid var(--line)',borderRadius:9,whiteSpace:'nowrap'}}>
+              <span key={i} style={{fontSize:'0.78125rem',fontWeight:700,padding:'6px 10px',background:'var(--card2)',border:'1px solid var(--line)',borderRadius:9,whiteSpace:'nowrap'}}>
                 {s.n} <span className="muted" style={{fontWeight:600}}>{s.s}s</span>
               </span>))}
           </div>
@@ -4882,8 +4915,8 @@ function GuidedStretch({onDone}){
   });
   if(done) return (
     <div className="card" style={{padding:18,textAlign:'center',marginTop:8}}>
-      <div style={{fontSize:38}}>✅</div>
-      <div style={{fontWeight:800,fontSize:16,margin:'6px 0'}}>Xong khởi động — sẵn sàng vào bàn!</div>
+      <div style={{fontSize:'2.375rem'}}>✅</div>
+      <div style={{fontWeight:800,fontSize:'1rem',margin:'6px 0'}}>Xong khởi động — sẵn sàng vào bàn!</div>
       <button className="btn ghost wide" onClick={onDone}>Đóng</button>
     </div>
   );
@@ -4891,9 +4924,9 @@ function GuidedStretch({onDone}){
   return (
     <div className="card" style={{padding:18,textAlign:'center',marginTop:8}}>
       <div className="muted small">Động tác {idx+1}/{STRETCHES.length}</div>
-      <div style={{fontWeight:900,fontSize:21,margin:'4px 0'}}>{cur.n}</div>
-      <div className="muted" style={{fontSize:13,minHeight:34,lineHeight:1.4}}>{cur.h}</div>
-      <div style={{fontSize:52,fontWeight:900,color:'var(--gold)',fontVariantNumeric:'tabular-nums',lineHeight:1}}>{left}</div>
+      <div style={{fontWeight:900,fontSize:'1.3125rem',margin:'4px 0'}}>{cur.n}</div>
+      <div className="muted" style={{fontSize:'0.8125rem',minHeight:34,lineHeight:1.4}}>{cur.h}</div>
+      <div style={{fontSize:'3.25rem',fontWeight:900,color:'var(--gold)',fontVariantNumeric:'tabular-nums',lineHeight:1}}>{left}</div>
       <button className="btn ghost wide" style={{marginTop:8}} onClick={onDone}>Dừng</button>
     </div>
   );
@@ -4919,7 +4952,7 @@ function MindsetQuotes(){
       ) : (
         <div className="card mqhero" onClick={()=>setAddOpen(true)}>
           <div className="mqlabel">⚔️ Mindset chiến đấu</div>
-          <div className="mqtext" style={{fontSize:'clamp(17px,4.6vw,22px)',fontWeight:800,color:'var(--soft)'}}>Thêm khẩu quyết chiến đấu của bạn — để nó đập vào mắt mỗi lần mở app.</div>
+          <div className="mqtext" style={{fontSize:'clamp(1.0625rem,4.6vw,1.375rem)',fontWeight:800,color:'var(--soft)'}}>Thêm khẩu quyết chiến đấu của bạn — để nó đập vào mắt mỗi lần mở app.</div>
         </div>
       )}
       {addOpen ? (
@@ -4955,7 +4988,7 @@ function MusicLinks({kkey}){
         : <div className="list">
             {list.map(m=>(
               <div key={m.id} className="musicRow">
-                <span style={{fontSize:20}}>{platformIco(m.url)}</span>
+                <span style={{fontSize:'1.25rem'}}>{platformIco(m.url)}</span>
                 <a href={m.url} target="_blank" rel="noopener noreferrer" className="musicLink">{m.label||m.url}</a>
                 <button onClick={()=>del(m.id)} className="xbtn">✕</button>
               </div>))}
@@ -4986,8 +5019,8 @@ function MyTips(){
         : <div className="list">
             {list.map(t=>(
               <div key={t.id} className="card" style={{padding:'11px 13px',display:'flex',gap:10,alignItems:'flex-start'}}>
-                <span style={{color:'var(--gold)',fontSize:16,flex:'none'}}>📌</span>
-                <div className="preline" style={{flex:1,fontSize:14,lineHeight:1.5}}>{t.t}</div>
+                <span style={{color:'var(--gold)',fontSize:'1rem',flex:'none'}}>📌</span>
+                <div className="preline" style={{flex:1,fontSize:'0.875rem',lineHeight:1.5}}>{t.t}</div>
                 <button onClick={()=>startEdit(t)} className="chip" style={{flex:'none'}}>✎</button>
                 <button onClick={()=>del(t.id)} className="xbtn">✕</button>
               </div>))}
@@ -5099,8 +5132,8 @@ function FocusAnchor(){
       <div className="h">Neo mắt — thu nhỏ tiêu điểm</div>
       <div className="tsub">Khi thấy mình tuột tập trung, hoặc bị đám đông và ánh mắt làm phân tâm: một hơi thở ra thật dài rồi <b>neo mắt vào MỘT điểm</b> cho tới khi xung quanh mờ đi. ~10 giây để kéo chú ý trở lại.</div>
       <div className="card" style={{alignItems:'center',textAlign:'center',gap:12,padding:'22px 16px'}}>
-        <div style={{fontSize:42,lineHeight:1}}>🎯</div>
-        <div className="preline" style={{color:'var(--soft)',fontSize:14,maxWidth:300,lineHeight:1.55}}>Xả một hơi → thế giới thu về một điểm → mang sự tập trung đó vào cú đánh. Vào bàn, chọn ngay một điểm thật (chấm trên bi / điểm chạm) và giữ mắt trên nó.</div>
+        <div style={{fontSize:'2.625rem',lineHeight:1}}>🎯</div>
+        <div className="preline" style={{color:'var(--soft)',fontSize:'0.875rem',maxWidth:300,lineHeight:1.55}}>Xả một hơi → thế giới thu về một điểm → mang sự tập trung đó vào cú đánh. Vào bàn, chọn ngay một điểm thật (chấm trên bi / điểm chạm) và giữ mắt trên nó.</div>
         <button className="btn acc wide" style={{maxWidth:260}} onClick={()=>setRun(true)}>▶ Bắt đầu · 10 giây</button>
       </div>
     </div>
