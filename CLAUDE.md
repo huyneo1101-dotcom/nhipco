@@ -129,23 +129,15 @@ trong `HeThong/don-lich-routine.py` rồi chạy `--lam`, đừng sửa thẳng 
 - ⛔ **Cấm bịa trích dẫn** — luật số một trong `nghien-cuu-tam-ly-co-thu.md`. Không đủ tư liệu
   công khai thật thì routine bỏ qua cơ thủ đó, ghi vào `khong_du_tu_lieu`, KHÔNG viết hồ sơ giả.
 
-### Video nói tiếng địa phương: tự nghe lại, cấm dùng phụ đề tự động
+### ⛔ Phụ đề tự động không phải tiếng Anh: không dùng làm nguồn trích dẫn
 
-```bash
-python3 /Users/Huy/Claude/App/NhipCo/nghe-lai-phong-van.py <URL> --tieng tl
-```
+Đo 14/08/2026 trên 20 video phỏng vấn cơ thủ Philippines: 12 video có mục phụ đề `fil` nhưng
+chỉ **02** là nhận dạng gốc đúng tiếng Filipino, còn lại là bản dịch máy từ ngôn ngữ YouTube
+nghe nhầm — video Carlo Biado trả về `lang=id&tlang=fil`, cho ra chữ vô nghĩa kiểu "nasira ang
+hubbul ng sonokerep". Bản `vi` hỏng y hệt vì dịch từ chính bản sai đó. Dấu hiệu nhận ra bản
+dịch máy: URL phụ đề mang tham số `tlang=`, hoặc khoá ngôn ngữ không có bản `<mã>-orig` đi kèm.
 
-Tải riêng phần tiếng bằng `yt-dlp` rồi cho `mlx_whisper` nghe lại trên GPU máy (miễn phí,
-không gửi dữ liệu ra ngoài), ghi bản chữ kèm mốc thời gian từng câu vào `ban-chu-phong-van/`.
-Cần `ffmpeg` — đã cài 14/08/2026, bản 9.0.1. Cỡ model mặc định `small`, đổi bằng `--co`.
-
-⛔ **CẤM lấy `automatic_captions` của YouTube cho ngôn ngữ không phải tiếng Anh làm nguồn
-trích dẫn.** Đo 14/08/2026 trên 20 video phỏng vấn cơ thủ Philippines: 12 video có mục `fil`
-nhưng chỉ **02** là nhận dạng gốc đúng tiếng Filipino, còn lại là bản dịch máy từ ngôn ngữ
-YouTube nghe nhầm — video Carlo Biado trả về `lang=id&tlang=fil`, cho ra chữ vô nghĩa kiểu
-"nasira ang hubbul ng sonokerep". Dấu hiệu nhận ra bản dịch máy: URL phụ đề mang tham số
-`tlang=`, hoặc khoá ngôn ngữ không có bản `<mã>-orig` đi kèm.
-
-⚠️ Endpoint phụ đề của YouTube chặn IP nhà bằng lỗi 429 sau vài lượt gọi liên tiếp; đường tải
-phần tiếng thì không bị. Cần đọc phụ đề gấp thì đi qua Chrome thật (`mcp__claude-in-chrome__*`)
-vì nó mang cookie phiên — trình duyệt trong app dùng chung IP nên cũng bị chặn.
+Huy chốt cùng ngày: **không đầu tư thêm vào hướng nguồn tiếng Philippines** — đã thử đường tự
+nghe lại bằng `mlx_whisper` và bỏ, vì cỡ model `small` chạy 25 phút vẫn chưa xong một video
+23,5 phút trên máy M1 8GB. Cơ thủ không có phỏng vấn tiếng Anh thì cứ xếp `khong_du_tu_lieu`
+theo quy trình cũ, đừng dựng lại đường nghe lại.
