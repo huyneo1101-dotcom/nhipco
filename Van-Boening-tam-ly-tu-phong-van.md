@@ -229,3 +229,142 @@ Và trên *The Boom and Freezer Show* (19/01/2026), sau khi thua Gorst ở chung
 > (Tôi chỉ có thể làm những gì tôi làm được, và tôi không hối tiếc chút nào. Tôi đã cày nát người ra. Tôi không hối tiếc gì cả.)
 
 Cách đọc này là suy luận của người lập hồ sơ: **thước đo mà anh dùng để chấm mình không phải kết quả trận đấu, mà là mức nỗ lực đã bỏ ra.** Đó là một thước đo anh kiểm soát được toàn bộ, và nó giải thích vì sao anh chịu được chuỗi thất bại dài mà không đổ vỡ.
+
+## 8. Về cách anh kể lại hai lần thua chung kết thế giới: gọi thẳng là "thua", rồi chỉ đúng chỗ hỏng
+
+Van Boening mất **19 năm** mới vô địch thế giới, và trên đường đi có hai trận chung kết thua: 2016 thua Ko Pin Yi, 2017 thua Albin Ouschan. Trong buổi hỏi-đáp của Matchroom Pool ngày 26/07/2022, ngay sau khi anh đăng quang, người dẫn hỏi cảm giác làm nhà vô địch thế giới ra sao. Anh không mở đầu bằng chức vô địch, anh mở đầu bằng hai lần thua:
+
+> *"It took me 19 years to win the world championship after two fails in 2016 and 2017. When I lost to [Ko Pin Yi], I thought I was going to win the world championship at that time. When I played [Ko Pin Yi] I just made a mistake when I had the lead, and [he] ended up winning the tournament. And then I came back next year, got in the finals and lost to [Albin]. And [Albin] played perfect pool and there's not much I can do there."*
+> (Tôi mất 19 năm mới vô địch thế giới, sau hai lần hỏng vào 2016 và 2017. Lần thua Ko Pin Yi, lúc đó tôi tưởng mình sẽ vô địch thế giới. Đánh với Ko Pin Yi, tôi mắc đúng một sai lầm lúc đang dẫn, và anh ta thắng cả giải. Rồi năm sau tôi quay lại, vào chung kết và thua Albin. Albin đánh hoàn hảo, tôi chẳng làm gì hơn được.)
+
+*(Chữ trong ngoặc vuông là chỗ sửa tên riêng bị phụ đề nghe nhầm thành "Copenhagen" và "Alvin". Nội dung khớp kết quả thật: chung kết thế giới 9 bi 2016 Ko Pin Yi thắng, 2017 Albin Ouschan thắng.)*
+
+Đáng học nhất ở đây là **anh xếp hai trận thua vào hai loại nguyên nhân khác nhau, và làm việc đó rất gọn**: trận 2016 là **lỗi của mình** ("tôi mắc đúng một sai lầm lúc đang dẫn"); trận 2017 là **đối thủ chơi hay hơn** ("Albin đánh hoàn hảo, tôi chẳng làm gì hơn được"). Không gộp cả hai vào một câu "tôi xui", cũng không gộp cả hai vào một câu "tôi kém". Người tập thường chỉ có đúng một ngăn để chứa mọi trận thua, nên hoặc là tự trách quá tay, hoặc là chối hết.
+
+Người dẫn nhận xét rằng rất ít cơ thủ tự nhận mình đã "fail". Anh đáp bằng một câu còn trần trụi hơn:
+
+> *"People don't realize how tough the game is today, because there's a lot of young talents out there like Joshua Filler and a couple Polish kids, and there's young talents just not missing a ball today, and that's a little bit scary, you know. But I do know they look up to me… and I still got my game there, and I'm working hard."*
+> (Người ta không hình dung nổi môn này bây giờ khó tới mức nào, vì ngoài kia có rất nhiều tài năng trẻ như Joshua Filler và mấy cậu người Ba Lan, đám trẻ ngày nay không trượt bi nào cả, và điều đó hơi đáng sợ đấy. Nhưng tôi biết là họ nhìn lên tôi… và tôi vẫn còn nghề của mình, và tôi vẫn đang cày.)
+
+Chữ **"scary"** — đáng sợ — được nói ra bởi đương kim vô địch thế giới, ở đúng tuần anh đăng quang. Đây là chỗ nên ghi lại cho người tập: thừa nhận nỗi sợ không mâu thuẫn với đỉnh phong độ, và trong cùng một câu anh đã dán ngay đối trọng vào ("tôi vẫn còn nghề, tôi vẫn đang cày") thay vì để nỗi sợ đứng một mình.
+
+## 9. Về chuyện quay lại đúng nơi đã thua: Florida Open 2026
+
+Đây là dữ kiện mới nhất trong hồ sơ, và nó cho thấy nguyên tắc ở mục 8 được anh dùng như một công cụ chứ không phải một lời hay ý đẹp. Năm 2025 anh vào chung kết Florida Open và thua. Năm 2026 anh quay lại, thắng Alexander Kazakis 13-5, nhận 40.000 đô la. Nói với ban tổ chức ngay sau trận (World Nineball Tour, 09/08/2026 — **nguồn hạng A**):
+
+> *"I felt like I should have won this tournament one year ago. I learnt from those mistakes and came back with one goal — redemption."*
+> (Tôi thấy đáng lẽ tôi đã vô địch giải này từ một năm trước. Tôi học từ mấy sai lầm đó và quay lại với đúng một mục tiêu: chuộc lại.)
+
+> *"I played great pool all week and I came here ready to win this tournament."*
+> (Cả tuần tôi đánh rất hay và tôi tới đây trong tư thế sẵn sàng vô địch.)
+
+> *"If I can win one Major, I believe I can win them all — including my sixth US Open."*
+> (Nếu thắng được một giải lớn thì tôi tin tôi thắng được tất cả, kể cả chức vô địch US Open thứ sáu.)
+
+Câu cuối nên đặt cạnh mục 1 để thấy **hai tầng khác nhau trong cùng một con người**: ở tầng mục tiêu cả mùa, anh nói bằng giọng người tin chắc mình thắng được tất cả; còn ở tầng từng cú đánh, thứ anh theo đuổi vẫn chỉ là "lỏng tay" và "làm tốt nhất trong khả năng". Cách đọc này là suy luận của người lập hồ sơ: **tham vọng đặt ở tầm mùa giải, còn tầm một cú đánh thì cố tình để trống tham vọng** — vì tham vọng chen vào đúng lúc cúi xuống bàn chính là thứ làm tay siết lại.
+
+Một chi tiết nhỏ nữa, cùng giải: sau hai trận thắng Yapp và Biado, anh nói *"I know I'm one of the favourites this week so I felt confident going into both matches. But tomorrow is a new day and another challenge."* (Tôi biết tuần này mình nằm trong nhóm ứng viên nặng ký nên tôi vào cả hai trận với sự tự tin. Nhưng ngày mai là một ngày mới và một thử thách khác.) Tự tin được thừa nhận công khai, nhưng **hạn dùng của nó chỉ tới hết ngày hôm đó** — đúng kiểu cắt hạn như cách anh cắt hạn cơn giận ở mục 5.
+
+## 10. Về cỗ máy tập luyện, và cái phanh anh tự lắp vào nó
+
+Đây là mục giải thích phần "nhiên liệu" phía sau toàn bộ những mục trên, và nó gồm hai nửa ngược chiều nhau. Nửa thứ nhất, trên *The Boom and Freezer Show* (19/01/2026), khi người dẫn nói rằng không ai làm việc nhiều hơn anh:
+
+> *"When I'm on the pool table I'm extremely a professionalist. So I'll do this shot 100 times all day or maybe 1,000 times. I don't even know. A lot of times when I'm practicing, I don't even know what time it is."*
+> (Khi tôi đứng ở bàn bi-a thì tôi cực kỳ chuyên nghiệp. Tôi sẽ đánh đúng cú đó 100 lần trong một ngày, hoặc có khi 1.000 lần. Tôi cũng chẳng biết nữa. Rất nhiều lần đang tập, tôi không biết mấy giờ rồi.)
+
+Cùng đoạn, anh mô tả nó như một nét tính chung áp cho mọi thứ anh làm, không riêng bi-a:
+
+> *"There's a lot of things that I do like pool, golf, fishing, archery. I do all these things to be good at. Like I will put in so many hours to be good at it… I love golfing and I will practice 6 hours a day just to get good."*
+> (Có nhiều thứ tôi làm: bi-a, golf, câu cá, bắn cung. Tôi làm hết những thứ này để giỏi chúng. Kiểu tôi sẽ bỏ vào đó rất nhiều giờ để giỏi… Tôi mê golf và tôi sẽ tập 6 tiếng một ngày chỉ để giỏi lên.)
+
+*(Ghi chú trung thực: trong cùng đoạn, chính anh mở đầu bằng câu tự nhận "I think I show signs of autism" — tôi nghĩ tôi có dấu hiệu tự kỷ. Đây là lời tự nói về nết tập trung một chiều của mình, không phải một chẩn đoán y khoa, và hồ sơ này không dùng nó làm cách giải thích năng lực của anh.)*
+
+Nửa thứ hai mới là chỗ ít ai ngờ. Chính người đánh 1.000 cú một ngày lại là người chủ động lắp phanh, bằng việc câu cá:
+
+> *"I needed some balance in my life. Like, this is a great balance, you know, just taking a boat and just going to the lake and then just enjoy yourself. So and then after that, get back on the pool table, and you're ready to go. Like, you're all fresh."*
+> (Tôi cần chút cân bằng trong đời mình. Đây là một sự cân bằng rất tốt, kiểu lấy con thuyền ra hồ rồi tận hưởng. Rồi sau đó quay lại bàn bi-a là sẵn sàng luôn. Kiểu người mới tinh lại.)
+
+Và anh kể một chuyện thật để nói rõ mình phản đối kiểu nào — chuyện về đúng cơ thủ đã có hồ sơ tâm lý riêng trong app này:
+
+> *"I seen some players out there like Joshua Filler… he's hitting balls after the tournament. He's already beaten out of the tournament, and he's in the lobby at the hotel, and there was a couple pool tables sitting in the lobby, and I looked over and I see Joshua Filler hitting balls. And I went over and talked to him for a little bit. I said, 'Why are you guys hitting balls?' And he said, 'Oh, I just want to play pool.' I said, 'You guys ever have any hobbies?'"*
+> (Tôi thấy có những cơ thủ như Joshua Filler… cậu ấy đánh bi ngay sau giải. Bị loại rồi, mà vẫn ở sảnh khách sạn, sảnh có kê mấy cái bàn bi-a, tôi nhìn sang thì thấy Joshua Filler đang đánh bi. Tôi bước qua nói chuyện một lúc. Tôi hỏi: "Sao mấy cậu còn đánh bi thế?" Cậu ấy đáp: "À, tại em chỉ muốn đánh bi thôi." Tôi hỏi lại: "Mấy cậu có thú vui nào khác không đấy?")
+
+Ngay sau đó anh nói thẳng dự báo của mình: *"It won't last forever."* (Kiểu đó không kéo dài mãi được đâu.) Và anh khai luôn rằng anh nói từ kinh nghiệm bản thân: *"I used to do that."* (Tôi từng như thế.)
+
+Cách đọc này là suy luận của người lập hồ sơ, không phải lời anh: **đây là hai bản thiết kế sự nghiệp khác nhau chứ không phải một người siêng và một người lười.** Filler nạp toàn bộ đời sống vào bàn bi và cháy rất sáng ở tuổi 20; Van Boening ở tuổi 42 vẫn vô địch, và cái giữ anh lại đó không phải là tập ít hơn mà là **có một chỗ khác để đổ năng lượng thừa vào**. Người tập bận đi làm, mỗi tuần lên bàn hai buổi, không cần lo chuyện quá tải này. Nhưng người tập nghiêm túc tới mức thấy mình chỉ còn bi-a trong đầu thì đây là lời cảnh báo đến từ người khó có thể bị chê là lười.
+
+## 11. Về chuẩn cảm xúc anh đặt ra cho chính mình từ năm 2014
+
+Mục 5 nói về hạn dùng của cơn giận. Mục này nói về **nguồn gốc** của quy tắc ấy, và bằng chứng nằm ở một video rất cũ: loạt "CSI Ten Questions" của CueSports International, đăng 05/09/2014, dài 3 phút. Khi được hỏi thần tượng của mình, anh không chọn người đánh hay nhất:
+
+> *"My favorite player is Warren Kiamco. He never gets upset. He's always just enjoying playing pool whether he wins or lose."*
+> (Cơ thủ tôi thích nhất là Warren Kiamco. Anh ấy không bao giờ nổi cáu. Anh ấy luôn tận hưởng việc đánh bi-a, thắng hay thua cũng vậy.)
+
+Và ngay sau đó là điều anh ghét, nói không vòng vo:
+
+> *"I don't like when people get arrogant on the table or get upset. They throw chalk around, they throw the cues. I don't think it's good for the sport."*
+> (Tôi không thích khi người ta lên mặt trên bàn hoặc nổi cáu. Họ ném lơ tứ tung, họ quăng cơ. Tôi không cho đó là điều tốt cho môn này.)
+
+Cũng trong ba phút đó, anh trả lời câu "điều gì anh tiếc nhất trong sự nghiệp" bằng một câu không dính gì tới bi-a:
+
+> *"My biggest regression in my career is that I didn't start to work out earlier in my early days. I think it's important that you have to stay fit and be an athlete… you don't have to be tired all the time."*
+> (Điều tôi tiếc nhất trong sự nghiệp là tôi không bắt đầu tập thể lực sớm hơn hồi trẻ. Tôi cho rằng giữ thể lực và sống như một vận động viên là chuyện quan trọng… để anh không bị mệt suốt.)
+
+Hai câu này, cách các câu ở mục 5 và mục 10 tới **hơn mười một năm**, cho thấy hệ giá trị của anh không đổi theo thành tích: chuẩn để anh chấm một cơ thủ là **giữ được bình tĩnh và giữ được thể trạng**, chứ không phải đánh đẹp. Cách đọc này là suy luận của người lập hồ sơ, nhưng nó dựa trên việc cùng một nội dung xuất hiện ở ba mốc thời gian rời nhau, do ba kênh khác nhau ghi lại.
+
+Một mảnh nhỏ nữa, mới hơn, cho thấy cùng chuẩn ấy vận hành trong lúc đang thi đấu. Kênh *Strokin It Billiards* phỏng vấn anh ngay sau trận bán kết ngược dòng tại Florida Open 2025 (14/08/2025, video 2 phút 35 giây), hỏi lúc bị dẫn thì trong đầu anh có gì:
+
+> *"All I can do is do my best. I made a couple mistakes at the beginning… but that's part of the game, you just got to stay positive and that's the most important thing, and never give up."*
+> (Tôi chỉ có thể làm hết sức mình. Tôi mắc vài lỗi ở đầu trận… nhưng đó là một phần của cuộc chơi, anh chỉ cần giữ thái độ tích cực, đó là điều quan trọng nhất, và không bao giờ bỏ cuộc.)
+
+Đối thủ đánh trúng một cú cắt mỏng gần như không thể, và anh bình luận về nó bằng đúng bốn chữ: *"What can you do? That's part of the game again."* (Anh làm gì được? Lại là một phần của cuộc chơi thôi.) Không có chữ nào về sự bất công. Đây chính là mục 5 nhìn từ bên ngoài, ở cự ly một trận đấu cụ thể.
+
+## 12. Về Mosconi Cup: nơi duy nhất anh mô tả áp lực bằng giọng nặng nề
+
+Van Boening đã đánh 18 kỳ Mosconi Cup. Đây là môi trường trái ngược hoàn toàn với "tắt tiếng thế giới" ở mục 3: khán giả Anh la hét, đồng đội ngồi cùng ghế, và anh mang biệt danh "Captain America". Theo bài của ban tổ chức (World Nineball Tour, *"Van Boening the History Maker"*, 23/11/2024 — **nguồn hạng A**), cú đánh anh **vẫn gọi là "cú đánh áp lực nhất sự nghiệp"** là cú bi băng dọc bàn 1-9 hạ Alexander Kazakis, ấn định 11-9 cho tuyển Mỹ tại Alexandra Palace năm 2018, chấm dứt chuỗi tám năm thua liên tiếp.
+
+Cùng bài, anh mô tả tám năm đó bằng đúng một chữ:
+
+> *"The eight years in a row that we lost were brutal. But the game changed because the Europeans got better. That's what I learned through the Mosconi Cup. The Europeans just kept getting better."*
+> (Tám năm thua liên tiếp là tám năm tàn khốc. Nhưng cuộc chơi đã đổi vì người châu Âu giỏi lên. Đó là thứ tôi học được qua Mosconi Cup. Người châu Âu cứ giỏi lên mãi.)
+
+Và điều kéo anh trở lại 18 lần không phải danh hiệu, mà là bầu không khí:
+
+> *"I remember that first Mosconi Cup. It was in Las Vegas, and I remember that everybody talked about the Mosconi Cup. I really liked the atmosphere. It was different than other tournaments. Even though we lost, I knew I wanted to be in more Mosconi Cups."*
+> (Tôi nhớ kỳ Mosconi Cup đầu tiên. Nó ở Las Vegas, và tôi nhớ ai cũng nói về Mosconi Cup. Tôi rất thích bầu không khí ấy. Nó khác hẳn các giải khác. Dù thua, tôi biết là tôi muốn dự thêm nhiều kỳ Mosconi Cup nữa.)
+
+Trên *The Boom and Freezer Show* (19/01/2026), khi bàn về một lần anh mất bình tĩnh tại giải này — chỗ hiếm hoi anh vượt quá hạn mức cảm xúc của chính mình — anh nói:
+
+> *"People got to understand Mosconi Cup is too tough… They don't understand the mentality of what we are going through. The pressure, the tight pockets, the team effort, everything. But we tried. We tried our hardest and I got no regrets."*
+> (Người ta phải hiểu là Mosconi Cup quá khắc nghiệt… Họ không hiểu được tâm thế mà bọn tôi phải đi qua. Áp lực, lỗ bàn hẹp, chuyện phải gánh cả đội, đủ thứ. Nhưng bọn tôi đã cố. Bọn tôi cố hết sức và tôi không hối tiếc gì.)
+
+Chú ý cách kết: kể cả ở nơi anh gọi là quá sức chịu đựng, câu chốt vẫn quay về đúng thước đo cũ ở mục 7 — **"cố hết sức, không hối tiếc"**. Đó là hằng số duy nhất chạy suốt 12 năm tư liệu của hồ sơ này.
+
+## Về ba điều rút ra được cho người tập
+
+1. **Áp lực là một triệu chứng ở cánh tay, không phải một cảm xúc cần thắng.** Van Boening không tìm cách hết lo rồi mới đánh; anh đo áp lực bằng câu *"everything's so tight"* rồi xử lý ngay ở chỗ đo được là cú đẩy — thả lỏng, bung tay, thôi cố điều khiển. Trật tự của anh là "lỏng tay trước, hết áp lực sau", ngược với trật tự mà phần lớn người tập chờ đợi.
+
+2. **Cảm xúc xấu nên có hạn dùng, và hạn ấy phải ngắn hơn trận đấu.** Anh thừa nhận cơn giận sống trong người mình vài tiếng, nhưng chỉ cho nó điều khiển tay mình đúng một ván. Kèm theo là một thao tác vật lý khi vượt ngưỡng: xin thời gian chờ, đi rửa mặt, quay lại. Cắt hạn cụ thể như vậy dùng được ngay ở bàn quán, còn câu "phải bình tĩnh" thì không.
+
+3. **Chấm mình bằng nỗ lực đã bỏ ra, đừng chấm bằng kết quả — nhưng phải chấm thật.** Đây là chỗ hai vế của anh phải đi cùng nhau mới đúng: một vế là *"chấp nhận thua, không thì phát điên"* và *"tôi chỉ làm cho chính tôi, không hối tiếc"*; vế kia là 1.000 cú một ngày, là gọi thẳng hai trận thua chung kết thế giới là "hỏng" rồi chỉ đúng chỗ hỏng của từng trận. Buông ở kết quả mà không siết ở quá trình thì chỉ còn là lời tự an ủi.
+
+---
+
+## Phụ lục — cách xác minh, để người đọc sau kiểm lại được
+
+Toàn bộ trích dẫn trong hồ sơ này được đối chiếu lại ngày 14/08/2026 trực tiếp trên phụ đề gốc tiếng Anh của từng video (khoá `en-orig`, tức bản máy nhận dạng **từ chính tiếng Anh trong video**, không phải bản dịch máy từ ngôn ngữ khác — mọi khoá đều không mang tham số `tlang`). Bản phụ đề đã tải để đối chiếu nằm ở `App/NhipCo/logs/svb-subs/`.
+
+| Nguồn | Mã video YouTube | Ngày đăng đo được | Độ dài đo được |
+|---|---|---|---|
+| The Boom and Freezer Show | `bOTji6vn1yc` | 19/01/2026 | 80 phút |
+| Billiard Breakdown, "Riding With Shane Van Boening" | `CbHoCgP4CRQ` | 21/01/2026 | 32 phút |
+| Doggin' It, phỏng vấn tại CSI Expo | `egKzhBSl9S8` | 27/03/2022 | 30 phút |
+| Doggin' It, "World Championship recap" | `BE3APh_T6oQ` | 08/04/2022 | 12 phút |
+| Matchroom Pool, "SVB Junior and Q&A with you" | `YfB8PTVtdQo` | 26/07/2022 | 38 phút |
+| CueSports International, "CSI Ten Questions" | `6Ab_xP2cWW0` | 05/09/2014 | 3 phút |
+| Strokin It Billiards, Florida Open 2025 | `m9yM0x9f4-U` | 14/08/2025 | 2 phút 35 giây |
+| 60 Minutes, bản video đầy đủ | `ervLwxz7xPo` | phát 12/2022 | 13 phút |
+
+Ba bài báo hạng A đã mở lại và đối chiếu nguyên văn: CBS News (bản chép của 60 Minutes, 04/12/2022) · World Nineball Tour, *"Van Boening the History Maker"* (23/11/2024) · World Nineball Tour, *"Van Boening Completes His Florida Redemption To Claim The Crown"* (09/08/2026).
+
+**Sai số đã biết của phụ đề tự động, ghi ra để không ai đọc nhầm là lỗi trích dẫn:** máy nghe "sharks me" thành *"strikes me"*, "Ko Pin Yi" thành *"Copenhagen"*, "Albin" thành *"Alvin"*, "one-in-a-lifetime" thành *"one to lifetime"*, và tên anh thành *"Van Bonin"/"Vamboni"*. Mọi chỗ sửa đều đặt trong ngoặc vuông hoặc ghi chú ngay dưới trích dẫn; không câu nào được viết lại cho trơn tru hơn lời gốc.

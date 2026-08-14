@@ -36,13 +36,24 @@
       "ngay": "2026-08-13",
       "hang_fargo": 5,
       "rating": 847
+    },
+    {
+      "ten": "Shane Van Boening",
+      "key": "psy_pro_shanevanboening",
+      "ngay": "2026-08-14"
+    },
+    {
+      "ten": "Aloysius Yapp",
+      "key": "psy_pro_yapp",
+      "ngay": "2026-08-14"
+    },
+    {
+      "ten": "Chang Jung-Lin",
+      "key": "psy_pro_changjunglin",
+      "ngay": "2026-08-14"
     }
   ],
   "hang_cho": [
-    "Shane Van Boening",
-    "Aloysius Yapp",
-    "Ameer Ali",
-    "Chang Jung-Lin",
     "Johann Chua",
     "Carlo Biado",
     "Jayson Shaw",
@@ -88,9 +99,19 @@
     "John Albert Refulle",
     "Marco Teutscher",
     "Aleksa Pecelj",
-    "Roland Garcia"
+    "Roland Garcia",
+    "Stefan Kasper",
+    "Chris Melling",
+    "Hayato Hijikata",
+    "Mieszko Fortunski"
   ],
-  "khong_du_tu_lieu": [],
+  "khong_du_tu_lieu": [
+    {
+      "ten": "Ameer Ali",
+      "ngay": "2026-08-14",
+      "ghi_chu": "Video có, chữ không — chỉ có clip phỏng vấn/phát biểu tiếng Ả Rập không phụ đề chữ (Threads/Facebook), còn lại chỉ 4 câu xã giao sau trận trên Asharq Al-Awsat. Ưu tiên mở lại đầu tiên nếu sau này cho phép chép lời từ video tiếng địa phương."
+    }
+  ],
   "bang_xep_hang_fargorate": {
     "_do_ngay": "2026-08-08",
     "_nguon": "https://fargorate.com/top-ten-lists — mục Top 100 World",
