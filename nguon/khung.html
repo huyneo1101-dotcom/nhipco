@@ -228,13 +228,14 @@ body{
 .cuecard .csrc{font-size:0.6875rem;font-weight:600;color:var(--muted);line-height:1.4;max-width:92%}
 
 /* Thanh lưu quote — hiện khi bôi đen một đoạn trong bài Kiến thức.
-   Nằm đè lên thanh tab dưới cùng, nhường chỗ cho thanh chọn chữ của hệ điều hành ở trên. */
-.quotebar{position:fixed;left:0;right:0;bottom:0;z-index:55;margin:0 auto;width:100%;max-width:520px;
-  background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--gold);
-  border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.45);
-  padding:12px 14px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;
+   ĐẶT Ở ĐỈNH màn hình, không đặt ở đáy: đáy điện thoại Android là chỗ hệ điều hành dựng
+   thanh "Nhấn để xem kết quả tìm kiếm" cùng ba nút điều hướng, đè kín nút Lưu. */
+.quotebar{position:fixed;left:0;right:0;top:0;z-index:55;margin:0 auto;width:100%;max-width:520px;
+  background:linear-gradient(195deg,var(--card),var(--card2));border:1px solid var(--gold);
+  border-radius:0 0 16px 16px;box-shadow:0 8px 30px rgba(0,0,0,.45);
+  padding:calc(12px + env(safe-area-inset-top)) 14px 12px;display:flex;flex-direction:column;gap:8px;
   animation:qbup .18s var(--ease)}
-@keyframes qbup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes qbup{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 .quotebar .qnguon{font-size:0.6875rem;font-weight:800;letter-spacing:.6px;color:var(--gold);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .quotebar .qtxt{font-size:0.8125rem;line-height:1.5;color:var(--text);

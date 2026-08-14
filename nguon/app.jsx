@@ -4620,18 +4620,17 @@ function LuuQuoteBar(){
   const [chon,setChon]=useState(null);   // {t,key} đoạn đang bôi đen
   const [bao,setBao]=useState('');       // câu báo sau khi lưu
   useEffect(()=>{
-    let hen=null, xoa=null;
-    const doc=()=>{
-      const c=docVungChon();
-      if(c){ clearTimeout(xoa); setChon(c); setBao(''); }
-      // Nhả tay ra khỏi chữ là selectionchange bắn ngay, mà cú chạm vào nút Lưu cũng
-      // xoá vùng chọn — nên chờ một nhịp rồi mới ẩn, để cú chạm ấy kịp thành click.
-      else { clearTimeout(xoa); xoa=setTimeout(()=>setChon(null),600); }
-    };
+    let hen=null;
+    const doc=()=>{ const c=docVungChon(); if(c){ setChon(c); setBao(''); } };
     const hoan=()=>{ clearTimeout(hen); hen=setTimeout(doc,180); };   // gộp các nhịp kéo tay
     document.addEventListener('selectionchange',hoan);
-    return ()=>{ document.removeEventListener('selectionchange',hoan); clearTimeout(hen); clearTimeout(xoa); };
+    return ()=>{ document.removeEventListener('selectionchange',hoan); clearTimeout(hen); };
   },[]);
+  // Thanh KHÔNG tự ẩn khi mất vùng bôi đen. Trên điện thoại, hệ điều hành dựng menu riêng
+  // (Chép · Chia sẻ · Tìm kiếm trên web) đè lên app, và cú chạm ra chỗ trống để dẹp menu ấy
+  // cũng xoá luôn vùng chọn — ẩn theo vùng chọn là nút Lưu biến mất đúng lúc sắp bấm được.
+  // Chỉ ẩn khi bấm Lưu/Bỏ chọn, hoặc sau 30 giây không đụng tới.
+  useEffect(()=>{ if(!chon) return; const t=setTimeout(()=>setChon(null),30000); return ()=>clearTimeout(t); },[chon]);
   useEffect(()=>{ if(!bao) return; const t=setTimeout(()=>setBao(''),3200); return ()=>clearTimeout(t); },[bao]);
   const bai=chon?KNOWLEDGE.find(x=>x.key===chon.key):null;
   const ten=tenCoThu(bai);
