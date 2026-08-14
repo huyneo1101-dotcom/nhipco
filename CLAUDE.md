@@ -28,7 +28,7 @@ App tĩnh một-file: toàn bộ UI + logic + CSS trong `index.html` (~5.611 dò
 
 ## Quy tắc làm việc với file này
 - **KHÔNG đọc cả `index.html` (~5.000 dòng)** — dùng grep định vị rồi Read cửa sổ nhỏ (xem skill `bigfile-nav`).
-- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v45`).
+- Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v46`).
 - Babel transpile trong trình duyệt: lỗi cú pháp là trắng màn hình, không báo terminal. Kiểm tra Console sau khi sửa.
 - ⛔ **CẤM viết cỡ chữ bằng `px`** — dùng `rem` (`font-size:0.8125rem` thay `13px`, `style={{fontSize:'0.8125rem'}}` thay `fontSize:13`). Từ 14/08/2026 người dùng chọn được cỡ chữ ở Cài đặt, cơ chế là đổi `font-size` của thẻ `<html>` (14/16/18/20px) nên **chỉ cỡ chữ viết bằng rem mới đổi theo**. Một chỗ viết px vẫn hiện đúng ở cỡ Vừa, không lỗi nào phát ra — mãi tới khi người dùng chọn cỡ khác mới lộ ra là chỗ đó đứng im. Quy đổi: chia cho 16.
   - **Ngoại lệ đúng**: `fontSize=` trong `<svg>` (đơn vị là toạ độ viewBox, không phải cỡ chữ trang) · `font-size:34vw` của đồng hồ bấm giờ toàn màn hình · `html{font-size:16px}` ở đầu `khung.html` (chính là cỡ nền) · chữ mẫu "A" trong nút chọn cỡ chữ (phải bày 4 cỡ cạnh nhau).
@@ -68,6 +68,10 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
   - Nút chọn mục (`catbar` trong `KnowledgeView`) dùng class `catbar wrap` (CSS `.catbar.wrap{flex-wrap:wrap;overflow-x:visible}`) — bấm-để-xuống-dòng, KHÔNG phải dải chip kéo ngang như `catbar` trần (vẫn dùng ở `KnowReview`/Training).
   - Trỏ chéo giữa các bài dùng 3 khuôn hợp lệ: `(Xem "tên BÀI".)` · `(Xem "tên GẠCH" trong "tên BÀI".)` · `(Xem bài tập "tên" ở tab Rèn luyện.)`. Tránh dấu ngoặc đơn bên trong cụm `(Xem …)`. **Khuôn `(Xem "tên BÀI".)` giờ bấm được** — `renderKnowText()` (ngay trước `KnowCard`) dò cụm `"..."` khớp đúng `a.title` một bài đang có (bảng tra `KNOW_TITLE_TO_KEY`), biến thành `<span className="klink">` gọi `navToKnowArticle(key)`: bài đang mở (Đọc) nhận ngay qua `_knowNavListeners` (không remount), bài từ Ôn luyện ép `seg='read'` qua `_setKnowSeg` rồi `KnowledgeView` đọc `_knowNavKey` lúc mount. Cụm không khớp tiêu đề nào (tên gạch đầu dòng, tên bài tập ở tab khác) giữ nguyên chữ thường, không link.
   - `KNOW_CARDS` (~4663) tự sinh thẻ ôn luyện từ mọi mục `body` — thêm bài là tab Ôn luyện tự có thẻ, không phải sửa gì.
+  - **Bôi đen một đoạn trong bài → lưu thành câu Nhắc nhở** (từ 14/08/2026). `LuuQuoteBar` (ngay trước `KnowCard`) mắc một listener `selectionchange` ở `document`, `docVungChon()` chỉ nhận vùng chọn nằm trong phần tử mang `data-know-key` — hiện đánh dấu ở `.drillB` của `KnowCard` (Đọc) và thẻ lật của `KnowReview` (Ôn luyện). Câu lưu ra đi vào `nc.customcues` đúng khuôn `Cue` đang đọc, thêm trường `src` (tên bài) hiển thị nhỏ dưới thẻ.
+    - **Bài `tag:'Cơ thủ'` thì nhãn câu là TÊN CƠ THỦ**, lấy qua `tenCoThu()`: ưu tiên trường `who` nếu bài có khai, không có thì cắt phần trước dấu hai chấm của `title`. ⚠️ **Routine hằng ngày viết bài mới phải giữ khuôn tiêu đề `Tên: mô tả …`**, đổi khuôn thì quote mất tên người nói mà không lỗi nào phát ra — muốn chắc thì khai thẳng `who:'Tên'` trong bài.
+    - Ngưỡng chọn: `QUOTE_NGAN`=12 · `QUOTE_DAI`=500 ký tự, ngoài khoảng đó thanh không hiện (chặn cú chạm nhầm và chặn bôi cả bài). Trùng câu đã có thì báo, không lưu thêm.
+    - ⚠️ Chạm vào nút Lưu cũng xoá vùng chọn, nên khi vùng chọn rỗng thanh **chờ 600ms rồi mới ẩn** — bỏ nhịp chờ này là nút bấm không ăn trên điện thoại, mà trên máy tính vẫn chạy tốt nên rất dễ tưởng là xong.
   - ⚠️ `data/knowledge.js` (178 KB) là **bản chết**, không được `index.html` hay `sw.js` nạp; đừng sửa nó, cũng đừng lấy làm chuẩn.
 - Đồng bộ đám mây: `cloudInit`/`cloudPush`/`cloudApply`/`cloudSnap` (~764–791); `Settings` (~1761) chứa auth + backup.
 - 9 theme qua `body.theme-*` (midnight/coffee/court/racing/neon/peach/sage/periwinkle/color) — xem skill `theme-pack`.
@@ -124,3 +128,24 @@ trong `HeThong/don-lich-routine.py` rồi chạy `--lam`, đừng sửa thẳng 
   hiển thị phẳng, không có mảng `keys:[...]` con nào cần khai thêm.
 - ⛔ **Cấm bịa trích dẫn** — luật số một trong `nghien-cuu-tam-ly-co-thu.md`. Không đủ tư liệu
   công khai thật thì routine bỏ qua cơ thủ đó, ghi vào `khong_du_tu_lieu`, KHÔNG viết hồ sơ giả.
+
+### Video nói tiếng địa phương: tự nghe lại, cấm dùng phụ đề tự động
+
+```bash
+python3 /Users/Huy/Claude/App/NhipCo/nghe-lai-phong-van.py <URL> --tieng tl
+```
+
+Tải riêng phần tiếng bằng `yt-dlp` rồi cho `mlx_whisper` nghe lại trên GPU máy (miễn phí,
+không gửi dữ liệu ra ngoài), ghi bản chữ kèm mốc thời gian từng câu vào `ban-chu-phong-van/`.
+Cần `ffmpeg` — đã cài 14/08/2026, bản 9.0.1. Cỡ model mặc định `small`, đổi bằng `--co`.
+
+⛔ **CẤM lấy `automatic_captions` của YouTube cho ngôn ngữ không phải tiếng Anh làm nguồn
+trích dẫn.** Đo 14/08/2026 trên 20 video phỏng vấn cơ thủ Philippines: 12 video có mục `fil`
+nhưng chỉ **02** là nhận dạng gốc đúng tiếng Filipino, còn lại là bản dịch máy từ ngôn ngữ
+YouTube nghe nhầm — video Carlo Biado trả về `lang=id&tlang=fil`, cho ra chữ vô nghĩa kiểu
+"nasira ang hubbul ng sonokerep". Dấu hiệu nhận ra bản dịch máy: URL phụ đề mang tham số
+`tlang=`, hoặc khoá ngôn ngữ không có bản `<mã>-orig` đi kèm.
+
+⚠️ Endpoint phụ đề của YouTube chặn IP nhà bằng lỗi 429 sau vài lượt gọi liên tiếp; đường tải
+phần tiếng thì không bị. Cần đọc phụ đề gấp thì đi qua Chrome thật (`mcp__claude-in-chrome__*`)
+vì nó mang cookie phiên — trình duyệt trong app dùng chung IP nên cũng bị chặn.

@@ -225,6 +225,22 @@ body{
 .cuecard .q{font-size:2.5rem}
 .cuecard .t{font-size:1.3125rem;font-weight:800;line-height:1.45}
 .cuecard .tag{font-size:0.6875rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}
+.cuecard .csrc{font-size:0.6875rem;font-weight:600;color:var(--muted);line-height:1.4;max-width:92%}
+
+/* Thanh lưu quote — hiện khi bôi đen một đoạn trong bài Kiến thức.
+   Nằm đè lên thanh tab dưới cùng, nhường chỗ cho thanh chọn chữ của hệ điều hành ở trên. */
+.quotebar{position:fixed;left:0;right:0;bottom:0;z-index:55;margin:0 auto;width:100%;max-width:520px;
+  background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--gold);
+  border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.45);
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;
+  animation:qbup .18s var(--ease)}
+@keyframes qbup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.quotebar .qnguon{font-size:0.6875rem;font-weight:800;letter-spacing:.6px;color:var(--gold);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quotebar .qtxt{font-size:0.8125rem;line-height:1.5;color:var(--text);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.quotebar .qacts{display:flex;gap:8px}
+.quotebar .qbao{font-size:0.8125rem;font-weight:700;color:var(--ok);line-height:1.45}
 .mqhero{position:relative;overflow:hidden;width:100%;min-height:clamp(240px,42vh,340px);padding:26px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;cursor:pointer;
   background:linear-gradient(160deg,var(--card),var(--card2));border:1.5px solid var(--gold);box-shadow:0 10px 34px -10px rgba(0,0,0,.55)}
 .mqhero:active{transform:scale(.995)}

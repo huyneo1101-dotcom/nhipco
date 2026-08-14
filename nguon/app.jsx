@@ -1084,6 +1084,8 @@ function Cue(){
         <div className="card cuecard" onClick={next}>
           <div className="tag">{cur.tag}</div>
           <div className="t">{cur.t}</div>
+          {/* src: tên bài Kiến thức mà câu này được bôi đen lưu ra — để lần theo lại nguồn. */}
+          {cur.src && <div className="csrc">📚 {cur.src}</div>}
         </div>
         <div style={{display:'flex',gap:8,marginTop:10}}>
           <button className="btn ghost" style={{flex:'0 0 auto',color:liked?'var(--gold)':'var(--text)'}} onClick={like}>{liked?'❤️':'🤍'} Thích</button>
@@ -4549,6 +4551,83 @@ function renderKnowText(text){
     return part;
   });
 }
+/* ---------- Bôi đen một đoạn trong bài Kiến thức → lưu thành câu Nhắc nhở ---------- */
+// Tên cơ thủ của một bài hồ sơ, để quote lưu ra mang đúng tên người nói.
+// Ưu tiên trường `who` nếu bài có khai; không có thì lấy phần trước dấu hai chấm
+// của tiêu đề (khuôn hiện dùng: 'Gorst: quy trình bịt nỗi sợ trượt — hồ sơ từ …').
+function tenCoThu(a){
+  if(!a || a.tag!=='Cơ thủ') return null;
+  if(a.who) return a.who;
+  const i=(a.title||'').indexOf(':');
+  if(i<1) return null;
+  const t=a.title.slice(0,i).trim();
+  return (t && t.length<=40) ? t : null;
+}
+// Bỏ cặp nháy kép bao ngoài — chỉ bỏ khi CẢ HAI đầu đều là nháy, vì đoạn bôi đen
+// giữa chừng một câu trích thường chỉ dính một bên và bỏ lệch sẽ hỏng nghĩa.
+function bocNhayKep(s){
+  const mo='"“', dong='"”';
+  if(s.length>2 && mo.indexOf(s[0])>=0 && dong.indexOf(s[s.length-1])>=0) return s.slice(1,-1).trim();
+  return s;
+}
+const QUOTE_NGAN=12, QUOTE_DAI=500;
+// Đọc vùng đang bôi đen; trả null nếu không nằm trong một bài Kiến thức, quá ngắn hoặc quá dài.
+function docVungChon(){
+  const sel=window.getSelection&&window.getSelection();
+  if(!sel || sel.isCollapsed || !sel.rangeCount) return null;
+  const txt=bocNhayKep(sel.toString().replace(/\s+/g,' ').trim());
+  if(txt.length<QUOTE_NGAN || txt.length>QUOTE_DAI) return null;
+  let n=sel.getRangeAt(0).commonAncestorContainer;
+  if(n && n.nodeType===3) n=n.parentElement;
+  const hop=n && n.closest ? n.closest('[data-know-key]') : null;
+  if(!hop) return null;
+  return {t:txt, key:hop.getAttribute('data-know-key')};
+}
+function LuuQuoteBar(){
+  const [chon,setChon]=useState(null);   // {t,key} đoạn đang bôi đen
+  const [bao,setBao]=useState('');       // câu báo sau khi lưu
+  useEffect(()=>{
+    let hen=null, xoa=null;
+    const doc=()=>{
+      const c=docVungChon();
+      if(c){ clearTimeout(xoa); setChon(c); setBao(''); }
+      // Nhả tay ra khỏi chữ là selectionchange bắn ngay, mà cú chạm vào nút Lưu cũng
+      // xoá vùng chọn — nên chờ một nhịp rồi mới ẩn, để cú chạm ấy kịp thành click.
+      else { clearTimeout(xoa); xoa=setTimeout(()=>setChon(null),600); }
+    };
+    const hoan=()=>{ clearTimeout(hen); hen=setTimeout(doc,180); };   // gộp các nhịp kéo tay
+    document.addEventListener('selectionchange',hoan);
+    return ()=>{ document.removeEventListener('selectionchange',hoan); clearTimeout(hen); clearTimeout(xoa); };
+  },[]);
+  useEffect(()=>{ if(!bao) return; const t=setTimeout(()=>setBao(''),3200); return ()=>clearTimeout(t); },[bao]);
+  const bai=chon?KNOWLEDGE.find(x=>x.key===chon.key):null;
+  const ten=tenCoThu(bai);
+  const boChon=()=>{ try{ window.getSelection().removeAllRanges(); }catch(e){} setChon(null); };
+  const luu=()=>{
+    if(!chon) return;
+    const list=store.get('nc.customcues',[]);
+    if(list.some(c=>c.t===chon.t) || CUES.some(c=>c.t===chon.t) || WAR_CUES.some(c=>c.t===chon.t)){
+      setBao('Câu này đã có trong Nhắc nhở rồi.');
+    }else{
+      store.set('nc.customcues',[{tag:ten||'Kiến thức', t:chon.t, src:bai?bai.title:''},...list]);
+      setBao(ten?('Đã lưu vào Nhắc nhở — ghi tên '+ten+'.'):'Đã lưu vào Nhắc nhở.');
+    }
+    boChon();
+  };
+  if(bao) return <div className="quotebar"><div className="qbao">✅ {bao}</div></div>;
+  if(!chon) return null;
+  return (
+    // Giữ vùng bôi đen khi bấm bằng chuột; chạm tay thì không chặn, đã có nhịp chờ 600ms ở trên.
+    <div className="quotebar" onPointerDown={e=>{ if(e.pointerType==='mouse') e.preventDefault(); }}>
+      <div className="qnguon">{ten?('🎙️ Lời của '+ten):('📚 '+(bai?bai.title:'Kiến thức'))}</div>
+      <div className="qtxt">“{chon.t}”</div>
+      <div className="qacts">
+        <button className="btn ghost sm" onClick={boChon}>Bỏ chọn</button>
+        <button className="btn acc sm" style={{flex:1}} onClick={luu}>💾 Lưu vào Nhắc nhở</button>
+      </div>
+    </div>
+  );
+}
 function KnowCard({a,defaultOpen,onArchive,archived,onFav,fav,onPin,pinned,navKey}){
   const [open,setOpen]=useState(!!defaultOpen);
   const elRef=useRef(null);
@@ -4567,7 +4646,8 @@ function KnowCard({a,defaultOpen,onArchive,archived,onFav,fav,onPin,pinned,navKe
         <span className="muted" style={{fontSize:'1rem',flex:'none'}}>{open?'▾':'▸'}</span>
       </div>
       {open &&
-        <div className="drillB">
+        // data-know-key: mốc để LuuQuoteBar biết đoạn bôi đen thuộc bài nào.
+        <div className="drillB" data-know-key={a.key}>
           {a.intro && <div className="kv" style={{color:'var(--soft)',fontStyle:'italic'}}>{a.intro}</div>}
           {a.body.map((s,i)=>(
             <div key={i} className="kv">
@@ -4670,6 +4750,7 @@ function KnowledgeView(){
     <div style={{display:'flex',flexDirection:'column',flex:1}}>
       <div className="h">Kiến thức bi-a</div>
       <div className="tsub">Chạm để mở/đóng. ⭐ yêu thích · 📌 ghim lên đầu · 🗄 lưu trữ cho gọn.</div>
+      <div className="tsub">Bôi đen một đoạn trong bài để lưu thành câu Nhắc nhở — đoạn lấy từ bài cơ thủ được ghi kèm tên người nói.</div>
       {favList.length>0 &&
         <div className="presets" style={{justifyContent:'flex-start',margin:'2px 0 6px'}}>
           <button className={'chip'+(!favMode?' on':'')} onClick={()=>setFavMode(false)}>Duyệt theo mục</button>
@@ -4804,7 +4885,7 @@ function KnowledgeView(){
   );
 }
 // Thẻ ôn luyện: mỗi mục (h) trong mọi bài Kiến thức = 1 thẻ (mặt trước = tên mục, mặt sau = nội dung).
-const KNOW_CARDS=KNOWLEDGE.flatMap(a=>a.body.map((s,i)=>({id:a.key+'#'+i, cat:a.tag, article:a.title, front:s.h, back:s.p})));
+const KNOW_CARDS=KNOWLEDGE.flatMap(a=>a.body.map((s,i)=>({id:a.key+'#'+i, akey:a.key, cat:a.tag, article:a.title, front:s.h, back:s.p})));
 function KnowReview(){
   const [rev,setRev]=usePersist('nc.knowrev',{});
   const [cat,setCat]=useState('all');
@@ -4840,7 +4921,7 @@ function KnowReview(){
             <button className="btn acc" onClick={restart}>🔁 Ôn lại</button>
           </div>
         : <>
-          <div className="card" onClick={()=>setFlip(f=>!f)} style={{padding:18,marginTop:10,minHeight:190,display:'flex',flexDirection:'column',cursor:'pointer'}}>
+          <div className="card" data-know-key={card.akey} onClick={()=>setFlip(f=>!f)} style={{padding:18,marginTop:10,minHeight:190,display:'flex',flexDirection:'column',cursor:'pointer'}}>
             <div className="muted small" style={{fontWeight:800}}>{card.cat} · {card.article}</div>
             <div style={{fontWeight:800,fontSize:'1.125rem',color:'var(--soft)',margin:'10px 0 6px',lineHeight:1.35}}>{card.front}</div>
             {!flip
@@ -4866,6 +4947,7 @@ function KnowTab(){
       <Seg val={seg} set={setSeg} opts={opts}/>
       {seg==='read' && <KnowledgeView/>}
       {seg==='review' && <KnowReview/>}
+      <LuuQuoteBar/>
     </div>
   );
 }

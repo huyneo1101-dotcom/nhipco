@@ -229,6 +229,22 @@ body{
 .cuecard .q{font-size:2.5rem}
 .cuecard .t{font-size:1.3125rem;font-weight:800;line-height:1.45}
 .cuecard .tag{font-size:0.6875rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}
+.cuecard .csrc{font-size:0.6875rem;font-weight:600;color:var(--muted);line-height:1.4;max-width:92%}
+
+/* Thanh lưu quote — hiện khi bôi đen một đoạn trong bài Kiến thức.
+   Nằm đè lên thanh tab dưới cùng, nhường chỗ cho thanh chọn chữ của hệ điều hành ở trên. */
+.quotebar{position:fixed;left:0;right:0;bottom:0;z-index:55;margin:0 auto;width:100%;max-width:520px;
+  background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--gold);
+  border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.45);
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;
+  animation:qbup .18s var(--ease)}
+@keyframes qbup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.quotebar .qnguon{font-size:0.6875rem;font-weight:800;letter-spacing:.6px;color:var(--gold);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quotebar .qtxt{font-size:0.8125rem;line-height:1.5;color:var(--text);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.quotebar .qacts{display:flex;gap:8px}
+.quotebar .qbao{font-size:0.8125rem;font-weight:700;color:var(--ok);line-height:1.45}
 .mqhero{position:relative;overflow:hidden;width:100%;min-height:clamp(240px,42vh,340px);padding:26px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;cursor:pointer;
   background:linear-gradient(160deg,var(--card),var(--card2));border:1.5px solid var(--gold);box-shadow:0 10px 34px -10px rgba(0,0,0,.55)}
 .mqhero:active{transform:scale(.995)}
@@ -3614,7 +3630,9 @@ function Cue() {
     className: "tag"
   }, cur.tag), /*#__PURE__*/React.createElement("div", {
     className: "t"
-  }, cur.t)), /*#__PURE__*/React.createElement("div", {
+  }, cur.t), cur.src && /*#__PURE__*/React.createElement("div", {
+    className: "csrc"
+  }, "📚 ", cur.src)), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: 8,
@@ -13397,6 +13415,134 @@ function renderKnowText(text) {
     return part;
   });
 }
+/* ---------- Bôi đen một đoạn trong bài Kiến thức → lưu thành câu Nhắc nhở ---------- */
+// Tên cơ thủ của một bài hồ sơ, để quote lưu ra mang đúng tên người nói.
+// Ưu tiên trường `who` nếu bài có khai; không có thì lấy phần trước dấu hai chấm
+// của tiêu đề (khuôn hiện dùng: 'Gorst: quy trình bịt nỗi sợ trượt — hồ sơ từ …').
+function tenCoThu(a) {
+  if (!a || a.tag !== 'Cơ thủ') return null;
+  if (a.who) return a.who;
+  const i = (a.title || '').indexOf(':');
+  if (i < 1) return null;
+  const t = a.title.slice(0, i).trim();
+  return t && t.length <= 40 ? t : null;
+}
+// Bỏ cặp nháy kép bao ngoài — chỉ bỏ khi CẢ HAI đầu đều là nháy, vì đoạn bôi đen
+// giữa chừng một câu trích thường chỉ dính một bên và bỏ lệch sẽ hỏng nghĩa.
+function bocNhayKep(s) {
+  const mo = '"“',
+    dong = '"”';
+  if (s.length > 2 && mo.indexOf(s[0]) >= 0 && dong.indexOf(s[s.length - 1]) >= 0) return s.slice(1, -1).trim();
+  return s;
+}
+const QUOTE_NGAN = 12,
+  QUOTE_DAI = 500;
+// Đọc vùng đang bôi đen; trả null nếu không nằm trong một bài Kiến thức, quá ngắn hoặc quá dài.
+function docVungChon() {
+  const sel = window.getSelection && window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+  const txt = bocNhayKep(sel.toString().replace(/\s+/g, ' ').trim());
+  if (txt.length < QUOTE_NGAN || txt.length > QUOTE_DAI) return null;
+  let n = sel.getRangeAt(0).commonAncestorContainer;
+  if (n && n.nodeType === 3) n = n.parentElement;
+  const hop = n && n.closest ? n.closest('[data-know-key]') : null;
+  if (!hop) return null;
+  return {
+    t: txt,
+    key: hop.getAttribute('data-know-key')
+  };
+}
+function LuuQuoteBar() {
+  const [chon, setChon] = useState(null); // {t,key} đoạn đang bôi đen
+  const [bao, setBao] = useState(''); // câu báo sau khi lưu
+  useEffect(() => {
+    let hen = null,
+      xoa = null;
+    const doc = () => {
+      const c = docVungChon();
+      if (c) {
+        clearTimeout(xoa);
+        setChon(c);
+        setBao('');
+      }
+      // Nhả tay ra khỏi chữ là selectionchange bắn ngay, mà cú chạm vào nút Lưu cũng
+      // xoá vùng chọn — nên chờ một nhịp rồi mới ẩn, để cú chạm ấy kịp thành click.
+      else {
+        clearTimeout(xoa);
+        xoa = setTimeout(() => setChon(null), 600);
+      }
+    };
+    const hoan = () => {
+      clearTimeout(hen);
+      hen = setTimeout(doc, 180);
+    }; // gộp các nhịp kéo tay
+    document.addEventListener('selectionchange', hoan);
+    return () => {
+      document.removeEventListener('selectionchange', hoan);
+      clearTimeout(hen);
+      clearTimeout(xoa);
+    };
+  }, []);
+  useEffect(() => {
+    if (!bao) return;
+    const t = setTimeout(() => setBao(''), 3200);
+    return () => clearTimeout(t);
+  }, [bao]);
+  const bai = chon ? KNOWLEDGE.find(x => x.key === chon.key) : null;
+  const ten = tenCoThu(bai);
+  const boChon = () => {
+    try {
+      window.getSelection().removeAllRanges();
+    } catch (e) {}
+    setChon(null);
+  };
+  const luu = () => {
+    if (!chon) return;
+    const list = store.get('nc.customcues', []);
+    if (list.some(c => c.t === chon.t) || CUES.some(c => c.t === chon.t) || WAR_CUES.some(c => c.t === chon.t)) {
+      setBao('Câu này đã có trong Nhắc nhở rồi.');
+    } else {
+      store.set('nc.customcues', [{
+        tag: ten || 'Kiến thức',
+        t: chon.t,
+        src: bai ? bai.title : ''
+      }, ...list]);
+      setBao(ten ? 'Đã lưu vào Nhắc nhở — ghi tên ' + ten + '.' : 'Đã lưu vào Nhắc nhở.');
+    }
+    boChon();
+  };
+  if (bao) return /*#__PURE__*/React.createElement("div", {
+    className: "quotebar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "qbao"
+  }, "✅ ", bao));
+  if (!chon) return null;
+  return (
+    /*#__PURE__*/
+    // Giữ vùng bôi đen khi bấm bằng chuột; chạm tay thì không chặn, đã có nhịp chờ 600ms ở trên.
+    React.createElement("div", {
+      className: "quotebar",
+      onPointerDown: e => {
+        if (e.pointerType === 'mouse') e.preventDefault();
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "qnguon"
+    }, ten ? '🎙️ Lời của ' + ten : '📚 ' + (bai ? bai.title : 'Kiến thức')), /*#__PURE__*/React.createElement("div", {
+      className: "qtxt"
+    }, "“", chon.t, "”"), /*#__PURE__*/React.createElement("div", {
+      className: "qacts"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "btn ghost sm",
+      onClick: boChon
+    }, "Bỏ chọn"), /*#__PURE__*/React.createElement("button", {
+      className: "btn acc sm",
+      style: {
+        flex: 1
+      },
+      onClick: luu
+    }, "💾 Lưu vào Nhắc nhở")))
+  );
+}
 function KnowCard({
   a,
   defaultOpen,
@@ -13467,8 +13613,12 @@ function KnowCard({
       fontSize: '1rem',
       flex: 'none'
     }
-  }, open ? '▾' : '▸')), open && /*#__PURE__*/React.createElement("div", {
-    className: "drillB"
+  }, open ? '▾' : '▸')), open &&
+  /*#__PURE__*/
+  // data-know-key: mốc để LuuQuoteBar biết đoạn bôi đen thuộc bài nào.
+  React.createElement("div", {
+    className: "drillB",
+    "data-know-key": a.key
   }, a.intro && /*#__PURE__*/React.createElement("div", {
     className: "kv",
     style: {
@@ -13643,7 +13793,9 @@ function KnowledgeView() {
     className: "h"
   }, "Kiến thức bi-a"), /*#__PURE__*/React.createElement("div", {
     className: "tsub"
-  }, "Chạm để mở/đóng. ⭐ yêu thích · 📌 ghim lên đầu · 🗄 lưu trữ cho gọn."), favList.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "Chạm để mở/đóng. ⭐ yêu thích · 📌 ghim lên đầu · 🗄 lưu trữ cho gọn."), /*#__PURE__*/React.createElement("div", {
+    className: "tsub"
+  }, "Bôi đen một đoạn trong bài để lưu thành câu Nhắc nhở — đoạn lấy từ bài cơ thủ được ghi kèm tên người nói."), favList.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "presets",
     style: {
       justifyContent: 'flex-start',
@@ -13830,6 +13982,7 @@ function KnowledgeView() {
 // Thẻ ôn luyện: mỗi mục (h) trong mọi bài Kiến thức = 1 thẻ (mặt trước = tên mục, mặt sau = nội dung).
 const KNOW_CARDS = KNOWLEDGE.flatMap(a => a.body.map((s, i) => ({
   id: a.key + '#' + i,
+  akey: a.key,
   cat: a.tag,
   article: a.title,
   front: s.h,
@@ -13929,6 +14082,7 @@ function KnowReview() {
     onClick: restart
   }, "🔁 Ôn lại")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "card",
+    "data-know-key": card.akey,
     onClick: () => setFlip(f => !f),
     style: {
       padding: 18,
@@ -14010,7 +14164,7 @@ function KnowTab() {
     val: seg,
     set: setSeg,
     opts: opts
-  }), seg === 'read' && /*#__PURE__*/React.createElement(KnowledgeView, null), seg === 'review' && /*#__PURE__*/React.createElement(KnowReview, null));
+  }), seg === 'read' && /*#__PURE__*/React.createElement(KnowledgeView, null), seg === 'review' && /*#__PURE__*/React.createElement(KnowReview, null), /*#__PURE__*/React.createElement(LuuQuoteBar, null));
 }
 
 /* ================= Trước trận ================= */
