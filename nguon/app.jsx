@@ -664,7 +664,7 @@ function tabView(id){
 }
 function Seg({val,set,opts}){
   return (
-    <div className="modeseg" style={{alignSelf:'center',margin:'4px 0 10px',maxWidth:'100%',overflowX:'auto'}}>
+    <div className="modeseg" style={{alignSelf:'center',margin:'4px 0 10px',maxWidth:'100%'}}>
       {opts.map(([k,t])=><button key={k} className={val===k?'on':''} onClick={()=>set(k)}>{t}</button>)}
     </div>
   );
@@ -1946,7 +1946,7 @@ function PositionEditor({init,onSave,onDel,close}){
           <span><i className="posdot" style={{background:'#5fb6ff'}}/>Đường bi cái</span>
         </div>
 
-        <div className="modeseg" style={{alignSelf:'center',margin:'10px 0 2px',maxWidth:'100%',overflowX:'auto'}}>
+        <div className="modeseg" style={{alignSelf:'center',margin:'10px 0 2px',maxWidth:'100%'}}>
           <button className={mode==='tip'?'on':''} onClick={()=>setMode('tip')}>🎯 Đầu cơ→Đường bi</button>
           <button className={mode==='path'?'on':''} onClick={()=>setMode('path')}>➡️ Đường bi→Đầu cơ</button>
         </div>
