@@ -51,12 +51,30 @@
       "ten": "Chang Jung-Lin",
       "key": "psy_pro_changjunglin",
       "ngay": "2026-08-14"
+    },
+    {
+      "ten": "Johann Chua",
+      "key": "psy_pro_johannchua",
+      "ngay": "2026-08-15",
+      "hang_fargo": 10,
+      "rating": 840
+    },
+    {
+      "ten": "Carlo Biado",
+      "key": "psy_pro_carlobiado",
+      "ngay": "2026-08-15",
+      "hang_fargo": 11,
+      "rating": 839
+    },
+    {
+      "ten": "Jayson Shaw",
+      "key": "psy_pro_jaysonshaw",
+      "ngay": "2026-08-15",
+      "hang_fargo": 12,
+      "rating": 836
     }
   ],
   "hang_cho": [
-    "Johann Chua",
-    "Carlo Biado",
-    "Jayson Shaw",
     "Albin Ouschan",
     "Wojciech Szewczyk",
     "Wiktor Zieliński",
@@ -103,7 +121,10 @@
     "Stefan Kasper",
     "Chris Melling",
     "Hayato Hijikata",
-    "Mieszko Fortunski"
+    "Mieszko Fortunski",
+    "Mike Dechaine",
+    "Lo Li Wen",
+    "Jui-An Hsu"
   ],
   "khong_du_tu_lieu": [
     {
@@ -536,7 +557,78 @@
         "Mike Dechaine",
         "USA",
         805
+      ],
+      [
+        61,
+        "Mike Dechaine",
+        "Mike Dechaine",
+        "USA",
+        805
+      ],
+      [
+        62,
+        "Lo Li Wen",
+        "Lo Li Wen",
+        "JPN",
+        804
+      ],
+      [
+        63,
+        "Jui-An Hsu",
+        "Jui-An Hsu",
+        "TWN",
+        803
+      ],
+      [
+        64,
+        "Isral Afrinneza Nasution",
+        "Isral Afrinneza Nasution",
+        "IDN",
+        803
+      ],
+      [
+        65,
+        "Ruslan Chinakhov",
+        "Ruslan Chinakhov",
+        "RUS",
+        803
+      ],
+      [
+        66,
+        "AJ Manas",
+        "AJ Manas",
+        "PHL",
+        803
+      ],
+      [
+        67,
+        "Tobias Bongers",
+        "Tobias Bongers",
+        "DEU",
+        802
+      ],
+      [
+        68,
+        "Jeffrey De Luna",
+        "Jeffrey De Luna",
+        "PHL",
+        802
+      ],
+      [
+        69,
+        "Gerson Martinez",
+        "Gerson Martinez",
+        "PER",
+        802
+      ],
+      [
+        70,
+        "Assis Tadique",
+        "Assis Tadique",
+        "PHL",
+        802
       ]
-    ]
+    ],
+    "_do_ngay_bo_sung": "2026-08-15 (hạng 61-70, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World)"
   }
 }
