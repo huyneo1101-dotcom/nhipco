@@ -113,11 +113,12 @@ body{
 
 .body{flex:1;padding:6px 16px 14px;display:flex;flex-direction:column}
 
+/* Thanh tab dưới CHIA ĐỀU, không cuộn ngang (HO-SO-THIET-KE.md mục 7b). 05 tab × tối thiểu
+   60px vừa khít màn 390px; thêm tab thứ 06 thì phải bớt tab khác chứ không được lặng lẽ đẩy
+   tab cuối ra ngoài mép — thanh dưới mà cuộn được là thanh dưới có mục không ai thấy. */
 .tabs{display:flex;gap:5px;padding:8px 8px calc(12px + env(safe-area-inset-bottom));
-  background:linear-gradient(0deg,var(--bg) 72%,transparent);position:sticky;bottom:0;
-  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:1 1 auto;min-width:60px;border:1px solid var(--line);background:var(--card2);color:var(--muted);
+  background:linear-gradient(0deg,var(--bg) 72%,transparent);position:sticky;bottom:0}
+.tab{flex:1 1 0;min-width:0;border:1px solid var(--line);background:var(--card2);color:var(--muted);
   border-radius:12px;padding:8px 7px;cursor:pointer;display:flex;flex-direction:column;
   align-items:center;gap:3px;font-size:0.625rem;font-weight:700;transition:.15s;white-space:nowrap}
 .tab .ico{font-size:1.125rem;line-height:1}
@@ -192,8 +193,11 @@ body{
 .clockbtns{display:flex;gap:10px;width:100%;max-width:330px}
 .clockbtns .btn{flex:1}
 .presets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.modeseg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
-.modeseg button{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:0.8125rem;
+/* ⛔ CẤM cuộn ngang (Huy chốt 15/08/2026, HO-SO-THIET-KE.md mục 7b): nhãn dài như
+   «🎯 Đầu cơ→Đường bi» làm thanh cần 390px trong khung 356px, tức nút thứ hai bị khuất.
+   Nay XUỐNG DÒNG — nút lẻ cuối giãn hết hàng cho khỏi hụt một bên. */
+.modeseg{display:flex;flex-wrap:wrap;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.modeseg button{flex:1 1 auto;border:none;background:transparent;color:var(--muted);font-weight:800;font-size:0.8125rem;
   padding:7px 14px;border-radius:9px;cursor:pointer}
 .modeseg button.on{background:var(--gold);color:var(--on-gold)}
 
@@ -292,9 +296,10 @@ body{
 .planrow .pt{flex:1;min-width:0}
 .planrow .pt b{font-weight:800;font-size:0.875rem}
 .planrow .pt small{display:block;color:var(--muted);font-size:0.71875rem;font-weight:600;margin-top:1px}
-.catbar{display:flex;gap:7px;overflow-x:auto;padding:9px 0 3px;scrollbar-width:none}
-.catbar.wrap{flex-wrap:wrap;overflow-x:visible}
-.catbar::-webkit-scrollbar{display:none}
+/* Dải chip danh mục cũng XUỐNG DÒNG. Lớp `.wrap` giữ lại để chỗ nào đang khai vẫn chạy,
+   nay nó không còn khác gì mặc định. */
+.catbar{display:flex;flex-wrap:wrap;gap:7px;padding:9px 0 3px}
+.catbar.wrap{flex-wrap:wrap}
 .catbar .chip{flex:none}
 .drillC{padding:0;overflow:hidden;margin-top:0}
 .drillH{display:flex;align-items:center;gap:9px;padding:12px 14px;cursor:pointer}
@@ -2893,8 +2898,7 @@ function Seg({
     style: {
       alignSelf: 'center',
       margin: '4px 0 10px',
-      maxWidth: '100%',
-      overflowX: 'auto'
+      maxWidth: '100%'
     }
   }, opts.map(([k, t]) => /*#__PURE__*/React.createElement("button", {
     key: k,
@@ -6300,8 +6304,7 @@ function PositionEditor({
     style: {
       alignSelf: 'center',
       margin: '10px 0 2px',
-      maxWidth: '100%',
-      overflowX: 'auto'
+      maxWidth: '100%'
     }
   }, /*#__PURE__*/React.createElement("button", {
     className: mode === 'tip' ? 'on' : '',
