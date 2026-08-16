@@ -1,9 +1,9 @@
-# Tâm lý thi đấu của Francisco Sánchez Ruiz — rút từ lời tự thuật trong 08 video phỏng vấn và 02 bài báo
+# Tâm lý thi đấu của Francisco Sánchez Ruiz — rút từ lời tự thuật trong 08 video phỏng vấn và 03 bài báo
 
-**Ngày lập:** 13/08/2026
+**Ngày lập:** 13/08/2026 · **Soát bổ sung:** 16/08/2026 (thêm mục 16, nguồn 11)
 **Đối tượng:** Francisco Sánchez Ruiz (Tây Ban Nha, sinh 29/12/1991 tại Murcia, biệt danh *"The Ferrari"* / FSR; hạng 5 FargoRate, rating 847 tại thời điểm lập hồ sơ). Vô địch thế giới 9 bi 2023, US Open 2022, World Cup of Pool 2022 cùng David Alcaide, Derby City Classic 2022; từng đứng số 1 thế giới.
 
-**Nguồn đã dùng — 10 nguồn, trải từ 01/2021 tới 04/2026:**
+**Nguồn đã dùng — 11 nguồn, trải từ 01/2021 tới 08/2026:**
 
 | # | Nguồn | Dạng | Thời điểm | Độ dài |
 |---|---|---|---|---|
@@ -17,6 +17,7 @@
 | 8 | *Shootout de la Verdad con Francisco Sánchez Ruiz* — kênh David Alcaide | trò chơi hỏi-đáp, tiếng Tây Ban Nha | 03/05/2024 | 4'13" |
 | 9 | *Francisco Sanchez Ruiz Is Champion Of The World* — Matchroom Pool, đăng lại trên WPA Pool và AZBilliards | **báo**, không phải video | 05/02/2023 | — |
 | 10 | *Francisco Sanchez Ruiz Becomes New Nineball World No.1 After Win* — Matchroom Pool | **báo** | 10/2022 | — |
+| 11 | *World No.1 Yapp Bows Out As Van Boening Continues Charge — 2026 Arizona Open Pool Championship* — World Nineball Tour / Matchroom Pool (đăng lại trên AZBilliards và PhilBoxing) | **báo**, bản tin sau ngày thi đấu | 15/08/2026 | — |
 
 **⚠️ Về độ tin cậy của từng loại nguồn — đọc trước khi tin bất kỳ trích dẫn nào dưới đây:**
 
@@ -291,6 +292,28 @@ Nguồn Billiard Junkie 01/2021 có một dữ kiện cùng hướng, đo đư�
 > (Xét ở khía cạnh con người thi đấu thì tôi cho Filler là số một, và số một cách biệt. Vì khác biệt giữa cậu ấy với phần còn lại, theo tôi, là cậu ấy đánh một giải phong trào với đúng mức động lực như đánh một giải vô địch thế giới… Đó như một kiểu tính cách khác hẳn. Bởi khi cậu ấy chịu áp lực lớn nhất, đó lại đúng là lúc cậu ấy chơi hay nhất. Cậu ấy chơi như thể không có áp lực nào.)
 
 Hai điều đáng ghi. Thứ nhất, tiêu chí anh dùng để chấm một cơ thủ mạnh **không phải kỹ thuật mà là độ ổn định của động lực** — đánh giải nhỏ với mức nghiêm túc của giải lớn. Thứ hai, mô tả *"chơi như thể không có áp lực nào"* của Sánchez Ruiz **đúng là thứ Filler tự bác bỏ** trong hồ sơ Filler (*"tôi có thể trông không hồi hộp, nhưng tôi hồi hộp, chắc chắn thế"*). Tức là ngay cả cơ thủ hạng 5 thế giới ngồi cùng phòng đấu suốt mười năm cũng đọc sai trạng thái bên trong của đồng nghiệp. Điều này củng cố cho mục 8: mặt ngoài trên bàn đấu là thứ được chọn để trưng ra, và nó đánh lừa được cả người trong nghề.
+
+## 16. Về một trận thua tươi, ghi ngay trong ngày (bổ sung 16/08/2026)
+
+Mười lăm mục trên đều dựng từ lời anh **kể lại** những trận thua đã cũ. Mục này khác: đây là lời anh nói **ngay hôm thua**, nên nó là chỗ đối chiếu xem quy tắc anh nêu ở mục 6 có được chính anh thi hành hay không.
+
+Ngày 14/08/2026 tại Arizona Open ở Yuma — giải Matchroom mới lập, thể thức loại trực tiếp một lần thua, 128 cơ thủ — Sánchez Ruiz thua Nicholas Tan (Singapore) 8-10 ngay vòng 64. Bản tin ngày thi đấu của ban tổ chức hôm sau (World Nineball Tour / Matchroom Pool, 15/08/2026 — **hạng A**, trích trực tiếp trong ngoặc kép) dẫn nguyên lời anh:
+
+> *"I knew this was going to be a brutal tournament, and today I paid the price. I lost control of the match and made a few mistakes that I wouldn't normally make."*
+> (Tôi biết đây sẽ là một giải đấu tàn khốc, và hôm nay tôi phải trả giá. Tôi đánh mất quyền kiểm soát trận đấu và mắc vài lỗi mà bình thường tôi không mắc.)
+
+> *"At 8-8, Nicholas played better when it mattered and deserved the win. It's disappointing."*
+> (Ở tỷ số 8-8, Nicholas chơi hay hơn đúng vào lúc quan trọng và xứng đáng thắng. Thật đáng thất vọng.)
+
+**Ba nét đáng ghi, tất cả nằm trong bốn câu ngắn:**
+
+Thứ nhất, **không một chữ đổ ra bên ngoài.** Không nhắc may rủi, không nhắc mặt bàn hay điều kiện thi đấu, không nhắc lịch dày của đợt US Swing dù anh vừa đánh Florida Open xong tuần trước đó. Hai nguyên nhân anh nêu đều thuộc về mình: mất quyền kiểm soát trận đấu, và mấy cú hỏng lệch khỏi chuẩn thường ngày của chính anh.
+
+Thứ hai, **anh định vị được đúng chỗ trận đấu tuột đi** — tỷ số 8-8 trong loạt đua tới 10. Đây là thói quen đọc trận theo mốc chứ không theo cảm giác chung chung, cùng họ với cách anh mô tả các khoảnh khắc áp lực ở mục 3 và mục 4.
+
+Thứ ba, **anh nói thẳng "thật đáng thất vọng" thay vì nuốt vào.** Đặt cạnh mục 6 thì hai thứ khớp nhau: quy tắc anh nêu năm 2021 là cho phép mình đau vài ngày rồi giữ nguyên lịch tập, chứ không phải giả vờ không đau. Cũng đáng đặt cạnh mục 8: nguyên tắc giấu trạng thái của anh áp cho **mặt anh trưng ra trên bàn trước đối thủ**, không áp cho lời anh nói sau trận.
+
+Một chỗ phải khai rõ về độ tin cậy: đây là trích dẫn nằm trong bản tin do bộ phận truyền thông của giải soạn, tức đã qua chọn lọc và cắt gọt, không phải bản ghi nguyên buổi trả lời. Nội dung tin được, nhưng nó ngắn và không có ngữ cảnh hỏi-đáp xung quanh.
 
 ---
 
