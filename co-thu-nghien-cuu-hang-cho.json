@@ -72,12 +72,30 @@
       "ngay": "2026-08-15",
       "hang_fargo": 12,
       "rating": 836
+    },
+    {
+      "ten": "Albin Ouschan",
+      "key": "psy_pro_ouschan",
+      "ngay": "2026-08-16",
+      "hang_fargo": 13,
+      "rating": 835
+    },
+    {
+      "ten": "Wojciech Szewczyk",
+      "key": "psy_pro_szewczyk",
+      "ngay": "2026-08-16",
+      "hang_fargo": 14,
+      "rating": 835
+    },
+    {
+      "ten": "Wiktor Zieliński",
+      "key": "psy_pro_wiktorzielinski",
+      "ngay": "2026-08-16",
+      "hang_fargo": 15,
+      "rating": 832
     }
   ],
   "hang_cho": [
-    "Albin Ouschan",
-    "Wojciech Szewczyk",
-    "Wiktor Zieliński",
     "Anton Raga",
     "Eklent Kaçi",
     "Dương Quốc Hoàng",
@@ -124,7 +142,10 @@
     "Mieszko Fortunski",
     "Mike Dechaine",
     "Lo Li Wen",
-    "Jui-An Hsu"
+    "Jui-An Hsu",
+    "Isral Afrinneza Nasution",
+    "Ruslan Chinakhov",
+    "AJ Manas"
   ],
   "khong_du_tu_lieu": [
     {
