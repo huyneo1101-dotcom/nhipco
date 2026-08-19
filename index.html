@@ -635,13 +635,20 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
 // ---- RUN-OUT: chuỗi dọn bàn (chọn lỗ từng viên · né MỌI bi còn lại · nối cue: điểm dừng cú i = cue cú i+1) ----
 function distSeg(p,a,b){var ab=sb(b,a),d2=dt2(ab,ab)||1e-9,t=Math.max(0,Math.min(1,dt2(sb(p,a),ab)/d2));return ln(sb(p,ad(a,ml(ab,t))));}
 function potFragility(dOP,dCO,cutCos){return dOP*(0.45+0.4*dCO)/Math.max(0.28,cutCos);} // DUNG SAI PHA POT: xa lỗ × xa cue / độ dày cắt (cutCos~1=thẳng dễ, ~0=mỏng khó). Nhỏ = pot dễ/tha lỗi.
+// #APPROACH — "effective pocket size" (Jewett/Dr.Dave): miệng lỗ rộng W nhìn THEO HƯỚNG BI chỉ còn W·cosθ; khe LỌT thực = W·cosθ − đường kính bi.
+// θ = góc giữa hướng bi→lỗ và phân giác lỗ GÓC (45° vào góc bàn). Vào thẳng phân giác: khe 4.5"−2.25"=2.25"; vào chếch 45° (bi chạy DỌC BĂNG): chỉ còn ~0.93" → khó gấp ~2.4× (rất dễ rung miệng lỗ).
+// [drdavepoolinfo.com/faq/pocket/size-and-center/ · Jewett, Billiards Digest 5/2013 "Just how big are the pockets"]
+var W_CORNER=0.1143, D_BALL=2*R, EFF0=W_CORNER-D_BALL; // 4.5" miệng lỗ góc
+function approachPen(k,toP){if(k>3)return 1; // lỗ GIỮA (4,5) đã có phạt riêng theo |thành phần vuông băng|
+ var bx=(k===1||k===3)?0.70711:-0.70711,by=(k>=2)?0.70711:-0.70711,c=bx*toP[0]+by*toP[1];
+ return Math.min(3,EFF0/Math.max(0.012,W_CORNER*c-D_BALL));}
 function pickPocket(cue,ball,others){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],best=-1,bs=Infinity;
  if(cue){for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return -1;} // #6: bi khác trong ~1R đường CUE→BI → không ngắm sạch được (kẹt)
  var dCO=cue?ln(sb(ball,cue)):0.6;
  for(var k=0;k<6;k++){var toP=nm(sb(POCK[k],ball)),cc=1;
   if(cue){cc=dt2(nm(sb(ball,cue)),toP);if(cc<0.22)continue;} // cut > ~77° → bỏ lỗ này
   var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,POCK[k])<2.9*R){blk=true;break;} // bi khác trong ~1R đường bi→lỗ (pot-line) → bỏ lỗ này
-  if(blk)continue;var frag=potFragility(ln(sb(POCK[k],ball)),dCO,cc);
+  if(blk)continue;var frag=potFragility(ln(sb(POCK[k],ball)),dCO,cc)*approachPen(k,toP);
   if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));} // #2: LỖ GIỮA khó hơn lỗ góc (miệng hẹp), và RẤT khó nếu bi vào chếch (app=|thành phần vuông rail|; vào thẳng app~1, chếch app nhỏ → phạt mạnh)
   if(frag<bs){bs=frag;best=k;}} // chọn lỗ có PHA POT dễ nhất → ưu tiên lỗ GÓC
  return best;} // -1 = không lỗ nào ăn được
@@ -650,7 +657,7 @@ function rnMakeable(cue,ball,others){var out=[],dCO=cue?ln(sb(ball,cue)):0.6; //
  if(cue)for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return out; // cue→bi bị chắn → không lỗ nào
  for(var k=0;k<6;k++){var toP=nm(sb(RN_POCK[k],ball)),cc=cue?dt2(nm(sb(ball,cue)),toP):1;if(cc<0.22)continue;
   var blk=false;for(var o=0;o<others.length;o++)if(distSeg(others[o],ball,RN_POCK[k])<2.9*R){blk=true;break;}if(blk)continue;
-  var frag=potFragility(ln(sb(RN_POCK[k],ball)),dCO,cc);if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));}
+  var frag=potFragility(ln(sb(RN_POCK[k],ball)),dCO,cc)*approachPen(k,toP);if(k===4||k===5){var app=Math.abs(toP[1]);frag*=(1.5/Math.max(0.35,app*app));}
   out.push({pk:k,frag:frag});}
  out.sort(function(a,b){return a.frag-b.frag;});return out;}
 function rnLeaves(nb,after,felt){var npk=pickPocket(null,nb,after),npos=npk>=0?RN_POCK[npk]:[1.27,0.635],C=[1.27,0.635]; // TOP-3 chỗ để bi AN TOÀN & KHÁC NHAU (giữa bàn, né băng/lỗ, cách vừa) → 2-3 PHƯƠNG ÁN
