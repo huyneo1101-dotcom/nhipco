@@ -93,12 +93,30 @@
       "ngay": "2026-08-16",
       "hang_fargo": 15,
       "rating": 832
+    },
+    {
+      "ten": "Anton Raga",
+      "key": "psy_pro_antonraga",
+      "ngay": "2026-08-19",
+      "hang_fargo": 16,
+      "rating": 832
+    },
+    {
+      "ten": "Eklent Kaçi",
+      "key": "psy_pro_kaci",
+      "ngay": "2026-08-19",
+      "hang_fargo": 17,
+      "rating": 832
+    },
+    {
+      "ten": "Dương Quốc Hoàng",
+      "key": "psy_pro_duongquochoang",
+      "ngay": "2026-08-19",
+      "hang_fargo": 18,
+      "rating": 831
     }
   ],
   "hang_cho": [
-    "Anton Raga",
-    "Eklent Kaçi",
-    "Dương Quốc Hoàng",
     "Naoyuki Oi",
     "Jonas Magpantay",
     "Dennis Orcollo",
@@ -145,7 +163,10 @@
     "Jui-An Hsu",
     "Isral Afrinneza Nasution",
     "Ruslan Chinakhov",
-    "AJ Manas"
+    "AJ Manas",
+    "Tobias Bongers",
+    "Jeffrey De Luna",
+    "Gerson Martinez"
   ],
   "khong_du_tu_lieu": [
     {
