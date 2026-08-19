@@ -5167,9 +5167,9 @@ function MindsetQuotes(){
           <div className="mqhint">{list.length>1?'chạm để đổi câu · '+list.length+' câu':'khẩu quyết của bạn'}</div>
         </div>
       ) : (
-        <div className="card mqhero" onClick={()=>setAddOpen(true)}>
+        <div className="card mqhero mqempty" onClick={()=>setAddOpen(true)}>
           <div className="mqlabel">⚔️ Mindset chiến đấu</div>
-          <div className="mqtext" style={{fontSize:'clamp(1.0625rem,4.6vw,1.375rem)',fontWeight:800,color:'var(--soft)'}}>Thêm khẩu quyết chiến đấu của bạn — để nó đập vào mắt mỗi lần mở app.</div>
+          <div className="mqtext" style={{fontSize:'clamp(0.9375rem,3.9vw,1.125rem)',fontWeight:700,color:'var(--soft)',lineHeight:1.4}}>Thêm khẩu quyết chiến đấu của bạn — để nó đập vào mắt mỗi lần mở app.</div>
         </div>
       )}
       {addOpen ? (

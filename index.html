@@ -253,6 +253,13 @@ body{
 .mqhero{position:relative;overflow:hidden;width:100%;min-height:clamp(240px,42vh,340px);padding:26px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;cursor:pointer;
   background:linear-gradient(160deg,var(--card),var(--card2));border:1.5px solid var(--gold);box-shadow:0 10px 34px -10px rgba(0,0,0,.55)}
 .mqhero:active{transform:scale(.995)}
+/* Ô CHƯA CÓ khẩu quyết: thu lại còn một khối mời nhập. Dùng chung `min-height` với ô đã có
+   câu là sai ý — ô lớn tồn tại để câu khẩu quyết ĐẬP VÀO MẮT, mà lúc chưa có câu thì nó chỉ
+   đập vào mắt một lời mời. Đo thật ở khổ 390×844: ô trống chiếm 340px (40% màn) và đẩy mục
+   «Khởi động & giãn cơ» xuống y=493, tức hơn nửa màn đầu không có nội dung dùng được.
+   Bỏ luôn thanh kiếm nền: hoạ tiết 13,75rem trong một ô cao 132px thì tràn ra thành vệt xám. */
+.mqhero.mqempty{min-height:0;padding:18px 20px;gap:8px}
+.mqhero.mqempty::before{display:none}
 .mqhero::before{content:"⚔";position:absolute;right:-26px;bottom:-54px;font-size:13.75rem;line-height:1;opacity:.055;pointer-events:none}
 .mqhero .mqlabel{font-size:0.75rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);z-index:1}
 .mqhero .mqtext{font-size:clamp(1.4375rem,6.3vw,2.0625rem);font-weight:900;line-height:1.28;letter-spacing:-.3px;color:var(--text);z-index:1}
@@ -14718,16 +14725,17 @@ function MindsetQuotes() {
   }, cur.t), /*#__PURE__*/React.createElement("div", {
     className: "mqhint"
   }, list.length > 1 ? 'chạm để đổi câu · ' + list.length + ' câu' : 'khẩu quyết của bạn')) : /*#__PURE__*/React.createElement("div", {
-    className: "card mqhero",
+    className: "card mqhero mqempty",
     onClick: () => setAddOpen(true)
   }, /*#__PURE__*/React.createElement("div", {
     className: "mqlabel"
   }, "⚔️ Mindset chiến đấu"), /*#__PURE__*/React.createElement("div", {
     className: "mqtext",
     style: {
-      fontSize: 'clamp(1.0625rem,4.6vw,1.375rem)',
-      fontWeight: 800,
-      color: 'var(--soft)'
+      fontSize: 'clamp(0.9375rem,3.9vw,1.125rem)',
+      fontWeight: 700,
+      color: 'var(--soft)',
+      lineHeight: 1.4
     }
   }, "Thêm khẩu quyết chiến đấu của bạn — để nó đập vào mắt mỗi lần mở app.")), addOpen ? /*#__PURE__*/React.createElement("div", {
     className: "editrow",
