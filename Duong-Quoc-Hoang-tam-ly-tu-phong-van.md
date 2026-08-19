@@ -1,7 +1,7 @@
-# Tâm lý thi đấu của Dương Quốc Hoàng — rút từ lời tự thuật trong 11 bài phỏng vấn và bản tin có trích dẫn trực tiếp
+# Tâm lý thi đấu của Dương Quốc Hoàng — rút từ lời tự thuật trong 13 bài phỏng vấn và bản tin có trích dẫn trực tiếp
 
-**Ngày lập:** 18/08/2026
-**Nguồn:** 11 bài báo có trích dẫn trực tiếp lời Dương Quốc Hoàng (không phải video), trải từ 16/01/2024 tới 22/06/2026. Trọng tâm là 03 bài phỏng vấn dài: *Vietnam News / VietnamNet English* (16/01/2024, bài dài nhất, nguyên văn tiếng Anh), *VnExpress* (06/05/2024, dẫn lại lời anh nói trong podcast *The Breaker*), *VnExpress International* (11/05/2024, bản tiếng Anh của cùng tuyến bài). Phần còn lại là các bản tin có trích dẫn trực tiếp tại giải vô địch thế giới 10 bi 2025 và Premier League Pool 2026.
+**Ngày lập:** 18/08/2026 · **Bổ sung:** 19/08/2026 (thêm bài phỏng vấn 01/03/2026, rà soát tới mốc Florida Open 08/2026)
+**Nguồn:** 13 bài báo có trích dẫn trực tiếp lời Dương Quốc Hoàng (không phải video), trải từ 16/01/2024 tới 09/08/2026. Trọng tâm là 04 bài phỏng vấn dài: *Vietnam News / VietnamNet English* (16/01/2024, bài dài nhất, nguyên văn tiếng Anh), *VnExpress* (06/05/2024, dẫn lại lời anh nói trong podcast *The Breaker*), *VnExpress International* (11/05/2024, bản tiếng Anh của cùng tuyến bài), và *Thanh Niên Việt* (01/03/2026, bài anh tự kể lại giải Premier League Pool 2026 một tuần sau khi vô địch). Phần còn lại là các bản tin có trích dẫn trực tiếp tại giải vô địch thế giới 10 bi 2025 và Premier League Pool 2026.
 
 **Danh sách nguồn đã dùng:**
 
@@ -16,8 +16,10 @@
 9. *Matchroom Pool / World Nineball Tour*, 23/02/2026 — "Duong Crowned Premier League Pool Champion In Historic Win" (thông cáo của ban tổ chức, có trích dẫn trực tiếp bằng tiếng Anh; AZBilliards và SPM Billiards Media đăng lại).
 10. *Thanh Niên Việt*, 24/02/2026 — "Dương Quốc Hoàng: Cơ thủ đi qua 'tâm bão chỉ trích', không bỏ cuộc để bước lên đỉnh vinh quang" (Kênh 14 đăng lại 25/02/2026). Bài trích lại **thư ngỏ do chính anh viết** trên trang cá nhân sau Premier League Pool 2025.
 11. *VnExpress*, 23/02/2026 và 22/06/2026 — hai bản tin về chức vô địch Premier League Pool 2026 và chức vô địch quốc gia lần thứ bảy (dùng làm dữ kiện).
+12. *Thanh Niên Việt*, 01/03/2026 — bài anh tự kể lại hành trình vô địch Premier League Pool 2026, đăng một tuần sau giải (Kênh 14 và CafeBiz đăng lại cùng ngày, tiêu đề "Cầm cúp vô địch và vị trí top 1 thế giới: Cơ thủ Dương Quốc Hoàng nói gì về cảm giác 'sĩ' nhất sự nghiệp?"). Bài này bổ sung 19/08/2026.
+13. *Soha*, 25/02/2026 — bản đăng lại bài Thanh Niên Việt về thư ngỏ, dùng để đối chiếu cách trình bày câu "chơi cho đến lúc lòng mình không còn sợ nữa". Bổ sung 19/08/2026.
 
-**Về giới hạn tư liệu, khai rõ ngay từ đầu:** Dương Quốc Hoàng gần như không có phỏng vấn dài bằng tiếng Anh. Kho phỏng vấn video của anh là tiếng Việt — podcast *The Breaker* (61 phút), *Bắn Bi TV* (18 phút), *On Sports*, *VTV Thể thao*, *Day in the Life* của Matchroom Pool — nhưng **toàn bộ các video đó chỉ có phụ đề máy nhận dạng tiếng Việt (`vi-orig`), không có phụ đề do người làm**, nên theo luật đã chốt của kho hồ sơ này, chúng không được dùng làm nguồn trích dẫn. Hồ sơ vì thế dựng hoàn toàn trên báo in/báo điện tử có ngoặc kép. Hệ quả: phần **quy trình trước cú đánh** của anh không có nguồn công khai nào nói tới, và hồ sơ này để trống chỗ đó thay vì đoán.
+**Về giới hạn tư liệu, khai rõ ngay từ đầu:** Dương Quốc Hoàng gần như không có phỏng vấn dài bằng tiếng Anh. Kho phỏng vấn video của anh là tiếng Việt — podcast *The Breaker* (61 phút), *Bắn Bi TV* (18 phút), *On Sports*, *VTV Thể thao*, *Day in the Life* của Matchroom Pool — nhưng **toàn bộ các video đó chỉ có phụ đề máy nhận dạng tiếng Việt (`vi-orig`), không có phụ đề do người làm**, nên theo luật đã chốt của kho hồ sơ này, chúng không được dùng làm nguồn trích dẫn. Hồ sơ vì thế dựng hoàn toàn trên báo in/báo điện tử có ngoặc kép. Đường YouTube Shorts cũng đã quét (19/08/2026): đoạn duy nhất tìm được là *"Hành trình vô địch Premier League Pool 2026 của Dương Quốc Hoàng!!"*, và đó là bản cắt highlight có lời bình, không phải hỏi-đáp, nên không dùng được làm nguồn trích dẫn. Hệ quả: phần **quy trình trước cú đánh** của anh không có nguồn công khai nào nói tới, và hồ sơ này để trống chỗ đó thay vì đoán.
 
 ---
 
@@ -140,6 +142,8 @@ Phần còn lại của bức thư được bài báo thuật lại, không ph�
 
 Cần ghi rõ giới hạn: bản đầy đủ của bức thư không tìm lại được trên nguồn công khai còn sống, nên ba mảnh trên là thứ tin được, phần diễn giải xung quanh là chữ của báo.
 
+**Bổ sung 19/08/2026, một chỗ đối chiếu đáng ghi:** bản đăng lại của *Soha* ngày 25/02/2026 trình bày câu *"Chơi cho đến lúc lòng mình không còn sợ nữa"* **trong ngoặc kép, như lời trực tiếp của anh**, trong khi bản *Thanh Niên Việt* để câu đó ở dạng thuật lại. Hai bản cùng một tuyến bài mà cách trình bày khác nhau, nên hồ sơ này nêu cả hai và vẫn xếp câu ấy vào diện *lời thuật của báo có độ tin cao*, không nâng lên thành trích dẫn nguyên văn. Ý nghĩa của câu không đổi theo cách trình bày; chỉ mức chắc chắn về câu chữ là đổi.
+
 ## 8. Về chức vô địch Premier League Pool 2026: tự tin được mô tả như một việc phải giữ
 
 Tháng 02/2026 tại Florida, anh thắng Francisco Sánchez Ruiz 7-4 ở chung kết, thành cơ thủ Việt Nam và châu Á đầu tiên vô địch một giải Major của Matchroom. Diễn biến đáng chú ý: dẫn 6-2, anh trượt bi số 9 cuối ván 10 khiến đối thủ rút ngắn còn 4-6, rồi ván 11 anh khép trận không mắc thêm lỗi nào.
@@ -194,6 +198,44 @@ Chi tiết này đọc cùng mục 6 thì thành một mạch: trận đấu l�
 
 ---
 
+## 12. Về cách anh mô tả một giải bào mòn, và về việc cho phép mình sướng
+
+*(Mục này bổ sung ngày 19/08/2026, từ bài Thanh Niên Việt 01/03/2026 — bài anh tự kể lại, đăng một tuần sau chức vô địch Premier League Pool.)*
+
+Premier League Pool đánh liên tục nhiều ngày, mỗi ngày nhiều trận. Anh gọi thẳng thể thức ấy bằng một cụm không hoa mỹ:
+
+> *"cỗ máy vắt sức"*
+
+Và ngay sau đó là mảnh đáng giá nhất của cả bài, chỗ anh mô tả **trạng thái tối ưu để thi đấu** bằng một hình ảnh rất đời:
+
+> *"Nó giống như một bữa ăn: ăn không quá no để sinh ra chây ì, nhưng cũng không bị đói. Một trạng thái 'vừa đủ' để thấy rằng cả giải đấu và bản thân các cơ thủ vẫn còn dư địa để bùng nổ hơn nữa."*
+
+Câu này nói về khối lượng thi đấu của giải, nhưng cách anh chọn thước đo mới là chỗ đáng học: thước đo không phải *nhiều hay ít*, mà là **còn dư địa hay không**. Quá no thì "chây ì", quá đói thì cạn. Điểm anh nhắm tới nằm ở giữa, và anh mô tả nó bằng cảm giác cơ thể chứ không bằng con số giờ tập.
+
+**Cách đọc dưới đây là suy luận của người lập hồ sơ:** cùng một khuôn ấy đã xuất hiện ở mục 4, nơi anh hạ kỳ vọng xuống nhưng vẫn giữ yêu cầu "chơi khôn". Cả hai đều là việc đưa mức kích hoạt về giữa, chứ không phải đẩy nó lên tối đa. Người dựng lời khuyên "phải quyết tâm hơn nữa" cho mọi tình huống sẽ không nói được câu "ăn không quá no".
+
+Chi tiết thứ ba của bài là Tết. Giải rơi đúng dịp Tết Nguyên đán, anh ở lại Mỹ:
+
+> *"Hoàng lọ mọ xoay xở soạn một mâm cúng Giao thừa nơi đất khách. Hài hước là tìm mỏi mắt chẳng ra nổi một nén nhang. Năm nay không có pháo hoa rợp trời, nhưng trong lòng mình đã nổ những tràng pháo quyết tâm phải 'mở bát' năm mới rực rỡ mới được."*
+
+Đáng chú ý là anh không kể đoạn này theo giọng chịu đựng. Việc thiếu nhang, thiếu pháo hoa được kể bằng chữ "hài hước", rồi chuyển thẳng sang quyết tâm. Đây là cùng một nét với mục 6: bất lợi được gọi tên đầy đủ, rồi mới tới phần xử lý — khác hẳn kiểu phủ nhận cho qua.
+
+Và câu cuối, lúc cầm cúp:
+
+> *"Nói thật là cảm giác lúc ấy nó... 'sĩ' thật sự mọi người ạ. Sướng lắm!"*
+
+Câu này ngắn nhưng bổ khuyết đúng chỗ hồ sơ đang thiếu. Toàn bộ phần còn lại của tư liệu cho thấy một người mô tả mình bằng ngôn ngữ sức bền, chịu đựng, giữ cho khỏi rơi. Câu này cho thấy anh **cũng cho phép mình hưởng phần thưởng một cách trọn vẹn**, bằng chữ khẩu ngữ, không rào đón, không vội hạ giọng khiêm tốn. Một người chỉ biết chịu đựng mà không biết sướng thì không giữ được hai mươi năm ở cái nghề anh đang làm.
+
+---
+
+## 13. Về mốc rà soát gần nhất: Florida Open 08/2026
+
+Ngày 04-09/08/2026, anh dự Florida Open Pool Championship tại Caribe Royale, Mỹ. Anh thắng trận mở màn trước Edward Epperson **10-0**, rồi dừng ở vòng 16.
+
+Hồ sơ ghi mốc này để làm rõ một điều: **giai đoạn 03/2026 tới 08/2026 không sinh thêm lời tự thuật nào về tâm lý**. Đã rà VnExpress, Thanh Niên, Lao Động, Thể thao & Văn hoá, Matchroom Pool và World Nineball Tour cho các giải European Open, UK Open, giải đồng đội 10 bi thế giới và Florida Open năm 2026 — tất cả đều là bản tin kết quả, không bài nào có ngoặc kép lời anh nói về áp lực hay cách nghĩ. Ghi rõ ra để lần rà sau khỏi tìm lại cùng một chỗ.
+
+---
+
 ## Về hai chỗ hồ sơ này KHÔNG có dữ liệu
 
 Nói rõ để người đọc không lấp bằng phỏng đoán:
@@ -205,7 +247,7 @@ Nói rõ để người đọc không lấp bằng phỏng đoán:
 
 ## Về ba điều rút ra được cho người tập
 
-1. **Hạ kỳ vọng xuống trước, rồi mới vào bàn.** Hai bước ngoặt lớn nhất sự nghiệp anh đều đến khi anh vào giải mà không đặt mục tiêu thứ hạng — giải thế giới 2023 anh tự khai là "dự giải mà không đặt mục tiêu thứ hạng cao" rồi vào tới tứ kết và loại đương kim vô địch. Đây không phải buông xuôi: cùng câu đó anh nói vẫn "cố chơi khôn". Hạ kỳ vọng về **kết quả**, giữ nguyên yêu cầu về **cách chơi**.
+1. **Hạ kỳ vọng xuống trước, rồi mới vào bàn.** Hai bước ngoặt lớn nhất sự nghiệp anh đều đến khi anh vào giải mà không đặt mục tiêu thứ hạng — giải thế giới 2023 anh tự khai là "dự giải mà không đặt mục tiêu thứ hạng cao" rồi vào tới tứ kết và loại đương kim vô địch. Đây không phải buông xuôi: cùng câu đó anh nói vẫn "cố chơi khôn". Hạ kỳ vọng về **kết quả**, giữ nguyên yêu cầu về **cách chơi**. Cùng khuôn ấy trở lại năm 2026 khi anh mô tả trạng thái thi đấu tốt nhất là "một trạng thái 'vừa đủ'", như bữa ăn không quá no cũng không đói — thước đo anh dùng là **còn dư địa hay không**, không phải căng hết sức.
 
 2. **Thừa nhận áp lực trước, đừng phủ nhận nó.** Khuôn ba nhịp anh lặp lại hai lần trong sáu ngày: có áp lực → nói ra là có → coi việc vượt qua nó là nguồn động lực. Không có câu nào trong toàn bộ tư liệu công khai mà anh nói mình không thấy áp lực. Người mạnh nhất Việt Nam khai thẳng rằng đối thủ mạnh cộng với cái bụng đau làm anh "càng thêm áp lực" — rồi vẫn thắng.
 

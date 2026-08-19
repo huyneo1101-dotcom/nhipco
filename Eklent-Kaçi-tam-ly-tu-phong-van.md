@@ -19,7 +19,7 @@
 | 10 | Absolute Pool, "'I think the cue ball was waxed real bad' — Kaci questions Filipino opponent after World Championship exit" | báo dẫn lại **bài đăng mạng xã hội** của Kaçi | 25/07/2025 |
 | 11 | Absolute Pool, "Eklent Kaci ruled out for 'a couple of months' following car accident" | báo dẫn lại **bài đăng mạng xã hội** của Kaçi | 17/07/2023 |
 
-**Ghi chú về độ tin cậy của nguồn.** Hai nguồn video (1 và 2) dùng phụ đề tự động **bản nhận dạng gốc tiếng Anh** (`en-orig`) chứ không phải bản dịch máy — kiểm bằng cách đối chiếu khoá ngôn ngữ có hậu tố `-orig` và URL phụ đề không mang tham số `tlang=`. Máy nhận dạng vẫn viết sai tên riêng (gọi Kaçi thành "Kachi", "Clint", "Katja"), nên mọi câu trích ở đây đã được sửa lại chính tả tên riêng và chấm câu, giữ nguyên từ ngữ. Hai nguồn 10 và 11 là **bài Kaçi tự viết trên mạng xã hội**, không phải phỏng vấn, và được ghi rõ như vậy ở từng chỗ dùng.
+**Ghi chú về độ tin cậy của nguồn.** Hai nguồn video (1 và 2) dùng phụ đề tự động **bản nhận dạng gốc tiếng Anh** (`en-orig`) chứ không phải bản dịch máy — kiểm bằng cách đối chiếu khoá ngôn ngữ có hậu tố `-orig` và URL phụ đề không mang tham số `tlang=`. Máy nhận dạng vẫn viết sai tên riêng (gọi Kaçi thành "Kachi", "Clint", "Katja") và nghe nhầm một số thuật ngữ bi-a quen thuộc ("wrecks"/"frames" thay cho *racks*, "Paul" thay cho *pool*, "whirlpool master" thay cho *World Pool Masters*, "finder" thay cho *final*). Mọi câu trích ở đây đã được sửa lại đúng những chỗ máy nghe nhầm ấy cùng chính tả tên riêng và chấm câu, **giữ nguyên trật tự và lựa chọn từ của người nói**; chỗ nào máy chỉ nghe được một phần thì cắt bỏ vế đó chứ không dựng thêm chữ. Toàn bộ trích dẫn từ hai nguồn video đã được đối chiếu lại với bản phụ đề `en-orig` tải trực tiếp ngày 19/08/2026. Hai nguồn 10 và 11 là **bài Kaçi tự viết trên mạng xã hội**, không phải phỏng vấn, và được ghi rõ như vậy ở từng chỗ dùng.
 
 **Đã đi hết 06 đường tìm nguồn theo quy trình:** (i) tìm kiếm web theo cụm phỏng vấn/áp lực/tâm lý; (ii) quét các podcast bi-a lớn — *Doggin' It* có, *Cue It Up* có nhắc tên Kaçi ở 03 tập nhưng chỉ là lời hai người dẫn bàn về anh, không phải khách mời, nên **không dùng**; (iii) báo viết — WPA, Matchroom/WNT, Sky Sports, Absolute Pool; AZBilliards bị Cloudflare chặn, lấy được bản lưu Wayback nhưng bài đó không có trích dẫn trực tiếp nào; (iv) **YouTube Shorts đã quét** bằng 06 cụm tìm khác nhau — chỉ ra clip ăn mừng và clip pha bóng, không có clip hỏi-đáp tiếng Anh nào; (v) mở thẳng URL video đọc mô tả; (vi) tránh phụ đề tự động ngoài tiếng Anh — video "Players Corner" của kênh *Billiards Archive* có khách mời là Kaçi nhưng bản gốc YouTube nhận dạng là **tiếng Filipino** (`fil-orig`), bản `en` là dịch máy, nên **bị loại**; toàn bộ clip truyền hình Albania (Ora News, Report TV, ABC News Albania, In Tv Albania, Nistori) cũng bị loại vì cùng lý do.
 
@@ -230,7 +230,7 @@ Năm 2024, khi trở thành người đầu tiên giành suất dự giải:
 
 Kaçi thua Ko Pin Yi 5-13 ở chung kết World Pool Masters 2023. Vài tuần sau, tại UK Open, anh vô địch. Điều đáng ghi là anh **nói ra mong muốn được gặp lại đúng người đó**:
 
-> *"I wanted him in the final. I just wanted to repeat again the same final, because I think I didn't really give him a proper final in the World Pool Masters. That break didn't really work too well, I missed a ball in the second rack, and then everything changed."*
+> *"I want him in the final. I just wanted to repeat again the same final, because I think I didn't really give him a proper final in the World Pool Masters. That break didn't really work too well, I missed a ball in the second rack, and then everything changed."*
 > (Tôi muốn gặp lại nó ở chung kết. Tôi chỉ muốn lặp lại đúng trận chung kết đó, vì tôi nghĩ ở World Pool Masters tôi đã không cho nó một trận chung kết ra hồn. Cú phá hôm đó không chạy tốt, tôi trượt một quả ở ván hai, rồi mọi thứ đổi hết.)
 > — *Doggin' It*, 06/2023
 
@@ -278,7 +278,7 @@ Về nội dung tập, anh chọn thứ khó hơn thứ mình sẽ thi đấu:
 
 ## 14. Về việc tự biết đồng hồ sinh học và nói thẳng ra
 
-> *"If I'm playing a morning match and I'm not playing my best, don't blame me — I'm just not a morning person. I need my time a little bit in the morning."*
+> *"If I'm playing a morning match and I'm not playing my best, don't blame me — I'm just not the morning person. I need my time a little bit in the morning."*
 > (Nếu tôi đánh trận buổi sáng mà không đánh hay nhất thì đừng trách tôi — tôi không phải người của buổi sáng. Buổi sáng tôi cần một chút thời gian của tôi.)
 > — *Doggin' It*, 06/2023
 

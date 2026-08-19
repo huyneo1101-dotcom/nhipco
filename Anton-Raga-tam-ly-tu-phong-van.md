@@ -1,14 +1,19 @@
 # Tâm lý thi đấu của Anton Raga — rút từ lời tự thuật trong phỏng vấn công khai
 
-**Ngày lập:** 18/08/2026
+**Ngày lập:** 18/08/2026 · **Soát lại và bổ sung:** 19/08/2026
 **Cơ thủ:** Anthony "Anton" Cortes Raga, biệt danh *The Dragon*, sinh 14/11/1997 tại Talisay City, Cebu, Philippines. Hạng 16 FargoRate, rating 832 (tính tới 08/2026). Á quân China Open 2019, á quân European Open 2023 (thua David Alcaide 12-13 ở ván quyết định, sau khi loại Joshua Filler 11-9 ở bán kết), vô địch SBA Philippine Open 2025.
 
-**Nguồn đã dùng — 04 nguồn, trải từ 2013 tới 2025:**
+**Nguồn — 06 nguồn dùng được, trải từ 2013 tới 2025, kèm mục 7 ghi lại các nguồn đã rà nhưng không dùng được:**
 
 1. **CPBA Brand, "EP:03 Anton Raga Interview (English Translation)"**, YouTube, đăng 19/07/2021, dài 05 phút 20 giây. Đây là nguồn chính, chiếm phần lớn trích dẫn dưới đây. Buổi phỏng vấn gồm 24 câu hỏi, câu hỏi hiện bằng tiếng Anh giữa khung hình, phần trả lời hiện bằng **phụ đề tiếng Anh dựng sẵn trong video** (burned-in) do chính nhà sản xuất CPBA làm.
-2. **CPBA Brand, "EP:04 Anton Raga Fast Talk (English Translation)"**, YouTube, đăng 19/07/2021, dài 02 phút 08 giây. Dạng hỏi nhanh đáp gọn, 17 câu.
-3. **SunStar Cebu, bài "'Future billiards king'"**, 20/07/2013 (báo giấy/báo mạng, có trích dẫn trực tiếp). Raga khi đó 15 tuổi.
-4. **77.billiards**, hai bài quan sát: *"Not Just a Money Game King"* (20/08/2023) và *"Where is Anton Raga?"* (30/01/2025). **Hai bài này KHÔNG có trích dẫn trực tiếp lời Raga** — chỉ dùng làm phần mô tả từ bên ngoài, và mọi câu lấy từ đây đều được ghi rõ là lời người viết báo, không phải lời cơ thủ.
+2. **CPBA Brand, "EP:04 Anton Raga Fast Talk (English Translation)"**, YouTube, đăng 19/07/2021, dài 02 phút 08 giây. Dạng hỏi nhanh đáp gọn, 17 câu. Bản đăng song song trên Facebook của CPBA Brand mang đúng tiêu đề *"EP:04 Fast Talk with Anton Raga (English Translation)"*, đã đối chiếu lại ngày 19/08/2026.
+3. **SunStar Cebu, bài "'Future billiards king'"**, 20/07/2013, tác giả Vernie Yocogan-Diano. Raga khi đó 15 tuổi. Bài có trích dẫn trực tiếp lời Raga bằng tiếng Bisaya, **và cả lời Roberto "Superman" Gomez nhận xét về Raga** — phần Gomez là tư liệu mới bổ sung ngày 19/08/2026.
+4. **SunStar Cebu, bài "Raga tops Summer 10-Ball for 2nd crown in two weeks"**, 27/04/2015. Trích dẫn trực tiếp bằng tiếng Bisaya, nói sau khi Raga vô địch giải 1st Visayas Summer 10-Ball. **Nguồn mới bổ sung ngày 19/08/2026.**
+5. **SunStar Cebu, bài "Raga tops PH Open"**, 28/04/2025, viết sau khi Raga thắng Jerico "Panday" Bañares 13-7 để vô địch SBA Philippine Open. **Nguồn mới bổ sung ngày 19/08/2026.**
+6. **77.billiards**, hai bài quan sát: *"Not Just a Money Game King"* (20/08/2023) và *"Where is Anton Raga?"* (30/01/2025). **Hai bài này KHÔNG có trích dẫn trực tiếp lời Raga** — chỉ dùng làm phần mô tả từ bên ngoài, và mọi câu lấy từ đây đều được ghi rõ là lời người viết báo, không phải lời cơ thủ.
+7. **Các bản tin giải đấu đã rà nhưng KHÔNG dùng được**: World Nineball Tour/Matchroom (bài bán kết và bài chung kết European Open 2023), Spin.ph, Inquirer Sports, Manila Bulletin. Rà lại ngày 19/08/2026, **không bài nào có lấy một câu trích dẫn trực tiếp nào của Raga** — toàn bộ là tường thuật của người viết. Ghi ra đây để lần sau khỏi đi lại đường này.
+
+**Về phần đã tìm nhưng không có:** đã quét YouTube Shorts theo tên có dấu và không dấu, kênh riêng *Anton Raga Official*, kênh giải đấu, và các podcast bi-a tiếng Tagalog/Bisaya. Kết quả Shorts trả về **toàn là clip pha đánh đẹp, không có đoạn hỏi-đáp nào**. Không tìm được podcast nào có Raga làm khách mời. Raga chưa từng có một buổi phỏng vấn dài bằng tiếng Anh nào — đây là lý do bộ tư liệu về anh mỏng hơn hẳn các cơ thủ cùng hạng.
 
 ---
 
@@ -25,6 +30,8 @@
 ## Về kết luận tổng quát
 
 Raga là mẫu cơ thủ **không có bộ công cụ tâm lý riêng nào cả, và điểm tựa của anh nằm hoàn toàn bên ngoài bàn bi-a**. Được hỏi thẳng cách xử lý áp lực, anh mô tả đúng hai động tác trần trụi là thả lỏng và bám mục tiêu, không có nhịp thở, không có câu tự nhủ, không có quy trình. Được hỏi điểm mạnh của mình *trong trận đấu*, anh không kể ra một kỹ năng bi-a nào mà kể tên vợ con. Cách anh xử lý thua cũng vậy: không phân loại nguyên nhân, không mổ băng, chỉ chấp nhận rồi tin rằng phần thắng đang tới muộn. Đây là kiểu tâm lý **mộc**, hình thành từ hoàn cảnh chứ không từ huấn luyện — và chính chỗ mộc đó vừa là sức bền vừa là điểm hở của anh.
+
+Đợt soát lại ngày 19/08/2026 bổ sung thêm hai mạch làm rõ hẳn phần điểm hở. Thứ nhất, **chỗ hở ấy đã được một người trong nghề gọi tên từ năm 2013**: Roberto Gomez chẩn Raga nôn nóng, muốn kết thúc ván ngay, không nghĩ hết nước trước khi đánh, và mười năm sau người quan sát ở European Open 2023 vẫn tả đúng nét đó (mục 12). Thứ hai, **nét tự hạ mình của anh mạnh hơn nhiều so với ghi nhận ban đầu**: năm 17 tuổi vừa vô địch đã gọi chức vô địch của mình là ăn may, và mười năm sau vô địch giải quốc gia thì câu đầu tiên là dâng chiến thắng cho bốn nhóm người khác, không nhắc gì tới mình (mục 13). Ghép lại, chân dung đầy đủ hơn là: một cơ thủ **có tài đánh bi được đánh giá ở tầm vô địch thế giới từ năm 15 tuổi, mang một lỗi nhịp độ chưa bao giờ được cấp công cụ để sửa, và một thói quen không cho phép mình tích vốn tự tin từ chính những trận đã thắng.**
 
 ---
 
@@ -207,12 +214,59 @@ Cũng trang này, bài ngày 30/01/2025 đặt câu hỏi vì sao Raga vắng m�
 
 *Suy luận của người lập hồ sơ, nói rõ là suy luận:* nếu ghép nhận định ấy với mục 6 và mục 7 thì nó không hẳn là chuyện thiếu tham vọng. Một người đo thành công bằng chiếc xe đã mua và khoản đã đầu tư, và tự đặt trần nghề nghiệp ở mức *chừng nào mắt còn theo được*, thì việc chọn giải gần nhà với kèo tiền chắc ăn là lựa chọn **nhất quán với thang đo của chính anh**, chứ không phải sự lùi bước. Thang đo đó khác thang đo của giới quan sát quốc tế, và khoảng lệch giữa hai thang đo mới là thứ sinh ra câu hỏi.
 
+## 12. Về nhịp độ: người thầy chẩn ra tính nôn nóng từ năm 2013, và mười năm sau người ngoài vẫn thấy y nguyên
+
+Đây là mạch tư liệu bổ sung ngày 19/08/2026, và là chỗ **duy nhất trong toàn bộ hồ sơ có một người trong nghề chẩn đoán thẳng vào tâm lý thi đấu của Raga**.
+
+Trong chính bài SunStar Cebu năm 2013, Roberto "Superman" Gomez — á quân thế giới 9 bi 2007, người khi đó đang dìu dắt Raga — được hỏi về cậu bé 15 tuổi này. Gomez khen phần kỹ năng trước:
+
+> *"He is really good. He beat Ronnie Alcano three times, he also beat me three times and Johann Chua. He's got great shot-making skills and he's got the skills and talent to become a world champion."*
+> (Thằng bé giỏi thật. Nó thắng Ronnie Alcano ba lần, thắng cả tôi ba lần, và thắng cả Johann Chua. Nó có tài đánh bi rất tốt, có đủ kỹ năng và tài năng để thành nhà vô địch thế giới.)
+
+Rồi nói ngay tới chỗ hỏng, và chỗ hỏng ấy không nằm ở kỹ thuật:
+
+> *"Medyo gigil lang, he wants to finish the game immediately. And sometimes, he doesn't think his shots through. But those could be easily corrected, all he has to do is join high level competitions. I told him not to hurry his shots but his shot-making skills are really good."*
+> (Chỉ hơi nôn nóng thôi, nó muốn kết thúc ván đấu ngay lập tức. Và đôi khi nó không nghĩ hết nước cho cú đánh của mình. Nhưng mấy cái đó sửa dễ thôi, chỉ cần cho nó đi đánh giải trình độ cao. Tôi đã bảo nó đừng vội ở các cú đánh, còn tài đánh bi của nó thì thật sự tốt.)
+
+Chữ *gigil* trong tiếng Philippines chỉ trạng thái bồn chồn nôn nao tới mức không ngồi yên được, thúc người ta phải làm ngay cái đang muốn làm. Gomez dùng đúng chữ ấy để mô tả **một lỗi nhịp độ, không phải lỗi kỹ thuật**: muốn kết thúc ván ngay, và không nghĩ hết nước trước khi cúi xuống.
+
+Điều đáng ghi là **mười năm sau, người quan sát bên ngoài vẫn mô tả đúng nét đó**. Bài của 77.billiards ngày 20/08/2023 (xem mục 11) viết về cách Raga di chuyển quanh bàn: đi rất nhanh, vô số động tác nhỏ và cuống. Hai lời mô tả cách nhau một thập kỷ, từ hai người không liên quan tới nhau, chỉ vào cùng một chỗ.
+
+Ghép mạch này với mục 4 thì ra một khoảng trống rõ hình: **phần chuẩn bị của Raga canh rất chặt ở thân thể — số giờ tập, giấc ngủ, sức khoẻ — nhưng không có mục nào canh nhịp độ.** Lời dặn *"đừng vội ở các cú đánh"* là lời dặn từ bên ngoài, chưa từng thấy Raga nhắc lại như một nguyên tắc của chính mình trong bất kỳ tư liệu nào tìm được.
+
+*Suy luận của người lập hồ sơ, nói rõ là suy luận:* một cơ thủ có bộ công cụ tâm lý gói gọn trong hai chữ *thả lỏng* thì không có gì để chống lại nhịp nhanh khi căng thẳng dâng lên, bởi thả lỏng không phải là một thao tác đo được — nó là kết quả mong muốn chứ không phải cách làm. Chỗ Gomez chỉ ra năm 2013 vì thế có lý do để tồn tại lâu: không ai cấp cho Raga một công cụ nào để sửa nó.
+
+## 13. Về nét tự hạ mình: thắng thì gọi là ăn may, và lời đầu tiên sau chức vô địch là tên người khác
+
+Mục 3, mục 6 và mục 10 đều đã chạm vào một nét lặp — Raga hay tự khai phần còn thiếu của mình mà không ai hỏi tới. Hai nguồn bổ sung ngày 19/08/2026 cho thấy nét ấy **bền suốt mười năm và mạnh hơn nhiều so với bản hồ sơ đầu tiên ghi nhận**.
+
+Tháng 4/2015, Raga 17 tuổi, vừa vô địch giải 1st Visayas Summer 10-Ball, chức vô địch thứ hai trong hai tuần. Được SunStar Cebu hỏi về trận chung kết gặp Lauro Bungay, cơ thủ chuyên nghiệp đang hành nghề ở Nhật, anh đáp:
+
+> *"Tsamba lang. Lisod pod kontrahon si Bungay. Maayo kaayo ang pulso unya maayo pod mo depensa. Na-tsambahan lang gyud to."*
+> (Ăn may thôi. Bungay cũng khó đấu lắm. Cú đẩy cơ của anh ấy rất tốt, phòng thủ cũng tốt. Tôi chỉ ăn may thật đấy.)
+
+Bốn câu, và **hai câu đầu cuối đều là chữ "ăn may"**. Ở giữa là lời khen dành cho người anh vừa đánh bại. Không một câu nào nói về thứ chính anh đã làm để thắng.
+
+Mười năm sau, tháng 4/2025, Raga thắng Jerico "Panday" Bañares 13-7 để vô địch SBA Philippine Open. Câu anh nói với SunStar Cebu:
+
+> *"I want to dedicate my victory to my family, my friends, my supporters and God."*
+> (Tôi muốn dâng chiến thắng này cho gia đình tôi, bạn bè tôi, những người ủng hộ tôi, và Chúa.)
+
+Lại là một câu **không có chỗ nào dành cho chính mình**. Danh sách bốn nhóm được kể ra, và người vừa thắng trận không nằm trong đó.
+
+Ba mốc — 2015 gọi chức vô địch là ăn may, 2021 tự khai chưa có nhà ngay trong câu trả lời về thành công và tự khai trận thua Efren Reyes mà không ai hỏi, 2025 dâng chiến thắng cho bốn nhóm người khác — dựng nên **một nét tính cách nhất quán chứ không phải mấy câu nói khiêm tốn xã giao rời rạc**. Nó khớp đúng với mục 2: chỗ neo của Raga luôn nằm ở người khác, chưa bao giờ nằm ở chính anh.
+
+*Suy luận của người lập hồ sơ, nói rõ là suy luận:* nét này có hai mặt thật sự đối nghịch, và người tập cần thấy cả hai. Mặt được là nó **cắt đứt đường dẫn từ thắng lợi tới tự mãn** — chính Raga đã nói ra thành lời khuyên ở mục 8, *"đừng nghĩ mình hơn người"* — nên anh không có kiểu sụp đổ của người tin mình đã ở đẳng cấp khác. Mặt mất là một người quy chiến thắng cho vận may thì **không tích lại được vốn tự tin từ chính những trận đã thắng**: mỗi giải mới lại bắt đầu từ số không, và ở loạt đua dài thì cái vốn ấy chính là thứ đỡ người ta dậy khi bị dẫn điểm. Khoảng cách giữa việc hạ Joshua Filler ở bán kết và việc thua ván quyết định ở chung kết European Open 2023 có thể đọc theo hướng đó, nhưng phải nói rõ: **Raga chưa từng công khai giải thích trận thua ấy**, nên đây thuần tuý là cách đọc của người lập hồ sơ, không phải lời anh.
+
 ---
 
-## Về ba điều rút ra được cho người tập
+
+## Về bốn điều rút ra được cho người tập
 
 1. **Điểm tựa tâm lý không bắt buộc phải nằm trên bàn.** Được hỏi điểm mạnh trong trận, Raga trả lời bằng gia đình và đứa con, không bằng một cú đánh nào. Với người tập, bài học không phải là "hãy nghĩ tới con" mà là: **phải có sẵn một chỗ neo chú ý đủ nặng để kéo đầu óc ra khỏi tỷ số**, và chỗ neo đó do mình chọn trước, không phải đợi lúc căng mới đi tìm.
 
 2. **Bộ công cụ hai động tác vẫn đủ để vào chung kết một giải Major.** Raga hạ Joshua Filler 11-9 rồi thua sát nút 12-13 ở chung kết European Open 2023, với đúng một công thức là thả lỏng và bám mục tiêu. Điều này bác bỏ ý nghĩ rằng phải có một quy trình tâm lý phức tạp mới thi đấu được ở mức cao. **Cái tối thiểu chạy được là cái đơn giản tới mức không hỏng nổi.**
 
 3. **Nhưng "chấp nhận rồi đi tiếp" cần ghép thêm một bước rà lỗi.** Cách xử lý thua của Raga giữ được tinh thần nhưng không sinh ra bản sửa: không phân loại nguyên nhân, không xem lại. Người tập nên lấy phần chấp nhận của Raga và ghép với phần mổ băng của Filler — chấp nhận để không sụp, rà lỗi để không lặp lại.
+
+4. **"Thả lỏng" không phải một thao tác, nên nó không sửa được lỗi nhịp độ.** Năm 2013 Roberto Gomez chỉ ra Raga nôn nóng, muốn kết thúc ván ngay, không nghĩ hết nước trước khi đánh; mười năm sau người quan sát ở European Open vẫn tả anh đi quanh bàn rất nhanh với những động tác cuống. Chỗ hở nằm ở chỗ **thả lỏng là kết quả mong muốn, không phải cách làm** — muốn nó xảy ra thật thì phải có một việc đếm được đặt vào giữa: một quy trình trước cú đánh cố định số nhịp, một mốc dừng bắt buộc trước khi cúi người, hoặc một câu tự nhủ luôn nói đúng chỗ. Người tập nào thấy mình đánh nhanh dần lên khi bị dẫn điểm thì đây đúng là chỗ phải vá, và **bài học lớn nhất của hồ sơ Raga là một lỗi không có công cụ đo thì sống được cả mười năm.**
