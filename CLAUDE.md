@@ -24,12 +24,12 @@ của lần dựng trước thì DỪNG và bắt gộp tay, chứ không ghi đ
 
 # CueZen — bạn đồng hành giữ tập trung khi chơi bi-a (tâm lý, kỹ thuật, nhật ký, rèn luyện)
 
-App tĩnh một-file: toàn bộ UI + logic + CSS trong `index.html` (~5.611 dòng), React 18 + Babel Standalone qua CDN, KHÔNG build step. PWA (`manifest.json` + `sw.js`). Deploy tĩnh (host thẳng thư mục gốc, push `main` → live).
+App tĩnh một-file: toàn bộ UI + logic + CSS trong `index.html` (~5.611 dòng), React 18 qua CDN, JSX dịch sẵn lúc dựng (đo 23/08/2026: `index.html` không nạp `@babel/standalone`). PWA (`manifest.json` + `sw.js`). Deploy tĩnh (host thẳng thư mục gốc, push `main` → live).
 
 ## Quy tắc làm việc với file này
 - **KHÔNG đọc cả `index.html` (~5.000 dòng)** — dùng grep định vị rồi Read cửa sổ nhỏ (xem skill `bigfile-nav`).
 - Sửa nội dung đáng kể → **bump `CACHE` trong `sw.js`** (hiện: `nhipco-v46`).
-- Babel transpile trong trình duyệt: lỗi cú pháp là trắng màn hình, không báo terminal. Kiểm tra Console sau khi sửa.
+- Lỗi cú pháp bị bắt ngay lúc `dung.py` chạy, không còn ra trắng màn hình trên máy người dùng. Vẫn kiểm Console sau khi sửa.
 - ⛔ **CẤM viết cỡ chữ bằng `px`** — dùng `rem` (`font-size:0.8125rem` thay `13px`, `style={{fontSize:'0.8125rem'}}` thay `fontSize:13`). Từ 14/08/2026 người dùng chọn được cỡ chữ ở Cài đặt, cơ chế là đổi `font-size` của thẻ `<html>` (14/16/18/20px) nên **chỉ cỡ chữ viết bằng rem mới đổi theo**. Một chỗ viết px vẫn hiện đúng ở cỡ Vừa, không lỗi nào phát ra — mãi tới khi người dùng chọn cỡ khác mới lộ ra là chỗ đó đứng im. Quy đổi: chia cho 16.
   - **Ngoại lệ đúng**: `fontSize=` trong `<svg>` (đơn vị là toạ độ viewBox, không phải cỡ chữ trang) · `font-size:34vw` của đồng hồ bấm giờ toàn màn hình · `html{font-size:16px}` ở đầu `khung.html` (chính là cỡ nền) · chữ mẫu "A" trong nút chọn cỡ chữ (phải bày 4 cỡ cạnh nhau).
   - ⚠️ **Ô nhập trong hàng flex phải có `min-width:0`** — `<input>` mặc định rộng theo 20 ký tự, ở cỡ Lớn/Rất lớn bề rộng tối thiểu ấy đẩy cả hàng tràn ngang ra ngoài màn hình. Đã vấp ở `.editrow input`.
@@ -79,7 +79,7 @@ Truy cập qua helper `store` (dòng ~798): `store.get(k,def)` / `store.set(k,v)
 - 4 cỡ chữ qua `FONT_SIZES` + `applyFontSize()` (ngay dưới `applyTheme`), ghi vào `document.documentElement.style.fontSize`. **Không đặt class trên `body`** — `applyTheme()` gán đè nguyên `body.className` nên class cỡ chữ để ở đó sẽ bị xoá mỗi lần đổi theme. Cỡ chữ áp ngay lúc nạp mã (trước khi React vẽ) để không nháy một nhịp cỡ mặc định.
 
 ## Thư viện (đã pin version)
-- react@18.2.0, react-dom@18.2.0, @babel/standalone@7.23.6, @supabase/supabase-js@2.45.4 (tất cả qua cdn.jsdelivr.net).
+- react@18.2.0, react-dom@18.2.0, @supabase/supabase-js@2.45.4 (tất cả qua cdn.jsdelivr.net).
 
 ## Deploy
 - Tĩnh, không CI (không có `netlify.toml` / `.github/workflows`). Remote `huyneo1101-dotcom/nhipco`; host phục vụ thẳng thư mục gốc, push `main` là cập nhật. Xem skill `deploy-static` nếu muốn nối CI/CD.
