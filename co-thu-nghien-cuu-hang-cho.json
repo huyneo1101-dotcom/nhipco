@@ -114,12 +114,30 @@
       "ngay": "2026-08-19",
       "hang_fargo": 18,
       "rating": 831
+    },
+    {
+      "ten": "Naoyuki Oi",
+      "key": "psy_pro_naoyukioi",
+      "ngay": "2026-08-21",
+      "hang_fargo": 19,
+      "rating": 830
+    },
+    {
+      "ten": "Jonas Magpantay",
+      "key": "psy_pro_jonasmagpantay",
+      "ngay": "2026-08-21",
+      "hang_fargo": 20,
+      "rating": 828
+    },
+    {
+      "ten": "Dennis Orcollo",
+      "key": "psy_pro_orcollo",
+      "ngay": "2026-08-21",
+      "hang_fargo": 21,
+      "rating": 827
     }
   ],
   "hang_cho": [
-    "Naoyuki Oi",
-    "Jonas Magpantay",
-    "Dennis Orcollo",
     "Wu Kun-Lin",
     "Alex Kazakis",
     "Niels Feijen",
@@ -166,7 +184,10 @@
     "AJ Manas",
     "Tobias Bongers",
     "Jeffrey De Luna",
-    "Gerson Martinez"
+    "Gerson Martinez",
+    "Assis Tadique",
+    "Jesus Atencio",
+    "Baseth Mocaibat"
   ],
   "khong_du_tu_lieu": [
     {
@@ -669,8 +690,22 @@
         "Assis Tadique",
         "PHL",
         802
+      ],
+      [
+        71,
+        "Jesus Atencio",
+        "Jesus Atencio",
+        "VEN",
+        801
+      ],
+      [
+        72,
+        "Baseth Mocaibat",
+        "Baseth Mocaibat",
+        "PHL",
+        801
       ]
     ],
-    "_do_ngay_bo_sung": "2026-08-15 (hạng 61-70, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World)"
+    "_do_ngay_bo_sung": "2026-08-21 (hạng 71-72, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World)"
   }
 }
