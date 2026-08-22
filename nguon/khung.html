@@ -527,7 +527,7 @@ function cushionCollide(b,rt){var n;if(rt=='x0')n=[1,0];else if(rt=='x1')n=[-1,0
 function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,cush=!!opts.cushions,noPath=!!opts.noPath,dt=opts.dt||1e-4,maxT=opts.maxT||12,obs=opts.obs||(opts.tenBall?[opts.tenBall]:null);
  var cue=launchSpin(speed,dir,bx,by);cue.p=A.slice();var obj={p:O.slice(),v:[0,0],w:[0,0,0]};
  var path=noPath?null:[cue.p.slice()],t=0,collided=false,obsHit=obs?obs.map(function(){return false;}):null,rails=0,objV0=0;
- var mc=!!opts.mc,MCP=mc?[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]]:null,nineMin=Infinity; // mc: theo dõi con 9 có tới lỗ đích không + scratch bi cái
+ var mc=!!opts.mc,MCP=mc?[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]]:null,nineMin=Infinity,nineSlip=0,nineDir=null; // mc: theo dõi con 9 có tới lỗ đích không + scratch bi cái
  while(t<maxT){
   if(!collided){if(ln(sb(cue.p,obj.p))<=2*R){ballCollide(cue,obj);collided=true;objV0=ln(obj.v);}}
   if(obs)for(var oi=0;oi<obs.length;oi++){if(!obsHit[oi]&&ln(sb(cue.p,obs[oi]))<=2*R){ballCollide(cue,{p:obs[oi].slice(),v:[0,0],w:[0,0,0]});obsHit[oi]=true;}} // other balls are physical obstacles: cue bounces off them (never drawn passing through)
@@ -538,15 +538,15 @@ function simulate(A,speed,dir,bx,by,O,opts){opts=opts||{};var f=opts.felt||null,
    if(f){var cd=[];if(d[0]>1e-9)cd.push((f[1]-R-cue.p[0])/d[0]);if(d[0]<-1e-9)cd.push((f[0]+R-cue.p[0])/d[0]);if(d[1]>1e-9)cd.push((f[3]-R-cue.p[1])/d[1]);if(d[1]<-1e-9)cd.push((f[2]+R-cue.p[1])/d[1]);for(var i=0;i<cd.length;i++)if(cd[i]>1e-6&&cd[i]<L)L=cd[i];}
    if(D<=L){var rest=ad(cue.p,ml(d,D));if(!f||(rest[0]>=f[0]+R-1e-3&&rest[0]<=f[1]-R+1e-3&&rest[1]>=f[2]+R-1e-3&&rest[1]<=f[3]-R+1e-3)){cue.p=rest;cue.v=[0,0];cue.w=[0,0,0];break;}}
    var jmp=Math.max(0,L-1e-4),s2=Math.sqrt(Math.max(0,s*s-2*a*jmp));cue.p=ad(cue.p,ml(d,jmp));cue.v=ml(d,s2);cue.w[0]=-cue.v[1]/R;cue.w[1]=cue.v[0]/R;cue.w[2]*=Math.exp(-jmp*1.5);if(path&&path.length<4000)path.push(cue.p.slice());}
-  clothStep(cue,dt);if(collided){clothStep(obj,dt);if(mc){var dn9=ln(sb(obj.p,opts.pocket));if(dn9<nineMin)nineMin=dn9;}} // theo đường con 9 → khoảng gần lỗ đích nhất
+  clothStep(cue,dt);if(collided){clothStep(obj,dt);if(mc){var dn9=ln(sb(obj.p,opts.pocket));if(dn9<nineMin){nineMin=dn9;nineSlip=ln(slip(obj));nineDir=nm(obj.v);}}} // theo đường con 9 → khoảng gần lỗ đích nhất
   if(cush&&f){if(cue.p[0]<f[0]+R){cue.p[0]=f[0]+R;cushionCollide(cue,'x0');rails++;}if(cue.p[0]>f[1]-R){cue.p[0]=f[1]-R;cushionCollide(cue,'x1');rails++;}if(cue.p[1]<f[2]+R){cue.p[1]=f[2]+R;cushionCollide(cue,'y0');rails++;}if(cue.p[1]>f[3]-R){cue.p[1]=f[3]-R;cushionCollide(cue,'y1');rails++;}}
   if(path&&t>0&&path.length<4000&&ln(sb(cue.p,path[path.length-1]))>0.008)path.push(cue.p.slice());
   t+=dt;if(atRest(cue))break;}
  if(path&&(path.length===0||ln(sb(path[path.length-1],cue.p))>1e-4))path.push(cue.p.slice()); // ensure path ends exactly at rest (analytic roll-to-rest jump didn't record its endpoint)
- if(mc&&collided){var gg2=0,ndt=4e-4;while(gg2++<10000){var dnn=ln(sb(obj.p,opts.pocket));if(dnn<nineMin)nineMin=dnn;if(nineMin<=1.4*R||atRest(obj))break;if(f&&(obj.p[0]<f[0]-3*R||obj.p[0]>f[1]+3*R||obj.p[1]<f[2]-3*R||obj.p[1]>f[3]+3*R))break;clothStep(obj,ndt);}} // lăn NỐT con 9 tới lỗ/nghỉ: cue có thể nghỉ trước (stun) → đừng cắt sớm. dt thô 4e-4 đủ cho pass/fail (con 9 lăn thẳng)
+ if(mc&&collided){var gg2=0,ndt=4e-4;while(gg2++<10000){var dnn=ln(sb(obj.p,opts.pocket));if(dnn<nineMin){nineMin=dnn;nineSlip=ln(slip(obj));nineDir=nm(obj.v);}if(nineMin<=0.7*R||atRest(obj))break;if(f&&(obj.p[0]<f[0]-3*R||obj.p[0]>f[1]+3*R||obj.p[1]<f[2]-3*R||obj.p[1]>f[3]+3*R))break;clothStep(obj,ndt);}} // lăn NỐT con 9 tới lỗ/nghỉ: cue có thể nghỉ trước (stun) → đừng cắt sớm. dt thô 4e-4 đủ cho pass/fail (con 9 lăn thẳng)
  var out={cueRest:cue.p.slice(),cuePath:path,rails:rails,rev:cue.rev||0,objV0:objV0};
  if(mc){var cuePk=Infinity,restPk=Infinity,pI,pK;if(path)for(pI=0;pI<path.length;pI++)for(pK=0;pK<6;pK++){var dP=ln(sb(path[pI],MCP[pK]));if(dP<cuePk)cuePk=dP;}for(pK=0;pK<6;pK++){var dR=ln(sb(cue.p,MCP[pK]));if(dR<restPk)restPk=dR;} // con 9 vào lỗ (đường đi trong ~1.4R tâm lỗ) · scratch (đường/điểm dừng bi cái sát miệng lỗ) · chạm bi khác
-  out.ninePotted=nineMin<=1.4*R;out.cueScratch=(cuePk<0.06||restPk<0.07);out.cueHitObs=obsHit?obsHit.indexOf(true)>=0:false;}
+  var accR=1.4*R;if(nineDir&&nineSlip>0.03)accR*=(1-rattleDirShrink(opts.pocket,nineDir)); out.ninePotted=nineMin<=accR;out.cueScratch=(cuePk<0.06||restPk<0.07);out.cueHitObs=obsHit?obsHit.indexOf(true)>=0:false;}
  return out;}
 // ---- solver ----
 function ghostBall(O,pk){return sb(O,ml(nm(sb(pk,O)),2*R));}
@@ -572,7 +572,8 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
  var tgtPk=Infinity;for(var q=0;q<6;q++){var dq=ln(sb(Tt,POCK[q]));if(dq<tgtPk)tgtPk=dq;} // nearest pocket to the user's target
  var tgtRail=felt?Math.min(Tt[0]-felt[0],felt[1]-Tt[0],Tt[1]-felt[2],felt[3]-Tt[1]):9; // đích cách băng gần nhất (nếu đích cố ý sát băng thì đừng phạt rest sát băng)
  var potFrag=potFragility(ln(sb(pocket,nine)),ln(sb(nine,cue)),Math.max(0.05,dt2(nm(sb(nine,cue)),nm(sb(pocket,nine))))); // độ khó PHA ĂN con 9 (báo người dùng: dễ/vừa/khó)
- var POT_K=12/(49*MU_SLIDE*gg)+25/(98*MU_ROLL*gg),dPotReach=ln(sb(nine,pocket))-1.4*R; // CỔNG "BI TỚI LỖ": bi mục tiêu rời va chạm KHÔNG xoáy → trượt-rồi-lăn được POT_K·objV0² m; phải ≥ khoảng tới lỗ mới THỰC SỰ ăn (khớp mc.ninePotted). Ngăn run-out chọn cú lê/rút quá nhẹ "đúng đường nhưng bi chết giữa bàn"
+ var POT_K=12/(49*MU_SLIDE*gg)+25/(98*MU_ROLL*gg),dPotReach=ln(sb(nine,pocket))-1.4*R,RATT=rattleShrink(pocket,nine); // RATT: lỗ này có bị HẸP khi bi vào lúc còn trượt không (#POCKET-SPEED)
+ // CỔNG "BI TỚI LỖ": bi mục tiêu rời va chạm KHÔNG xoáy → trượt-rồi-lăn được POT_K·objV0² m; phải ≥ khoảng tới lỗ mới THỰC SỰ ăn (khớp mc.ninePotted). Ngăn run-out chọn cú lê/rút quá nhẹ "đúng đường nhưng bi chết giữa bàn"
  function hazardPen(path,rest){var minD=Infinity,minR=Infinity,minT=Infinity,minTR=Infinity,i,k;for(i=0;i<path.length;i++){for(k=0;k<6;k++){var d=ln(sb(path[i],POCK[k]));if(d<minD)minD=d;}if(others){for(var oc=0;oc<others.length;oc++){var dtt=ln(sb(path[i],others[oc]));if(dtt<minT)minT=dtt;}}}for(k=0;k<6;k++){var d2=ln(sb(rest,POCK[k]));if(d2<minR)minR=d2;}if(others){for(k=0;k<others.length;k++){var dr=ln(sb(rest,others[k]));if(dr<minTR)minTR=dr;}}
   var pen=0;if(minD<0.06)pen+=2.5;if(minR<0.07)pen+=2.2; // real scratch (path over pocket mouth / cue resting in the jaw) — ALWAYS forbidden
   if(others&&minTR<0.11)pen+=(0.11-minTR)*2.0; // bi cái dừng SÁT bi khác = cò tay / khó bắc cầu → phạt (né vị trí bí)
@@ -580,10 +581,10 @@ function solveFast(cue,nine,pocket,Tt,opts){opts=opts||{};if(opts.quick2||opts.q
   if(felt&&tgtRail>0.16){var rr=Math.min(rest[0]-felt[0],felt[1]-rest[0],rest[1]-felt[2],felt[3]-rest[1]);if(rr<0.10)pen+=(0.10-rr)*2.2;} // #4: bi cái dừng SÁT BĂNG = khó bắc cầu cú sau (chỉ phạt khi đích không cố ý sát băng)
   if(others){if(minT<2.2*R)pen+=80;if(minT<3*R)pen+=(3*R-minT)/R*8;}return pen;} // TRAFFIC RẤT NẶNG: đường bi cái CHẠM bi khác (nảy, <2.2R) → +80 = CẤM (chỉ chọn nếu KHÔNG còn cách nào, vd gãi thế díu); đi trong ~1R bề mặt bi khác (<3R) → phạt nặng tăng dần
  var aimC={};function getAim(bx,sp){var qb=Math.round(bx/0.02)*0.02,qs=Math.round(sp/0.2)*0.2,k=qb.toFixed(2)+','+qs.toFixed(1);if(!(k in aimC))aimC[k]=aimToPot(cue,nine,pocket,qb,qs);return aimC[k];} // bucket (bx,sp) so hill-climb reuses aims (aimToPot is the hot path); throw-comp barely changes within a bucket
- function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,rev:r.rev,objReach:(POT_K*r.objV0*r.objV0>=dPotReach),scr:hazardPen(r.cuePath,r.cueRest)};} // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
+ function evalC(bx,by,sp){if(Math.hypot(bx,by)>0.5)return null;var sol=getAim(bx,sp);if(!sol)return null;var r=simulate(cue,sp,sol.aim,bx,by,nine,{cushions:!!felt,felt:felt,dt:dt,obs:others});return{cueRest:r.cueRest,aim:sol.aim,potErr:sol.err,bx:bx,by:by,sp:sp,path:r.cuePath,rails:r.rails,rev:r.rev,objReach:(POT_K*r.objV0*r.objV0>=dPotReach),hard:(RATT>0?Math.min(1,SLIDE_K*r.objV0*r.objV0/Math.max(0.05,dPotReach)):0),scr:hazardPen(r.cuePath,r.cueRest)};} // hard=1: bi mục tiêu tới lỗ lúc CÒN TRƯỢT (miệng lỗ hẹp lại) // #3: offset đầu cơ >0.5R = MISCUE (trượt cơ) → loại
  function score(e){ if(!e) return Infinity; if(opts.quick&&e.objReach===false) return Infinity; // run-out: CẤM cú bi mục tiêu không tới lỗ (Cố vấn đã có MC/potRate lo)
    return ln(sb(e.cueRest,Tt)) // ĐÍCH là chính; các phạt dưới đây NHẸ (chỉ nghiêng chọn, không lấn độ chính xác)
-   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045+Math.abs(e.bx)*0.07+0.6*Math.max(0,e.rails-1):0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr; } // RUN-OUT (quick): phạt ÁP PHÊ NGHỊCH (rev) + KHÔNG SIDE (|bx|) + PHẠT NẶNG ĐIỀU BI ≥2 BĂNG (đường dội nhiều băng để "tới" leave là phi thực tế/dễ scratch — ưu tiên leave tới được sạch 0-1 băng, hợp "điều bi tối giản"); draw/follow tự do; CỐ VẤN (non-quick): giữ nguyên (đã có MC/potRate lo). Chặn miscue (>0.46R)
+   +0.045*Math.abs(e.bx)+0.08*Math.max(0,e.sp-2.4)+0.08*Math.max(0,1.5-e.sp)+(opts.quick?0:0.03*Math.max(0,-e.by-0.25))+0.035*e.rails+(opts.quick?(e.rev||0)*0.045+Math.abs(e.bx)*0.07+0.6*Math.max(0,e.rails-1):0)+0.15*Math.max(0,Math.hypot(e.bx,e.by)-0.46)+e.scr+0.7*RATT*(e.hard||0); } // #POCKET-SPEED: pot chếch-dọc-băng (α 5–20°) mà bi vào lỗ lúc còn TRƯỢT → miệng lỗ chỉ còn ~1/2 → ưu tiên cú NHẸ hơn cho pha đó // RUN-OUT (quick): phạt ÁP PHÊ NGHỊCH (rev) + KHÔNG SIDE (|bx|) + PHẠT NẶNG ĐIỀU BI ≥2 BĂNG (đường dội nhiều băng để "tới" leave là phi thực tế/dễ scratch — ưu tiên leave tới được sạch 0-1 băng, hợp "điều bi tối giản"); draw/follow tự do; CỐ VẤN (non-quick): giữ nguyên (đã có MC/potRate lo). Chặn miscue (>0.46R)
  function stabCost(e){return (e.sensitivity||0)+0.10*Math.abs(e.bx)+0.04*Math.max(0,-e.by-0.32)+0.05*e.rails+0.10*Math.max(0,1.5-e.sp)+0.08*Math.max(0,e.sp-2.4)+0.25*Math.max(0,Math.hypot(e.bx,e.by)-0.46);} // "chi phí bất ổn": nhạy + côn side + rút RẤT sâu + băng (nhẹ) + lực + gần-miscue
  function techKey(e){return (e.by>0.14?'F':e.by<-0.14?'D':'S')+(e.bx>0.12?'R':e.bx<-0.12?'L':'C');} // Follow/Stun/Draw × Right/Center/Left
  function missObj(e){return e?ln(sb(e.cueRest,Tt))+e.scr:Infinity;} // độ chính xác THUẦN + né lỗ/bi (KHÔNG phạt english/lực) — để giữ cú chính xác dù cần english cao
@@ -645,6 +646,19 @@ var W_CORNER=0.1143, D_BALL=2*R, EFF0=W_CORNER-D_BALL; // 4.5" miệng lỗ góc
 function approachPen(k,toP){if(k>3)return 1; // lỗ GIỮA (4,5) đã có phạt riêng theo |thành phần vuông băng|
  var bx=(k===1||k===3)?0.70711:-0.70711,by=(k>=2)?0.70711:-0.70711,c=bx*toP[0]+by*toP[1];
  return Math.min(3,EFF0/Math.max(0.012,W_CORNER*c-D_BALL));}
+// #POCKET-SPEED — Jewett & Alciatore ĐO THỰC trên bàn (không phải lý thuyết): miệng lỗ GÓC HẸP ĐI khi bi tới lỗ lúc CÒN TRƯỢT (đánh mạnh),
+// nhưng CHỈ trong một DẢI GÓC. Theo góc so với BĂNG α: α≈0 (bi chạy sát DỌC băng) mạnh≈nhẹ; α ~5–20° miệng lỗ đánh mạnh chỉ còn ~1/2 đánh nhẹ
+// ("nearly two-to-one tightening"); α ≳30° (vào gần thẳng phân giác) mạnh KHÔNG hại (đo được rộng thêm ~0.25" → bỏ qua, không thưởng cú mạnh).
+// α = 45° − θ (θ = lệch khỏi phân giác lỗ góc, xem #APPROACH). Lỗ GIỮA không có số đo → không đoán.
+// [Jewett, Billiards Digest 5/2013 "Where's the Pocket? They change size and shape" · drdavepoolinfo.com/faq/pocket/size-and-center/]
+var SLIDE_K=12/(49*MU_SLIDE*gg); // bi mục tiêu rời va chạm KHÔNG xoáy → TRƯỢT được SLIDE_K·v0² m rồi mới lăn đều (Jewett: "soft"=đã lăn đều, "firm"=còn trượt)
+function rattleDirShrink(pocket,dir){ // phần miệng lỗ MẤT ĐI nếu bi tới lỗ lúc còn TRƯỢT, theo HƯỚNG bi chạy (0 = tốc độ không ảnh hưởng, 0.5 = còn nửa)
+ if(Math.abs(pocket[0]-1.27)<0.3)return 0; // lỗ GIỮA: chưa có số đo → giữ nguyên
+ var bx=(pocket[0]>1.27)?0.70711:-0.70711,by=(pocket[1]>0.635)?0.70711:-0.70711;
+ var al=45-Math.acos(Math.max(-1,Math.min(1,bx*dir[0]+by*dir[1])))*DEG; // α: góc so với băng
+ if(al<=0||al>=30)return 0;
+ return 0.5*(al<5?al/5:(al<=20?1:(30-al)/10));} // lên 0→5°, giữ 5–20°, xuống 20→30°
+function rattleShrink(pocket,ball){return rattleDirShrink(pocket,nm(sb(pocket,ball)));}
 function pickPocket(cue,ball,others){var POCK=[[0,0],[2.54,0],[0,1.27],[2.54,1.27],[1.27,0],[1.27,1.27]],best=-1,bs=Infinity;
  if(cue){for(var b0=0;b0<others.length;b0++)if(distSeg(others[b0],cue,ball)<2.9*R)return -1;} // #6: bi khác trong ~1R đường CUE→BI → không ngắm sạch được (kẹt)
  var dCO=cue?ln(sb(ball,cue)):0.6;
