@@ -337,3 +337,23 @@ Tháng 7/2023, ngay giữa năm thi đấu hay nhất sự nghiệp tính tới 
 **Hai — cắt trạng thái lái tự động bằng một biến vật lý nhỏ, đừng cắt bằng ý chí.** Kaçi đổi bên phá không vì hình học mà vì *"đổi một chút là như thể anh tập trung lại từ đầu"*. Cơ chế này rẻ và chạy được ngay: đổi bên đứng khi phá, đổi thứ tự thao tác chuẩn bị, đổi chỗ đặt phấn giữa hai ván. Điều kiện là **phải nhận ra mình đang trôi** — dấu hiệu ở Kaçi là cú thứ năm, thứ sáu bị đánh quá tay sau bốn cú hoàn hảo.
 
 **Ba — tách "đánh dở" khỏi "thua", và gọi tên cả hai thật lạnh.** Vừa thắng để vào top 16 UK Open, Kaçi vẫn nói thẳng *"mười ván cuối tôi đánh rất tệ"*; ngược lại, năm về ba thế giới anh lại cho rằng mình đánh hay hơn năm vô địch. Hai câu đó cùng nói một điều: **kết quả và chất lượng là hai sổ riêng**. Người tập ghi lẫn hai sổ sẽ vừa tự mãn sau trận thắng may, vừa tự đập mình sau trận thua đánh tốt. Sổ chất lượng mới là sổ dùng để quyết định buổi tập hôm sau.
+
+---
+
+## Cập nhật 23/08/2026
+
+**Tháng 8/2026: thua sớm mà không đổ cho điều kiện bên ngoài.** Hai phát biểu cách nhau năm ngày cho thấy cả hai đầu của con lắc. Ngày 09/08/2026, vào bán kết Florida Open, Kaçi vẫn dùng đúng khuôn tự tin cũ (World Nineball Tour, hạng A, trích trực tiếp):
+
+> *"I'm feeling great. I've been working really hard this year to get back to my best form, and I know what I'm capable of… It doesn't matter who I play next. I trust my game, and if my break is working and I'm in my zone, I know I can compete with anyone."*
+> (Tôi thấy rất khoẻ. Năm nay tôi làm việc thật sự chăm để lấy lại phong độ tốt nhất, và tôi biết mình làm được gì. Đánh với ai cũng không quan trọng. Tôi tin vào lối đánh của mình, và nếu cú phá chạy và tôi vào được vùng của mình thì tôi biết mình đấu được với bất kỳ ai.)
+> — World Nineball Tour, 09/08/2026
+
+Ngày 14/08/2026, thua Sun Yi Hsuan 7-10 ngay vòng đầu Arizona Open, anh nói:
+
+> *"I'm gutted to go out so early, but that's the game. In this format, nobody is safe and I paid the price today. It's a wake-up call. I need to learn from it and come back stronger."*
+> (Tôi tiếc vì ra sớm quá, nhưng đó là cuộc chơi. Ở thể thức này không ai an toàn cả, và hôm nay tôi phải trả giá. Đó là một hồi chuông cảnh tỉnh. Tôi cần học từ nó và quay lại mạnh hơn.)
+> — World Nineball Tour, 14/08/2026
+
+Đáng chú ý là lần này không có một chữ nào về bi cái, ánh sáng bàn hay nhịp đánh của đối thủ — khác hẳn cách anh truy nguyên nhân ra bên ngoài sau trận thua giải thế giới 2025. Đây là đối chứng đáng ghi cho mục "tách đánh dở khỏi thua" ở trên: lần này anh nhận lỗi thẳng vào chính mình, không có sổ nào đổ cho bên ngoài.
+
+Nguồn: https://worldnineballtour.com/florida-open-pool-championship/van-boening-chases-redemption-as-florida-open-final-four-is-set-2026-florida-open-pool-championship/ và https://worldnineballtour.com/news/van-boening-hunts-new-title-as-arizona-open-delivers-day-one-drama-2026-arizona-open-pool-championship/
