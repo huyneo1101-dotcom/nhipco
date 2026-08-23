@@ -135,12 +135,30 @@
       "ngay": "2026-08-21",
       "hang_fargo": 21,
       "rating": 827
+    },
+    {
+      "ten": "Wu Kun-Lin",
+      "key": "psy_pro_wukunlin",
+      "ngay": "2026-08-23",
+      "hang_fargo": 22,
+      "rating": 826
+    },
+    {
+      "ten": "Alex Kazakis",
+      "key": "psy_pro_alexkazakis",
+      "ngay": "2026-08-23",
+      "hang_fargo": 23,
+      "rating": 824
+    },
+    {
+      "ten": "Niels Feijen",
+      "key": "psy_pro_nielsfeijen",
+      "ngay": "2026-08-23",
+      "hang_fargo": 24,
+      "rating": 823
     }
   ],
   "hang_cho": [
-    "Wu Kun-Lin",
-    "Alex Kazakis",
-    "Niels Feijen",
     "Dang Jinhu",
     "Oliver Szolnoki",
     "Robbie Capito",
@@ -187,7 +205,10 @@
     "Gerson Martinez",
     "Assis Tadique",
     "Jesus Atencio",
-    "Baseth Mocaibat"
+    "Baseth Mocaibat",
+    "Aivhan Maluto",
+    "Hui Chan Lu",
+    "John Morra"
   ],
   "khong_du_tu_lieu": [
     {
@@ -704,8 +725,64 @@
         "Baseth Mocaibat",
         "PHL",
         801
+      ],
+      [
+        73,
+        "Aivhan Maluto",
+        "Aivhan Maluto",
+        "PHL",
+        801
+      ],
+      [
+        74,
+        "Hui Chan Lu",
+        "Hui Chan Lu",
+        "TWN",
+        801
+      ],
+      [
+        75,
+        "AJ Manas",
+        "AJ Manas",
+        "PHL",
+        801
+      ],
+      [
+        76,
+        "John Morra",
+        "John Morra",
+        "CAN",
+        800
+      ],
+      [
+        77,
+        "Marvin Asis",
+        "Marvin Asis",
+        "PHL",
+        800
+      ],
+      [
+        78,
+        "Petri Makkonen",
+        "Petri Makkonen",
+        "FIN",
+        799
+      ],
+      [
+        79,
+        "Cristopher Tevez",
+        "Cristopher Tevez",
+        "PER",
+        799
+      ],
+      [
+        80,
+        "Konrad Juszczyszyn",
+        "Konrad Juszczyszyn",
+        "POL",
+        798
       ]
     ],
-    "_do_ngay_bo_sung": "2026-08-21 (hạng 71-72, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World)"
+    "_do_ngay_bo_sung": "2026-08-23 (hạng 73-80, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World, gọi thẳng bằng curl không cần trình duyệt)"
   }
 }
