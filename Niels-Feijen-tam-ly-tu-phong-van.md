@@ -1,27 +1,29 @@
-# Tâm lý thi đấu của Niels Feijen — rút từ lời tự thuật trong 20 video, podcast và bài phỏng vấn
+# Tâm lý thi đấu của Niels Feijen — rút từ lời tự thuật trong 25 video, podcast và bài phỏng vấn
 
-**Ngày lập:** 22/08/2026
-**Cơ thủ:** Niels Feijen (Hà Lan, sinh 1977, biệt danh "The Terminator"), vô địch thế giới 14-1 năm 2008, vô địch thế giới 9 bi năm 2014, vô địch World Pool Masters 2013 và 2018, bốn lần MVP Mosconi Cup, vào Đại sảnh Danh vọng BCA năm 2023.
+**Ngày lập:** 22/08/2026 · **Soát lại và bổ sung:** 23/08/2026
+**Cơ thủ:** Niels Feijen (Hà Lan, sinh 1977, biệt danh "The Terminator"), vô địch thế giới 14-1 năm 2008, vô địch thế giới 9 bi năm 2014, vô địch World Pool Masters 2013 và 2018, bốn lần MVP Mosconi Cup, vào Đại sảnh Danh vọng BCA năm 2023. Hạng 24 FargoRate, rating 823.
 
-**Nguồn đã dùng — 20 mục, trải từ 02/2012 tới 12/2025:**
+**Nguồn đã dùng — 25 mục, trải từ 02/2012 tới 05/2026:**
 
 | # | Nguồn | Loại | Thời điểm | Độ dài |
 |---|---|---|---|---|
-| 1 | *POV Pool LiveCast* Ep. #8, người phỏng vấn Daniel Bush | phỏng vấn video | 03/06/2020 | ~48 phút |
-| 2 | *Cue It Up; A Billiards Podcast* — số về việc Feijen vào Đại sảnh Danh vọng | podcast video | 21/07/2023 | 70 phút |
-| 3 | AZBilliards / WPA, *"Feijen: I'm Preparing for Pool War"*, Ted Lerner hỏi đáp | **bài báo**, hỏi đáp viết | 08/09/2015 | — |
-| 4 | Kamui Brand, *"Interview with Professionals – Niels Feijen: A Lifelong Road Warrior"* | **bài phỏng vấn viết** | 2020 | — |
-| 5 | *The Sharkstream*, phỏng vấn ngay sau khi Feijen thắng Fedor Gorst tại The International 2024 | phỏng vấn video tại giải | 21/11/2024 | 3 phút 29 |
-| 6 | *The Sharkstream*, phỏng vấn sau trận thua kết thúc giải The International 2024 | phỏng vấn video tại giải | 23/11/2024 | 1 phút 11 |
-| 7-11 | Kamui Brand, loạt *"Inside the Mind of Niels Feijen"* Ep. 1-5 — Feijen tự bình luận lại các ván của chính mình | video tự thuật | 26/05 – 02/07/2020 | 5-10 phút mỗi tập |
-| 12 | *"Mental Matchplay for Competitive Pool Players with Niels Feijen"* | video tự thuật | 20/12/2020 | 5 phút 06 |
-| 13-19 | Kênh riêng *Niels The Terminator Feijen*, loạt **YouTube Shorts** *"Mental Mondays"* số 1, 2, 7, 10, 12, 13, 14, 17, 18 | **Shorts** | 08/2025 – 12/2025 | 44-60 giây mỗi tập |
-| 20 | Kênh riêng, **Shorts** *"Control The Controllables"* | **Shorts** | 02/10/2024 | 60 giây |
+| 1 | *POV Pool LiveCast* Ep. #8, người phỏng vấn Daniel Bush (`RcZLo8vYYIs`) | phỏng vấn video | 07/06/2020 | 51 phút 17 |
+| 2 | *Cue It Up; A Billiards Podcast*, *"Niels Feijen on his career in pool and Terminator College"* (`LXX10skbyuQ`) | podcast video | 30/06/2020 | 41 phút 57 |
+| 3 | WPA Pool / AZBilliards, *"Feijen: I'm Preparing for Pool War"*, tác giả Ted Lerner | **bài báo**, có trích dẫn trực tiếp | 08/09/2015 | — |
+| 4 | Kamui Brand, *"Interview with Professionals – Niels Feijen: A Lifelong Road Warrior"* | **bài phỏng vấn viết** | không ghi ngày | — |
+| 5 | *The Sharkstream*, *"Niels Feijen Interview after beating Fedor Gorst!!"* (`JjEsaO2BGY8`) | phỏng vấn video tại giải | 21/11/2024 | 3 phút 29 |
+| 6 | *The Sharkstream*, *"Niels Feijen advances to the Semi-Finals"* (`OHlZSFZlbIo`) | phỏng vấn video tại giải | 22/11/2024 | 1 phút 39 |
+| 7 | *The Sharkstream*, phỏng vấn sau trận thua kết thúc giải The International 2024 (`BY-9QEGlgaU`) | phỏng vấn video tại giải | 23/11/2024 | 1 phút 11 |
+| 8-12 | Kamui Brand, loạt *"Inside the Mind of Niels Feijen"* Ep. 1-5 — Feijen tự bình luận lại các ván của chính mình (Ep. 1 = `eralilXdNoQ`) | video tự thuật | 26/05 – 02/07/2020 | 5-11 phút mỗi tập |
+| 13 | *"Mental Matchplay for Competitive Pool Players with Niels Feijen"* (`N9iNLWaQlTA`) | video tự thuật | 20/12/2020 | 5 phút 06 |
+| 14-24 | Kênh riêng *Niels The Terminator Feijen*, loạt **YouTube Shorts** *"Mental Mondays"* số 2, 7, 8, 10, 12, 13, 14, 17, 18, 19, 20, 21, 22 | **Shorts** | 25/08/2025 – 25/05/2026 | 44-80 giây mỗi tập |
+| 25 | Kênh riêng, **Shorts** *"Control The Controllables"* (`wp63uYbI3VI`) | **Shorts** | 02/10/2024 | 60 giây |
 
-**Về cách lấy trích dẫn:** phần video lấy từ phụ đề `en-orig` của YouTube, tức bản nhận dạng giọng nói **tiếng Anh gốc** (Feijen nói tiếng Anh), không phải bản dịch máy — mọi bản có tham số `tlang=` đều bị loại theo luật. Người lập hồ sơ chỉ thêm dấu câu và cắt từ đệm, không đổi từ. Phần bài báo lấy nguyên văn từ trang gốc (AZBilliards lấy qua bản lưu Wayback vì trang chặn Cloudflare).
+**Về cách lấy trích dẫn:** phần video lấy từ phụ đề `en-orig` của YouTube, tức bản nhận dạng giọng nói **tiếng Anh gốc** (Feijen nói tiếng Anh), không phải bản dịch máy — mọi bản có tham số `tlang=` đều bị loại theo luật. Người lập hồ sơ chỉ thêm dấu câu và cắt từ đệm, không đổi từ. Chỗ bản nhận dạng nghe nhầm một từ mà nghĩa hiển nhiên (*"a steak tilt"* → *a mistake tilt*, *"nagging about the roles"* → *rolls*) thì sửa về từ đúng. Phần bài báo lấy nguyên văn từ trang gốc.
 
-**Một nguồn phụ, ghi rõ mức tin cậy thấp hơn:** đoạn Feijen kể về loạt 416 bi 14-1 (mục 12 dưới) là **bài đăng Facebook cá nhân do một thành viên diễn đàn AZBilliards chép lại ngày 22/02/2012**, không phải phỏng vấn. Đã giữ vì nội dung tâm lý đáng giá, nhưng độ tin cậy thấp hơn các nguồn còn lại.
+**Về đợt soát lại ngày 23/08/2026:** toàn bộ trích dẫn của bản lập ngày 22/08 đã được đối chiếu lại từng câu với phụ đề `en-orig` tải trực tiếp từ YouTube, không câu nào phải bỏ. Hai ô trong bảng nguồn được sửa theo số đo thật: mục 1 lệch ngày đăng và độ dài (đo được 07/06/2020, 51 phút 17), mục 2 trước ghi là số podcast về Đại sảnh Danh vọng tháng 7/2023 nhưng nguồn đo được lại là số *"career in pool and Terminator College"* đăng 30/06/2020. Bổ sung thêm 05 nguồn, trong đó có 04 tập *Mental Mondays* ra đời năm 2026 (số 19-22) và 02 buổi phỏng vấn tại giải The International 2024.
 
+**Một nguồn phụ, ghi rõ mức tin cậy thấp hơn:** đoạn Feijen kể về loạt 416 bi 14-1 (mục 11 dưới) là **bài đăng Facebook cá nhân do một thành viên diễn đàn AZBilliards chép lại ngày 22/02/2012**, không phải phỏng vấn. Đã giữ vì nội dung tâm lý đáng giá, nhưng độ tin cậy thấp hơn các nguồn còn lại.
 ---
 
 ## Về kết luận tổng quát
@@ -194,3 +196,170 @@ Quy cách của phép tự nói ấy được ông đặt giới hạn rõ:
 > (Bắt đầu bằng vài hơi thở sâu cho não đủ ô-xy tốt. Rồi có sẵn vài từ — viết ra giấy hoặc để trong đầu — để anh nhìn vào hoặc lặp lại. Không quá ba từ. Ví dụ: nhẹ, sẵn sàng, điềm tĩnh. Hoặc tập trung, tin tưởng, tấn công. Hay là tôn trọng, khiêm nhường, tập trung. Chọn ba từ mang ý nghĩa mạnh với riêng anh.)
 
 Điểm đáng chú ý về mặt phương pháp: ông phân biệt **nghe** với **nói**. Ý nghĩ tiêu cực trong trận không bị coi là kẻ thù phải diệt, mà bị coi là một kênh phát mà người chơi có quyền không nghe, bằng cách chiếm lấy chỗ phát bằng ba từ đã soạn sẵn.
+
+## 9. Về tuổi tác và việc rút về bán chuyên: áp lực là thứ phải giữ quen, mất quen thì phải học lại
+
+Đây là mục không có ở cơ thủ nào khác trong bộ hồ sơ, và nó đến từ chính buổi phỏng vấn tại giải The International 2024 (`JjEsaO2BGY8`, 21/11/2024, 3 phút 29). Feijen tự khai lại hạng của mình, và lý do:
+
+> *"I don't play all the tournaments anymore. I was like 10 weeks off after the US Open, just played the Pro Star Cup, that was it, and the rest just making videos. I consider myself semi-pro now, not full pro anymore, because I choose to stay more with the family at home. I want to see the kids. I don't want to be on the road 250 days a year and then have two kids — what is that for?"*
+> (Tôi không đánh hết các giải nữa. Sau US Open tôi nghỉ chừng 10 tuần, chỉ đánh mỗi Pro Star Cup, thế thôi, còn lại là làm video. Giờ tôi tự coi mình là bán chuyên, không còn chuyên toàn phần nữa, vì tôi chọn ở nhà với gia đình nhiều hơn. Tôi muốn thấy các con. Tôi không muốn xa nhà 250 ngày một năm rồi lại có hai đứa con — như thế thì để làm gì?)
+
+Ngay sau đó là câu đáng giá nhất của cả buổi, vì nó nói ra một cái giá mà rất ít cơ thủ chịu nói ra:
+
+> *"Sometimes it takes a little while to get used to the pressure again at the big tournaments. It doesn't feel like my living room anymore, like when I was in my 20s and 30s."*
+> (Đôi khi phải mất một lúc mới quen lại được với áp lực ở các giải lớn. Nó không còn cho cảm giác như phòng khách nhà mình nữa, như hồi tôi hai mươi mấy ba mươi mấy.)
+
+Hình ảnh "phòng khách nhà mình" là cách gọn nhất để mô tả thứ mà cơ thủ đánh liên tục có được: sân khấu lớn thành nơi quen thuộc. Feijen nói thẳng rằng thứ đó **mất đi khi ngừng thi đấu đều**, và nó không quay lại bằng kỹ thuật.
+
+Cách ông ứng phó không phải là ép mình đánh nhiều lại, mà là **hạ mục tiêu xuống mức một ngày**:
+
+> *"Just one match at a time. In this field I'm not going to say — you know, I haven't won a major in a long time — so if you would be asking Fedor you might say let's snap off another one. But my goal is just to get through this day."*
+> (Cứ từng trận một thôi. Trong cái bảng này thì tôi sẽ không nói kiểu — anh biết đấy, lâu lắm rồi tôi chưa vô địch một giải lớn nào — nên nếu anh hỏi Fedor thì cậu ấy có thể nói là chơi nốt một cái nữa. Còn mục tiêu của tôi chỉ là đi hết được ngày hôm nay.)
+
+**Cách đọc này là suy luận của người lập hồ sơ:** việc ông tự so mình với Gorst rồi cố ý chọn một mục tiêu nhỏ hơn hẳn không phải là tự ti, mà là đúng phép "tách cái điều khiển được ra" ở mục 7 đem áp cho chính mình. Chức vô địch không điều khiển được; đi hết một ngày thì có.
+
+Ở buổi phỏng vấn hôm sau khi vào bán kết (`OHlZSFZlbIo`, 22/11/2024, 1 phút 39), khi bị hỏi kế hoạch cho ngày kế tiếp, câu trả lời không có một chữ nào về đối thủ:
+
+> *"Same thing I asked you the last time — just keep doing good routines, right? Just keep it up, good resting, and warm up in the morning. (…) So we got a lot of time: just warm up in the morning and then take a nap, you know, rest up, and then jump in there and go all in."*
+> (Vẫn y như lần trước thôi — cứ giữ đúng các quy trình tốt. Cứ duy trì thế, nghỉ ngơi cho tốt, và khởi động buổi sáng. (…) Nên là còn nhiều thời gian: khởi động buổi sáng rồi chợp mắt một giấc, nghỉ cho lại sức, rồi bước vào và dốc hết.)
+
+Đáng chú ý là ở tuổi 47 và trong một giải lớn, thứ ông gọi tên khi được hỏi về ngày bán kết vẫn chỉ là **ngủ, khởi động, quy trình** — không phải chiến thuật, không phải đối thủ.
+
+## 10. Về cách xử lý thua: kể lại bàn bi, không kể lại bản thân
+
+Buổi phỏng vấn ngay sau trận thua kết thúc giải The International 2024 (`BY-9QEGlgaU`, 23/11/2024, 1 phút 11) là mẫu quý, vì nó cho thấy **cấu trúc lời nói của ông lúc vừa thua**, chứ không phải lúc ngồi giảng bài. Toàn bộ câu trả lời dài hơn một phút, và trong đó không có một chữ nào tự trách:
+
+> *"I guess, to sum it up, I wasn't destined to win that one. I mean, nine-ball, it's 10 to 15% luck. (…) I freeze him on the five, I jump the one in, and I freeze him on a ball. Next time he shoots, he kicks and flukes the nine in, then breaks the nine in on the break. (…) I never had another shot from 7-6 — not an open ball, I couldn't even play safe. So, nothing."*
+> (Tóm lại thì tôi nghĩ mình không có duyên thắng trận đó. Ý tôi là bi 9 có 10 tới 15% là may rủi. (…) Tôi bịt bi cái sát bi 5 của cậu ta, tôi nhảy vào bi 1, rồi lại bịt sát bi. Tới lượt cậu ta đánh thì cậu ta kick trúng rồi vào may bi 9, xong lại phá vào luôn bi 9 ngay cú phá. (…) Từ 7-6 tôi không còn được cú nào nữa — không một bi mở nào, đến an toàn cũng không đánh được. Nên là không có gì cả.)
+
+Hai chi tiết đáng ghi. Thứ nhất, **con số 10-15% may rủi xuất hiện y nguyên** ở Shorts *Mental Mondays 17* một năm sau (12/2025) — tức đây không phải câu chống chế nói cho qua lúc vừa thua, mà là một hằng số ông đã cài sẵn trong đầu từ trước. Thứ hai, cách kể là **kể lại chuỗi sự kiện trên bàn theo thứ tự**, mỗi cú một dòng, giống một biên bản hơn là một lời than.
+
+Cùng cơ chế ấy được ông dựng thành bài dạy trong Shorts *"Take The Information"* (Mental Mondays 21, 18/05/2026, 75 giây) — tập mới nhất trong tư liệu và cũng là tập cụ thể nhất về cách xử lý sai lầm ngay giữa trận:
+
+> *"You're missing the information that the table is offering you while you make the mistake. What actually happened on the break? Did you hit it too thin? Did you hit it too thick? Did you use too much spin? Did you overpower it or hit it a bit too soft? How are the balls reacting? Take that information, make the adjustment and make the improvement."*
+> (Anh đang bỏ sót cái thông tin mà mặt bàn đưa cho anh ngay trong lúc anh phạm lỗi. Thực ra cú phá vừa rồi đã xảy ra chuyện gì? Anh đánh mỏng quá? Dày quá? Xoáy nhiều quá? Anh đánh mạnh quá hay hơi nhẹ quá? Bi phản ứng thế nào? Cầm lấy thông tin đó, chỉnh lại, rồi cải thiện.)
+
+Và câu chốt, thẳng đến mức hơi phũ:
+
+> *"So don't just cry baby in the chair over your mistakes, because then you're just digging your own grave. Take the information, make the adjustment, get back to the table next inning, start doing some damage."*
+> (Nên đừng có ngồi trên ghế mà mếu máo về những cú sai của mình, vì làm thế là anh đang tự đào huyệt cho mình thôi. Cầm lấy thông tin, chỉnh lại, quay ra bàn ở lượt sau, và bắt đầu gây sát thương.)
+
+Điểm phương pháp: ông chuyển **cùng một quãng thời gian ngồi ghế** từ việc xử lý cảm xúc sang việc thu thập dữ liệu. Cơn bực không bị cấm; nó bị chiếm chỗ bằng một danh sách câu hỏi kỹ thuật phải trả lời.
+
+Bản thân ông cũng thừa nhận mình không phải lúc nào cũng làm được. Trong bài phỏng vấn viết của Kamui Brand, khi được hỏi về một lần nổi nóng, câu trả lời gồm đúng hai vế:
+
+> *"I try to maintain my composure pretty good."* … *"I'm only human."*
+> (Tôi cố giữ được bình tĩnh khá tốt. … Tôi cũng chỉ là người thôi.)
+
+## 11. Về loạt 416 bi: hồi hộp không đến từ đối thủ, nó đến từ con số
+
+Nguồn của mục này **yếu hơn các mục khác và phải đọc kèm cảnh báo**: đây là bài đăng Facebook cá nhân của Feijen, được một thành viên diễn đàn AZBilliards chép lại trong chủ đề *"Niels Feijen Runs 416!!"* ngày 22/02/2012. Không phải phỏng vấn, không có người hỏi, và không kiểm chứng được nguyên bản gốc còn tồn tại hay không. Giữ lại vì nội dung tâm lý hiếm: đây là mô tả từ bên trong một loạt 14-1 dài ba tiếng đồng hồ, **không có đối thủ nào ở bàn**.
+
+> *"I didn't get nervous until about 260. Nick had the old Dutch record with 293 and my old record was 259. Nobody in Holland ever reached 300, so I was nervous."*
+> (Tôi không hồi hộp cho tới quãng bi thứ 260. Nick giữ kỷ lục cũ của Hà Lan với 293, còn kỷ lục cũ của tôi là 259. Chưa ai ở Hà Lan chạm tới 300, nên là tôi hồi hộp.)
+
+Đây là dữ kiện đắt nhất trong toàn bộ hồ sơ về bản chất của áp lực trong bi-a: **suốt 259 bi đầu ông không hồi hộp; nỗi hồi hộp bật lên đúng ở chỗ con số bắt đầu có ý nghĩa.** Không đối thủ, không khán giả, không tiền thưởng — chỉ có một kỷ lục. Điều này khớp chính xác với học thuyết ông dạy 13 năm sau ở mục 4: nguồn áp lực chính là **kỳ vọng**, tức thứ do chính người chơi gắn vào tình huống, chứ không phải bản thân tình huống.
+
+Đoạn tiếp theo mô tả cách nó tan đi, và cũng đúng nguyên tắc "quay về quy trình":
+
+> *"I made [one] barely and then it took me another 30 balls to relax again. After that it was full steam ahead again."*
+> (Tôi vào được một bi nhưng suýt trượt, rồi phải mất thêm chừng 30 bi nữa mới thư giãn lại được. Sau đó thì lại băng băng.)
+
+**Cách đọc này là suy luận của người lập hồ sơ:** con số "thêm 30 bi nữa mới thư giãn lại được" là một mốc đáng nhớ cho người tập, vì nó cho thấy ngay cả ở một cơ thủ đã vô địch thế giới 14-1, **trạng thái bình tĩnh không quay về bằng một quyết định mà quay về bằng một quãng đủ dài**. Ai đợi mình hết run trong vòng một cú đánh là đang đợi thứ không xảy ra.
+
+Loạt bi đó kết thúc như mọi loạt bi:
+
+> *"Missed a funky shot with a lot of inside english to break open 3 balls. Took 3 hours, Kat was the witness."*
+> (Trượt một cú lắt léo phải dùng nhiều xoáy trong để phá tơi ba bi. Mất 3 tiếng, Kat là người chứng kiến.)
+
+## 12. Về chức vô địch thế giới 2014: trận đấu thật là trận đấu với những trận chung kết đã thua
+
+Feijen thua nhiều trận chung kết lớn trước khi vô địch thế giới 9 bi năm 2014 ở Doha. Trong podcast *Cue It Up* (30/06/2020), ông kể lại chuỗi đó cùng thứ nó để lại:
+
+> *"One final was against Karl Boyes 12-11 and another one against Orcollo again. So this was really like hurting me. I was playing great, I was getting to the final, but for some reason I couldn't get over the hump. And then on top of that I started to get some criticism from like Billiards Digest and people saying, 'Yeah, you haven't won enough big ones.' And this really stung."*
+> (Một trận chung kết thua Karl Boyes 12-11, một trận nữa lại thua Orcollo. Chuyện đó thật sự làm tôi đau. Tôi chơi rất hay, tôi vào tới chung kết, nhưng không hiểu sao cứ không qua nổi cái gờ đó. Rồi trên nữa, tôi bắt đầu bị chê, kiểu Billiards Digest và người ta nói "ừ thì anh chưa vô địch đủ nhiều giải lớn". Câu đó đau thật.)
+
+Điều đáng chú ý là ông **không giấu chuyện lời chê có tác dụng**, và cũng không tô nó thành động lực đẹp đẽ:
+
+> *"That's something that just awoke in me. I said: I have to win this freaking tournament, you know what I mean, I need to get this monkey off my back."*
+> (Có cái gì đó vừa thức dậy trong tôi. Tôi nói: tôi phải vô địch cái giải chết tiệt này, anh hiểu ý tôi chứ, tôi cần gỡ con khỉ này khỏi lưng mình.)
+
+Rồi tới câu mô tả trận chung kết với Albin Ouschan, và đây là câu quan trọng nhất của mục:
+
+> *"This final against Albin, I had to shake off so many demons from lost finals. If you look back, I mean, I was just playing myself basically in that match. And he got ahead, I think it was like eight to six or whatever, and I said: if I don't catch up now, I'm not gonna win this match. I have to win from here or I'm gonna be lost. And I managed to turn it around, and it was just the most relieving feeling ever."*
+> (Trận chung kết ấy với Albin, tôi phải rũ đi bao nhiêu là bóng ma từ những trận chung kết đã thua. Nhìn lại thì, ý tôi là, về cơ bản trong trận đó tôi đang đánh với chính mình. Cậu ấy vượt lên, hình như 8-6 gì đó, và tôi tự nói: nếu bây giờ không đuổi kịp thì mình không thắng được trận này. Mình phải thắng từ đây, không thì mình mất. Và tôi lật lại được, và đó là cảm giác nhẹ nhõm nhất từ trước tới nay.)
+
+Cụm *"I was just playing myself basically in that match"* (về cơ bản tôi đang đánh với chính mình) là cách nói gọn nhất của toàn bộ hồ sơ về việc **đối thủ thật của một cơ thủ dày dạn không phải là người bên kia bàn**.
+
+Một năm sau, khi trở lại Doha bảo vệ danh hiệu, ông trả lời phóng viên Ted Lerner của WPA (*"Feijen: I'm Preparing for Pool War"*, 08/09/2015) bằng cách tự chấm điểm giải năm trước — và ông chấm ở hạng mục tâm lý, không phải kỹ thuật:
+
+> *"I think I was peaking mentally. I never got weak one second after mistakes. My composure and focus were great and my form was fine. So it was mental A game."*
+> (Tôi nghĩ lúc đó tôi đang ở đỉnh về mặt tâm lý. Sau mỗi cú sai tôi không hề yếu đi một giây nào. Sự điềm tĩnh và độ tập trung của tôi đều tốt, phong độ thì ổn. Nên đó là một giải mà phần đầu óc ở mức hay nhất.)
+
+Định nghĩa "đỉnh về tâm lý" của ông ở đây rất cụ thể và đo được: **không yếu đi một giây nào sau mỗi cú sai.** Không phải không sai, mà là khoảng thời gian phục hồi sau cú sai bằng không.
+
+Trong cùng bài, hai câu về động cơ, và chúng đi ngược nhau một cách đáng chú ý:
+
+> *"To be honest, it's painful to see how after so many years the sport is still at the same level."* … *"The kick is to play good pool."*
+> (Thành thật mà nói, thật đau lòng khi thấy sau ngần ấy năm môn này vẫn giậm chân ở chỗ cũ. … Cái sướng là được đánh hay.)
+
+Và một câu về vai trò của gia đình, cùng chiều với lựa chọn bán chuyên chín năm sau đó ở mục 9:
+
+> *"My girls keep me very grounded. It's back to the real world when I enter home, and that makes me take my moments at the table even more seriously."*
+> (Mấy cô gái của tôi giữ cho tôi rất chân đất. Bước vào nhà là quay lại thế giới thật, và điều đó khiến tôi coi trọng những khoảnh khắc ở bàn bi hơn nữa.)
+
+**Cách đọc này là suy luận của người lập hồ sơ:** logic ở đây ngược với logic thường gặp. Gia đình thường được nói tới như thứ làm nhẹ áp lực thi đấu; Feijen nói nó làm ông **coi trọng thời gian ở bàn hơn**, vì thời gian ấy đã trở nên hữu hạn.
+
+## 13. Về nền móng ngoài bàn bi: sáu điều cơ bản, và cuộc giành lại sự tập trung
+
+Bốn tập *Mental Mondays* ra trong năm 2026 (số 19-22) cho thấy trọng tâm của ông đã dịch: từ thao tác trong trận sang **điều kiện sống dựng nên khả năng tập trung**. Trong *"The 6 Fundamentals"* (Mental Mondays 19, 05/01/2026, 79 giây), ông liệt kê sáu thứ, và không thứ nào nằm trên mặt bàn:
+
+> *"Number one, eating — stop drinking sugar and start eating real food. Two, moving — try to install cardio, strengthening, mobility exercises as many days a week as you can. Do a little a lot, not a lot a little. Three, sleeping — get the recommended 7 to 9 hours a night, and the hour before bedtime turn off all screens so your mind can relax and unwind. Four, breathing — breathe in and out through your nose. Shut your mouth, because that puts you in fight or flight mode. Five, focusing — start a meditation or visualization practice. Even 10 minutes a day can get you a long way. And finally number six, go into nature."*
+> (Thứ nhất, ăn — bỏ uống đường, bắt đầu ăn thức ăn thật. Thứ hai, vận động — cố cài vào tuần càng nhiều buổi càng tốt các bài tim mạch, tăng cơ, tăng độ linh hoạt. Làm ít mà nhiều lần, đừng làm nhiều mà ít lần. Thứ ba, ngủ — ngủ đủ 7 tới 9 tiếng như khuyến nghị, và một tiếng trước khi ngủ thì tắt hết màn hình để đầu óc được thư giãn và lắng xuống. Thứ tư, thở — hít vào thở ra bằng mũi. Ngậm miệng lại, vì thở miệng đẩy anh vào trạng thái chiến-hay-chạy. Thứ năm, tập trung — bắt đầu một nếp thiền hoặc hình dung. Chỉ 10 phút một ngày cũng đưa anh đi được xa. Và cuối cùng thứ sáu, đi vào thiên nhiên.)
+
+Câu *"Do a little a lot, not a lot a little"* (làm ít mà nhiều lần, đừng làm nhiều mà ít lần) là nguyên tắc tập luyện gọn nhất trong toàn bộ tư liệu, và nó áp được cho cả bài tập tâm lý lẫn bài tập bi.
+
+*"Claim Back Your Focus"* (Mental Mondays 22, 25/05/2026, 80 giây) là tập gay gắt nhất, và mở đầu bằng một bài kiểm tra dành cho chính người xem:
+
+> *"Can you count with me to nine without swiping away? Here we go. One, two, three, four, five, six, seven, eight, nine. Congratulations, great job. You've now equalled the attention span of a goldfish. That's correct, you didn't even beat it yet — you need 10 seconds or more to do that."*
+> (Anh đếm cùng tôi tới chín mà không vuốt bỏ được không? Nào. Một, hai, ba, bốn, năm, sáu, bảy, tám, chín. Chúc mừng, giỏi lắm. Anh vừa ngang bằng khả năng chú ý của một con cá vàng. Đúng thế đấy, anh còn chưa hơn được nó — muốn hơn thì phải cần 10 giây trở lên.)
+
+Rồi ông nối thẳng sang môn bi-a:
+
+> *"So how do you think you're going to play great pool when your attention span is 8 seconds or less? Think about it. This is a concentration sport."*
+> (Vậy anh nghĩ mình sẽ đánh bi hay kiểu gì khi khả năng chú ý của anh chỉ 8 giây hoặc ít hơn? Nghĩ mà xem. Đây là môn thể thao của sự tập trung.)
+
+Đơn thuốc, một lần nữa, là hành động cụ thể chứ không phải quyết tâm:
+
+> *"Claim back that focus by making bold choices: turning off notifications, reducing screen time, training your focus with focus grids for example, and starting a daily routine like meditation or visualization. You can still turn this boat around and claim back your own focus instead of donating it to the big tech companies."*
+> (Giành lại sự tập trung ấy bằng những lựa chọn dứt khoát: tắt thông báo, giảm giờ nhìn màn hình, rèn độ tập trung bằng bảng số chẳng hạn, và bắt đầu một nếp hằng ngày như thiền hoặc hình dung. Anh vẫn còn xoay được con thuyền này và giành lại sự tập trung của chính mình, thay vì đem tặng nó cho mấy công ty công nghệ lớn.)
+
+Hai tập còn lại của năm 2026 nói về cùng một chỗ chuyển: đổi cảm xúc chủ đạo khi gặp chuyện không như ý. *"Get Fascinated"* (Mental Mondays 20, 11/05/2026, 70 giây):
+
+> *"Don't get frustrated, instead get fascinated. (…) Expectations are the root cause of your frustration and pressure. (…) They can only go right or wrong, hit or miss, black or white. It's always a one or a 10. Instead, it should be a one through a 10."*
+> (Đừng bực bội, hãy tò mò. (…) Kỳ vọng là gốc rễ của cơn bực và của áp lực. (…) Nó chỉ có thể đúng hoặc sai, trúng hoặc trượt, trắng hoặc đen. Lúc nào cũng là một điểm hoặc mười điểm. Đáng ra nó phải là một cho tới mười điểm.)
+
+Hệ quả của lối chấm điểm hai đầu ấy được ông chỉ đích danh:
+
+> *"Your confidence is constantly going up or down. You play a good match, great. You miss a couple of balls — horrible match, you're playing awful, you're terrible. There goes your confidence again."*
+> (Sự tự tin của anh cứ lên xuống liên tục. Đánh một trận hay, tuyệt. Trượt vài bi — trận kinh khủng, mình chơi tệ quá, mình dở tệ. Thế là sự tự tin lại đi mất.)
+
+Và cách thay:
+
+> *"Work on your craft. Do it with a spark in your eyes from the fascination, and not a big rock on your shoulders from frustration."*
+> (Hãy mài nghề của mình. Làm nó với ánh lấp lánh trong mắt của sự tò mò, chứ không phải với một tảng đá trên vai của sự bực bội.)
+
+Cuối cùng, *"Focus On What You've Got!"* (Mental Mondays 8, 06/10/2025, 58 giây) đưa ra phép chia tỷ lệ mà người tập dễ dùng nhất:
+
+> *"We start to focus on the 10, 20% that's not working and we totally forget about the 80% that we still have and that is working. Look, it's not about being perfect. It's about being effective with the stuff that you do have. Stop chasing that 10, 20% and start using 100% of that 80% that you have."*
+> (Ta bắt đầu chăm chăm vào 10, 20% đang không chạy và quên sạch 80% mình vẫn còn và vẫn đang chạy. Này nhé, vấn đề không phải là hoàn hảo. Vấn đề là hiệu quả với những gì mình đang có. Thôi đuổi theo cái 10, 20% ấy đi, và bắt đầu dùng 100% của cái 80% mà anh đang có.)
+
+---
+
+## Về ba điều rút ra được cho người tập
+
+**Một — câu hỏi đúng lúc đang hỏng không phải "làm sao hết run", mà "cần làm gì để đánh ra một cú tốt".** Đây là trục xuyên suốt 14 năm tư liệu Feijen, và là điều duy nhất ông lặp lại ở gần như mọi nguồn: trong buồng bình luận năm 2020, ở tỷ số 9-8 tại The International 2024, và trong Shorts cuối năm 2025. Bằng chứng mạnh nhất cho việc đây là công cụ chứ không phải khẩu hiệu nằm ở chính lời ông sau khi thắng Gorst: *"I was nervous as hell, but I pulled it out"* (tôi run kinh khủng, nhưng tôi vượt qua được). Người dạy tâm lý cho cả làng bi-a, ở tuổi 47, vẫn run — thứ ông có không phải là trạng thái hết run, mà là **thứ tự thao tác khi đang run**: kiểm soát cơ thể trước, thở, giữ mọi thứ đơn giản, rồi mới tới từng cú.
+
+**Hai — áp lực phần lớn là hàng tự sản xuất, và cái máy sản xuất ra nó tên là kỳ vọng.** Loạt 416 bi năm 2012 là bằng chứng sạch nhất: không đối thủ, không khán giả, không tiền thưởng, mà ông vẫn hồi hộp — và hồi hộp bật lên đúng ở bi thứ 260, tức đúng chỗ con số bắt đầu chạm vào một kỷ lục. Từ đó suy ra bài tập cụ thể nhất trong hồ sơ: liệt kê mọi thứ đang làm mình căng trước giải, rồi chia làm hai rổ — **"gạch đi" cho thứ không điều khiển được** (đối thủ là ai, bàn nảy hay lì, mình muốn thắng đến mức nào), và **"đem đi tập" cho thứ điều khiển được** (cảm giác áp lực trong trận, cơn tuột tay sau khi phạm lỗi). Kèm một phép sửa câu chữ mất đúng một giây: gạch chữ *again* khỏi *"here we go again"*, còn lại *"here we go"*.
+
+**Ba — sau một cú hỏng, hãy đọc lại mặt bàn thay vì đọc lại bản thân.** Quãng ngồi ghế sau cú sai là tài nguyên, và Feijen dùng nó theo hai bước có thể chép nguyên: trả lời một danh sách câu hỏi kỹ thuật (*đánh mỏng hay dày, xoáy nhiều hay ít, mạnh hay nhẹ, bi phản ứng thế nào*), rồi giao một việc cho lượt tới bằng đúng một câu — *"lượt vào bàn tiếp theo của tôi sẽ là lượt hay nhất của tôi"*. Cùng lúc, đừng đợi mình bình tĩnh lại trong một cú đánh: chính ông cần thêm 30 bi mới thư giãn lại được sau một cú suýt trượt. Và nếu đang tuột hẳn, hướng gỡ đi ngược bản năng — **tự dọn cho mình những cú dễ, hạ kỳ vọng xuống một chút**, vì ở Feijen sự tự tin là kết quả cuối của một chuỗi cú đơn giản làm được, chứ không phải điều kiện đầu gọi lên bằng ý chí.
