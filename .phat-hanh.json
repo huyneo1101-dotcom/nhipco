@@ -1,0 +1,10 @@
+{
+  "viec": "dựng bản chạy, chạy bộ ca rồi đẩy lên GitHub Pages",
+  "ghi_chu": "Kho GitHub `nhipco` phục vụ GitHub Pages thẳng từ nhánh `main`, thư mục gốc (đo 23/08/2026 bằng `gh api repos/huyneo1101-dotcom/nhipco/pages`), nên đẩy chỉ là một lượt push. Chuỗi chạy dưới khoá của HeThong/khoa-app.py để hai phiên không đè bản dựng lên nhau. Khoá `dia_chi` để HeThong/giao-app.py đo được bản NGƯỜI DÙNG ĐANG THẤY sau khi đẩy. ⚠ Pages dựng lại mất vài chục giây, bản mới chưa hiện ngay sau khi push.",
+  "lenh": [
+    "python3 /Users/Huy/Claude/HeThong/dungapp/dung.py /Users/Huy/Claude/App/NhipCo",
+    "python3 /Users/Huy/Claude/App/NhipCo/kiem-cuezen.py",
+    "git -C /Users/Huy/Claude/App/NhipCo push origin main"
+  ],
+  "dia_chi": "https://huyneo1101-dotcom.github.io/nhipco/"
+}
