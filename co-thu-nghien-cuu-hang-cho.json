@@ -156,12 +156,30 @@
       "ngay": "2026-08-23",
       "hang_fargo": 24,
       "rating": 823
+    },
+    {
+      "ten": "Dang Jinhu",
+      "key": "psy_pro_dangjinhu",
+      "ngay": "2026-08-24",
+      "hang_fargo": 25,
+      "rating": 822
+    },
+    {
+      "ten": "Oliver Szolnoki",
+      "key": "psy_pro_oliverszolnoki",
+      "ngay": "2026-08-24",
+      "hang_fargo": 26,
+      "rating": 822
+    },
+    {
+      "ten": "Robbie Capito",
+      "key": "psy_pro_robbiecapito",
+      "ngay": "2026-08-24",
+      "hang_fargo": 27,
+      "rating": 821
     }
   ],
   "hang_cho": [
-    "Dang Jinhu",
-    "Oliver Szolnoki",
-    "Robbie Capito",
     "Daniel Maciol",
     "Jundel Mazon",
     "David Alcaide",
@@ -208,7 +226,10 @@
     "Baseth Mocaibat",
     "Aivhan Maluto",
     "Hui Chan Lu",
-    "John Morra"
+    "John Morra",
+    "Marvin Asis",
+    "Petri Makkonen",
+    "Cristopher Tevez"
   ],
   "khong_du_tu_lieu": [
     {
