@@ -177,12 +177,30 @@
       "ngay": "2026-08-24",
       "hang_fargo": 27,
       "rating": 821
+    },
+    {
+      "ten": "Daniel Maciol",
+      "key": "psy_pro_danielmaciol",
+      "ngay": "2026-08-26",
+      "hang_fargo": 28,
+      "rating": 821
+    },
+    {
+      "ten": "Jundel Mazon",
+      "key": "psy_pro_jundelmazon",
+      "ngay": "2026-08-26",
+      "hang_fargo": 29,
+      "rating": 820
+    },
+    {
+      "ten": "David Alcaide",
+      "key": "psy_pro_davidalcaide",
+      "ngay": "2026-08-26",
+      "hang_fargo": 30,
+      "rating": 820
     }
   ],
   "hang_cho": [
-    "Daniel Maciol",
-    "Jundel Mazon",
-    "David Alcaide",
     "Xue Zhenqi",
     "Lee Vann Corteza",
     "Moritz Neuhausen",
@@ -229,7 +247,10 @@
     "John Morra",
     "Marvin Asis",
     "Petri Makkonen",
-    "Cristopher Tevez"
+    "Cristopher Tevez",
+    "Konrad Juszczyszyn",
+    "Michael Georgiou",
+    "Szymon Kural"
   ],
   "khong_du_tu_lieu": [
     {
@@ -802,8 +823,22 @@
         "Konrad Juszczyszyn",
         "POL",
         798
+      ],
+      [
+        81,
+        "Michael Georgiou",
+        "Michael Georgiou",
+        "CYP",
+        798
+      ],
+      [
+        82,
+        "Szymon Kural",
+        "Szymon Kural",
+        "POL",
+        798
       ]
     ],
-    "_do_ngay_bo_sung": "2026-08-23 (hạng 73-80, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World, gọi thẳng bằng curl không cần trình duyệt)"
+    "_do_ngay_bo_sung": "2026-08-26 (hạng 81-82, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World, gọi thẳng bằng curl không cần trình duyệt — thứ tự hạng 79-83 đổi nhẹ so với lần đo 23/08 vì rating các cơ thủ đồng mức 798 xếp lại)"
   }
 }
