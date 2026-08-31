@@ -198,12 +198,30 @@
       "ngay": "2026-08-26",
       "hang_fargo": 30,
       "rating": 820
+    },
+    {
+      "ten": "Xue Zhenqi",
+      "key": "psy_pro_xuezhenqi",
+      "ngay": "2026-08-31",
+      "hang_fargo": 31,
+      "rating": 820
+    },
+    {
+      "ten": "Lee Vann Corteza",
+      "key": "psy_pro_leevanncorteza",
+      "ngay": "2026-08-31",
+      "hang_fargo": 32,
+      "rating": 820
+    },
+    {
+      "ten": "Moritz Neuhausen",
+      "key": "psy_pro_moritzneuhausen",
+      "ngay": "2026-08-31",
+      "hang_fargo": 33,
+      "rating": 819
     }
   ],
   "hang_cho": [
-    "Xue Zhenqi",
-    "Lee Vann Corteza",
-    "Moritz Neuhausen",
     "Alex Pagulayan",
     "Max Lechner",
     "Fu Jianbo",
@@ -250,7 +268,10 @@
     "Cristopher Tevez",
     "Konrad Juszczyszyn",
     "Michael Georgiou",
-    "Szymon Kural"
+    "Szymon Kural",
+    "Casper Matikainen",
+    "Po Cheng Kuo",
+    "Mickey Krause"
   ],
   "khong_du_tu_lieu": [
     {
@@ -837,8 +858,134 @@
         "Szymon Kural",
         "POL",
         798
+      ],
+      [
+        83,
+        "Casper Matikainen",
+        "Casper Matikainen",
+        "FIN",
+        798
+      ],
+      [
+        84,
+        "Po Cheng Kuo",
+        "Po Cheng Kuo",
+        "TWN",
+        797
+      ],
+      [
+        85,
+        "Szymon Kural",
+        "Szymon Kural",
+        "POL",
+        797
+      ],
+      [
+        86,
+        "Mickey Krause",
+        "Mickey Krause",
+        "DNK",
+        797
+      ],
+      [
+        87,
+        "Alexis Ferrer",
+        "Alexis Ferrer",
+        "PHL",
+        797
+      ],
+      [
+        88,
+        "Justin Bergman",
+        "Justin Bergman",
+        "USA",
+        797
+      ],
+      [
+        89,
+        "Mohammad Soufi",
+        "Mohammad Soufi",
+        "SYR",
+        797
+      ],
+      [
+        90,
+        "Jesson Marabi",
+        "Jesson Marabi",
+        "PHL",
+        796
+      ],
+      [
+        91,
+        "Michael Feliciano",
+        "Michael Feliciano",
+        "PHL",
+        796
+      ],
+      [
+        92,
+        "Francisco Bustamante",
+        "Francisco Bustamante",
+        "PHL",
+        795
+      ],
+      [
+        93,
+        "Ralf Souquet",
+        "Ralf Souquet",
+        "DEU",
+        795
+      ],
+      [
+        94,
+        "The Kien Do",
+        "The Kien Do",
+        "VNM",
+        795
+      ],
+      [
+        95,
+        "Thorsten Hohmann",
+        "Thorsten Hohmann",
+        "USA",
+        795
+      ],
+      [
+        96,
+        "Harry Vergara",
+        "Harry Vergara",
+        "PHL",
+        794
+      ],
+      [
+        97,
+        "Siming Chen",
+        "Siming Chen",
+        "CHN",
+        794
+      ],
+      [
+        98,
+        "Che-Wei Fu",
+        "Che-Wei Fu",
+        "TWN",
+        794
+      ],
+      [
+        99,
+        "Sean Mark Malayan",
+        "Sean Mark Malayan",
+        "PHL",
+        794
+      ],
+      [
+        100,
+        "Duc Thien Luong",
+        "Duc Thien Luong",
+        "VNM",
+        794
       ]
     ],
-    "_do_ngay_bo_sung": "2026-08-26 (hạng 81-82, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World, gọi thẳng bằng curl không cần trình duyệt — thứ tự hạng 79-83 đổi nhẹ so với lần đo 23/08 vì rating các cơ thủ đồng mức 798 xếp lại)"
+    "_do_ngay_bo_sung": "2026-08-31 (hạng 83-100, API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World, gọi thẳng bằng curl không cần trình duyệt)"
   }
 }
