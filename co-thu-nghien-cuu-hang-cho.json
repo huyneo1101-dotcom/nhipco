@@ -219,12 +219,24 @@
       "ngay": "2026-08-31",
       "hang_fargo": 33,
       "rating": 819
+    },
+    {
+      "ten": "Alex Pagulayan",
+      "key": "psy_pro_pagulayan",
+      "ngay": "2026-09-01"
+    },
+    {
+      "ten": "Max Lechner",
+      "key": "psy_pro_maxlechner",
+      "ngay": "2026-09-01"
+    },
+    {
+      "ten": "Fu Jianbo",
+      "key": "psy_pro_fujianbo",
+      "ngay": "2026-09-01"
     }
   ],
   "hang_cho": [
-    "Alex Pagulayan",
-    "Max Lechner",
-    "Fu Jianbo",
     "Jeffrey Roda",
     "Jeffrey Ignacio",
     "Mario He",
@@ -271,7 +283,10 @@
     "Szymon Kural",
     "Casper Matikainen",
     "Po Cheng Kuo",
-    "Mickey Krause"
+    "Mickey Krause",
+    "Alexis Ferrer",
+    "Justin Bergman",
+    "Mohammad Soufi"
   ],
   "khong_du_tu_lieu": [
     {
