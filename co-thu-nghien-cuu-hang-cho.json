@@ -234,12 +234,31 @@
       "ten": "Fu Jianbo",
       "key": "psy_pro_fujianbo",
       "ngay": "2026-09-01"
+    },
+    {
+      "ten": "Jefrey Roda",
+      "key": "psy_pro_jefreyroda",
+      "ngay": "2026-09-02",
+      "hang_fargo": 37,
+      "rating": 816,
+      "ghi_chu": "Tên chính thức viết một chữ f (Jefrey Consigna Roda), khác chính tả 'Jeffrey' dùng trong hàng chờ/FargoRate."
+    },
+    {
+      "ten": "Jeffrey Ignacio",
+      "key": "psy_pro_jeffreyignacio",
+      "ngay": "2026-09-02",
+      "hang_fargo": 38,
+      "rating": 816
+    },
+    {
+      "ten": "Mario He",
+      "key": "psy_pro_mariohe",
+      "ngay": "2026-09-02",
+      "hang_fargo": 39,
+      "rating": 815
     }
   ],
   "hang_cho": [
-    "Jeffrey Roda",
-    "Jeffrey Ignacio",
-    "Mario He",
     "Chang Yu-Lung",
     "Pijus Labutis",
     "Sanjin Pehlivanović",
@@ -286,7 +305,10 @@
     "Mickey Krause",
     "Alexis Ferrer",
     "Justin Bergman",
-    "Mohammad Soufi"
+    "Mohammad Soufi",
+    "Jesson Marabi",
+    "Michael Feliciano",
+    "Francisco Bustamante"
   ],
   "khong_du_tu_lieu": [
     {
