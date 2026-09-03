@@ -256,12 +256,30 @@
       "ngay": "2026-09-02",
       "hang_fargo": 39,
       "rating": 815
+    },
+    {
+      "ten": "Chang Yu-Lung",
+      "key": "psy_pro_changyulung",
+      "ngay": "2026-09-03",
+      "hang_fargo": 40,
+      "rating": 815
+    },
+    {
+      "ten": "Pijus Labutis",
+      "key": "psy_pro_pijuslabutis",
+      "ngay": "2026-09-03",
+      "hang_fargo": 41,
+      "rating": 814
+    },
+    {
+      "ten": "Sanjin Pehlivanović",
+      "key": "psy_pro_sanjinpehlivanovic",
+      "ngay": "2026-09-03",
+      "hang_fargo": 42,
+      "rating": 814
     }
   ],
   "hang_cho": [
-    "Chang Yu-Lung",
-    "Pijus Labutis",
-    "Sanjin Pehlivanović",
     "Kledio Kaçi",
     "Bernie Regalario",
     "Edwin Gamas",
@@ -308,7 +326,10 @@
     "Mohammad Soufi",
     "Jesson Marabi",
     "Michael Feliciano",
-    "Francisco Bustamante"
+    "Francisco Bustamante",
+    "Ralf Souquet",
+    "The Kien Do",
+    "Thorsten Hohmann"
   ],
   "khong_du_tu_lieu": [
     {
