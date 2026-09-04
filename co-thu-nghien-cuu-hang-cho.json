@@ -1,5 +1,6 @@
 {
   "_ghi_chu": "Hàng chờ cho routine hằng ngày 'nghien-cuu-co-thu'. da_xong = đã có bài trong mục Kiến thức > Cơ thủ của app CueZen (khoá key trong index.html). hang_cho = mảng CHUỖI TÊN thuần, routine lấy phần tử ĐẦU. GIỮ hang_cho LUÔN ĐỦ 50 NGƯỜI: mỗi người rời hàng chờ (sang da_xong hoặc khong_du_tu_lieu) thì nối thêm một người vào cuối, lấy theo đúng hạng kế tiếp trong bang_xep_hang_fargorate.bang_hang, bỏ qua ai đã có trong da_xong/khong_du_tu_lieu. Hết bảng thì đọc tiếp Top 100 World của FargoRate.",
+  "_thieu_1_nguoi_05_09_2026": "hang_cho hiện chỉ có 49/50. Bảng bang_xep_hang_fargorate.bang_hang (hạng 1-100) đã dùng hết sạch (44 da_xong + 4 khong_du_tu_lieu + 49 hang_cho + 3 trùng người do trùng bản ghi hạng 60/61, 74/75, 84/85 trong bảng = 100). API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World (thử lại 05/09/2026, các tham số count/page/limit đều không phân trang được) cũng chỉ trả đúng 100 người, không lấy được hạng 101+. Trang fargorate.com/top-ten-lists render bằng JS phía trình duyệt (đã thử curl, HTML tĩnh không có dữ liệu nhúng) — phiên routine này chạy headless (claude -p), không có trình duyệt tương tác nên không tự mở được. Cần Huy hoặc phiên có trình duyệt mở trang này (preview_start + get_page_text) đọc hạng 101-110, ghi bổ sung vào bang_xep_hang_fargorate.bang_hang, rồi bù nốt 1 người vào hang_cho.",
   "_nguon_danh_sach": "Top 100 World của FargoRate (fargorate.com/top-ten-lists), đọc bằng trình duyệt ngày 08/08/2026. Huy chốt: chỉ cơ thủ pool 9 bi, lấy 50 hạng đầu, xếp hàng chờ đúng thứ tự hạng. FargoRate xếp theo rating đối kháng, KHÔNG xét độ phủ truyền thông — cơ thủ hạng sau (nhất là Philippines, Trung Quốc, Đài Loan) có thể thiếu phỏng vấn công khai tiếng Anh, khi đó routine ghi vào khong_du_tu_lieu và bỏ qua.",
   "da_xong": [
     {
@@ -277,15 +278,30 @@
       "ngay": "2026-09-03",
       "hang_fargo": 42,
       "rating": 814
+    },
+    {
+      "ten": "Bernie Regalario",
+      "key": "psy_pro_bernieregalario",
+      "ngay": "2026-09-05",
+      "hang_fargo": 44,
+      "rating": 813
+    },
+    {
+      "ten": "James Aranas",
+      "key": "psy_pro_jamesaranas",
+      "ngay": "2026-09-05",
+      "hang_fargo": 46,
+      "rating": 811
+    },
+    {
+      "ten": "Skyler Woodward",
+      "key": "psy_pro_skylerwoodward",
+      "ngay": "2026-09-05",
+      "hang_fargo": 48,
+      "rating": 811
     }
   ],
   "hang_cho": [
-    "Kledio Kaçi",
-    "Bernie Regalario",
-    "Edwin Gamas",
-    "James Aranas",
-    "Oliver Villafuerte",
-    "Skyler Woodward",
     "Paolo Gallito",
     "Kyle Amoroto",
     "Denis Grabe",
@@ -329,13 +345,33 @@
     "Francisco Bustamante",
     "Ralf Souquet",
     "The Kien Do",
-    "Thorsten Hohmann"
+    "Thorsten Hohmann",
+    "Harry Vergara",
+    "Siming Chen",
+    "Che-Wei Fu",
+    "Sean Mark Malayan",
+    "Duc Thien Luong"
   ],
   "khong_du_tu_lieu": [
     {
       "ten": "Ameer Ali",
       "ngay": "2026-08-14",
       "ghi_chu": "Video có, chữ không — chỉ có clip phỏng vấn/phát biểu tiếng Ả Rập không phụ đề chữ (Threads/Facebook), còn lại chỉ 4 câu xã giao sau trận trên Asharq Al-Awsat. Ưu tiên mở lại đầu tiên nếu sau này cho phép chép lời từ video tiếng địa phương."
+    },
+    {
+      "ten": "Kledio Kaçi",
+      "ngay": "2026-09-05",
+      "ghi_chu": "Chỉ 01 trích dẫn thật (WNT/Matchroom 07/2025, bán kết World Pool Championship). Mọi trích dẫn khác gán cho 'Kaci' tìm thấy trên mạng thực ra là của anh trai Eklent Kaçi. Nguồn dài duy nhất (ABC News Albania, phỏng vấn 29 phút) chỉ có phụ đề tự động ro-orig (dịch máy sai ngôn ngữ), không dùng theo luật cấm 14/08/2026. Đi hết 7 đường tìm nguồn."
+    },
+    {
+      "ten": "Edwin Gamas",
+      "ngay": "2026-09-05",
+      "ghi_chu": "0 trích dẫn thật tìm được. Sự nghiệp chủ yếu là trận độ ăn tiền ở Philippines/Indonesia (kênh ITIK THE DUCK SHOW), không có phòng phỏng vấn. Hai lần lộ diện quốc tế lớn (thắng Gorst ở Predator WPA World 10-Ball 2025, thua Van Boening ở Qatar World Cup) đều không có đoạn phỏng vấn nào trên 4+ kênh giải đấu lớn. Đi hết 6 đường tìm nguồn."
+    },
+    {
+      "ten": "Oliver Villafuerte",
+      "ngay": "2026-09-05",
+      "ghi_chu": "Chỉ 01 câu nói thật, không mang nội dung tâm lý (Abante 28/08/2025: 'Tôi hài lòng với màn trình diễn hôm nay'). Đánh độ ở Mindanao là chính, mới ra quốc tế gần đây (Universal Open, Duya Golden Nine 2026) nên khác nhóm-không-đủ-tư-liệu thông thường — đáng đo lại sau 06/2027 khi tuyến giải quốc tế dày thêm. Đi hết 6 đường tìm nguồn."
     }
   ],
   "bang_xep_hang_fargorate": {
