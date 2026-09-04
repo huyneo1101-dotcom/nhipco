@@ -117,7 +117,7 @@ body{
 .tab{flex:1 1 0;min-width:0;border:1px solid var(--line);background:var(--card2);color:var(--muted);
   border-radius:12px;padding:8px 7px;cursor:pointer;display:flex;flex-direction:column;
   align-items:center;gap:3px;font-size:0.625rem;font-weight:700;transition:.15s;white-space:nowrap}
-.tab .ico{font-size:1.125rem;line-height:1}
+.tab .ico{font-size:1.125rem;line-height:1;display:grid;place-items:center}
 .tab.on{background:linear-gradient(160deg,var(--card),var(--card2));color:var(--text);
   border-color:var(--gold);box-shadow:var(--shadow)}
 .tab.on .ico{filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
@@ -157,7 +157,7 @@ body{
 
 .card{background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--line);
   border-radius:var(--r);box-shadow:var(--shadow)}
-.h{font-size:0.8125rem;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.8px}
+.h{font-size:0.8125rem;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:7px}
 .muted{color:var(--muted)}
 .btn{border:none;border-radius:14px;padding:13px 16px;font-size:0.9375rem;font-weight:800;cursor:pointer;
   background:linear-gradient(160deg,var(--gold),#dca93c);color:var(--on-gold)}
@@ -257,7 +257,7 @@ body{
 .mqhero.mqempty{min-height:0;padding:18px 20px;gap:8px}
 .mqhero.mqempty::before{display:none}
 .mqhero::before{content:"⚔";position:absolute;right:-26px;bottom:-54px;font-size:13.75rem;line-height:1;opacity:.055;pointer-events:none}
-.mqhero .mqlabel{font-size:0.75rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);z-index:1}
+.mqhero .mqlabel{font-size:0.75rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);z-index:1;display:flex;align-items:center;gap:8px;justify-content:center}
 .mqhero .mqtext{font-size:clamp(1.4375rem,6.3vw,2.0625rem);font-weight:900;line-height:1.28;letter-spacing:-.3px;color:var(--text);z-index:1}
 .mqhero .mqhint{font-size:0.71875rem;color:var(--muted);letter-spacing:.4px;z-index:1}
 

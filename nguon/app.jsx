@@ -623,11 +623,11 @@ const uid=(p)=> p+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString
 
 /* ---- Tab (gộp gọn còn 5; cho phép đổi vị trí) ---- */
 const TAB_DEFS=[
-  {id:'pre',   ico:'🧘', lab:'Tâm & Thân'},
-  {id:'table', ico:'🎱', lab:'Thi đấu'},
-  {id:'log',   ico:'📓', lab:'Nhật ký'},
-  {id:'train', ico:'📈', lab:'Rèn luyện'},
-  {id:'know',  ico:'📚', lab:'Kiến thức'},
+  {id:'pre',   lab:'Tâm & Thân'},
+  {id:'table', lab:'Thi đấu'},
+  {id:'log',   lab:'Nhật ký'},
+  {id:'train', lab:'Rèn luyện'},
+  {id:'know',  lab:'Kiến thức'},
 ];
 const TAB_IDS=TAB_DEFS.map(t=>t.id);
 function mergeOrder(saved){
@@ -851,9 +851,25 @@ function App(){
     </div>
   );
 }
+/* ---------- Biểu tượng nét cho thanh dưới và nhãn mục ----------
+   Emoji đổi hình theo từng hệ điều hành và lệch chân dòng, nên thanh điều hướng
+   — thứ hiện ở MỌI màn — không được dùng emoji (luật mục 28, điều 6). */
+const _sIco={fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'};
+const _svg=(p,size)=>(<svg viewBox="0 0 24 24" width={size||22} height={size||22} aria-hidden="true" style={{display:'block'}}>{p}</svg>);
+function IcoTab({n,size}){
+  if(n==='pre')   return _svg(<><circle cx="12" cy="5.2" r="2.2" {..._sIco}/><path d="M12 7.6v5.2M8.4 19.4l3.6-6.6 3.6 6.6M6.6 11.2l5.4 1.6 5.4-1.6" {..._sIco}/></>,size);
+  if(n==='table') return _svg(<><circle cx="9.4" cy="14.6" r="5.4" {..._sIco}/><path d="M9.4 11.4v6.4M6.2 14.6h6.4" {..._sIco}/><path d="M13.6 10.4L20.4 3.6" {..._sIco}/><path d="M12 12l2.2 2.2" {..._sIco} strokeWidth="1.2"/></>,size);
+  if(n==='log')   return _svg(<><path d="M6.4 3.6h11.2a1.4 1.4 0 0 1 1.4 1.4v14a1.4 1.4 0 0 1-1.4 1.4H6.4a1.4 1.4 0 0 1-1.4-1.4V5a1.4 1.4 0 0 1 1.4-1.4z" {..._sIco}/><path d="M8.8 3.6v16.8M11.6 8.4h4.4M11.6 12h4.4" {..._sIco}/></>,size);
+  if(n==='train') return _svg(<><path d="M4 18.4l4.6-5 3.4 3.2 6-7.4" {..._sIco}/><path d="M14.4 9.2h3.8v3.8" {..._sIco}/></>,size);
+  if(n==='know')  return _svg(<><path d="M12 6.8C10.4 5.2 8.2 4.6 4.6 4.6v12.8c3.6 0 5.8.6 7.4 2.2 1.6-1.6 3.8-2.2 7.4-2.2V4.6c-3.6 0-5.8.6-7.4 2.2z" {..._sIco}/><path d="M12 6.8v12.8" {..._sIco}/></>,size);
+  if(n==='giancơ')return _svg(<><circle cx="12" cy="4.8" r="2" {..._sIco}/><path d="M12 7v4.4M4.8 8.6l7.2 2.8 7.2-2.8M8 19.6l4-8 4 8" {..._sIco}/></>,size);
+  if(n==='nhac')  return _svg(<><path d="M9.4 17.2V6.4l8.2-1.8v10.8" {..._sIco}/><circle cx="7.2" cy="17.6" r="2.4" {..._sIco}/><circle cx="15.4" cy="15.4" r="2.4" {..._sIco}/></>,size);
+  if(n==='kiem')  return _svg(<><path d="M18.6 4.4l-8 8M5.4 4.4l8.6 8.6" {..._sIco}/><path d="M4.2 17.4l2.6 2.6 3.2-3.2-2.6-2.6zM19.8 17.4l-2.6 2.6-3.2-3.2 2.6-2.6z" {..._sIco}/></>,size);
+  return null;
+}
 function TabBtn({id,cur,set,ico,lab}){
   return <button className={'tab'+(cur===id?' on':'')} onClick={()=>set(id)}>
-    <span className="ico">{ico}</span>{lab}
+    <span className="ico"><IcoTab n={id} size={22}/></span>{lab}
   </button>;
 }
 
@@ -5466,7 +5482,7 @@ function PreMatch(){
       <MindsetQuotes/>
 
       <div>
-        <div className="h">🤸 Khởi động &amp; giãn cơ</div>
+        <div className="h"><IcoTab n="giancơ" size={17}/>Khởi động &amp; giãn cơ</div>
         <div className="tsub" style={{marginTop:2}}>Làm nóng cổ tay – vai – cổ ~2 phút để tay mượt và tránh chấn thương.</div>
         {!g ? <>
           <div style={{marginTop:8,display:'flex',flexWrap:'wrap',gap:6}}>
@@ -5480,8 +5496,8 @@ function PreMatch(){
       </div>
 
       <div>
-        <div className="h">🎧 Nhạc</div>
-        <div className="tsub" style={{marginTop:2}}>Dán link playlist Spotify hoặc YouTube để mở nhanh trước hoặc giữa trận.</div>
+        <div className="h"><IcoTab n="nhac" size={17}/>Nhạc</div>
+        <div className="tsub" style={{marginTop:2}}>Dán đường dẫn danh sách nhạc Spotify hoặc YouTube để mở nhanh trước hoặc giữa trận.</div>
         <MusicLinks/>
       </div>
       <div style={{height:6}}/>
@@ -5533,13 +5549,13 @@ function MindsetQuotes(){
     <div>
       {cur ? (
         <div className="card mqhero" onClick={next}>
-          <div className="mqlabel">⚔️ Mindset chiến đấu</div>
+          <div className="mqlabel"><IcoTab n="kiem" size={15}/>Tâm thế thi đấu</div>
           <div className="mqtext">{cur.t}</div>
           <div className="mqhint">{list.length>1?'chạm để đổi câu · '+list.length+' câu':'khẩu quyết của bạn'}</div>
         </div>
       ) : (
         <div className="card mqhero mqempty" onClick={()=>setAddOpen(true)}>
-          <div className="mqlabel">⚔️ Mindset chiến đấu</div>
+          <div className="mqlabel"><IcoTab n="kiem" size={15}/>Tâm thế thi đấu</div>
           <div className="mqtext" style={{fontSize:'clamp(0.9375rem,3.9vw,1.125rem)',fontWeight:700,color:'var(--soft)',lineHeight:1.4}}>Thêm khẩu quyết chiến đấu của bạn — để nó đập vào mắt mỗi lần mở app.</div>
         </div>
       )}
@@ -5550,7 +5566,7 @@ function MindsetQuotes(){
         </div>
       ) : (
         <div style={{display:'flex',gap:8,marginTop:10}}>
-          <button className="btn acc" style={{flex:1}} onClick={()=>setAddOpen(true)}>＋ Thêm quote</button>
+          <button className="btn acc" style={{flex:1}} onClick={()=>setAddOpen(true)}>＋ Thêm câu</button>
           {cur && <button className="btn ghost" style={{flex:'0 0 auto',color:'var(--danger)'}} onClick={()=>del(cur.id)}>🗑</button>}
         </div>
       )}
@@ -5569,8 +5585,8 @@ function MusicLinks({kkey}){
   return (
     <div style={{marginTop:8}}>
       <div className="editrow"><input value={label} onChange={e=>setLabel(e.target.value)} placeholder="Tên (vd: Máu chiến)" style={{flex:'0 0 36%'}}/>
-        <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="Dán link Spotify / YouTube"/></div>
-      <button className="btn ghost wide" onClick={add} style={{marginBottom:10}}>＋ Thêm link</button>
+        <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="Dán đường dẫn Spotify / YouTube"/></div>
+      <button className="btn ghost wide" onClick={add} style={{marginBottom:10}}>＋ Thêm đường dẫn</button>
       {list.length===0
         ? <div className="muted small">Chưa có link. Dán link playlist của bạn ở trên để mở nhanh.</div>
         : <div className="list">

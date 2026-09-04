@@ -121,7 +121,7 @@ body{
 .tab{flex:1 1 0;min-width:0;border:1px solid var(--line);background:var(--card2);color:var(--muted);
   border-radius:12px;padding:8px 7px;cursor:pointer;display:flex;flex-direction:column;
   align-items:center;gap:3px;font-size:0.625rem;font-weight:700;transition:.15s;white-space:nowrap}
-.tab .ico{font-size:1.125rem;line-height:1}
+.tab .ico{font-size:1.125rem;line-height:1;display:grid;place-items:center}
 .tab.on{background:linear-gradient(160deg,var(--card),var(--card2));color:var(--text);
   border-color:var(--gold);box-shadow:var(--shadow)}
 .tab.on .ico{filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
@@ -161,7 +161,7 @@ body{
 
 .card{background:linear-gradient(165deg,var(--card),var(--card2));border:1px solid var(--line);
   border-radius:var(--r);box-shadow:var(--shadow)}
-.h{font-size:0.8125rem;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.8px}
+.h{font-size:0.8125rem;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:7px}
 .muted{color:var(--muted)}
 .btn{border:none;border-radius:14px;padding:13px 16px;font-size:0.9375rem;font-weight:800;cursor:pointer;
   background:linear-gradient(160deg,var(--gold),#dca93c);color:var(--on-gold)}
@@ -261,7 +261,7 @@ body{
 .mqhero.mqempty{min-height:0;padding:18px 20px;gap:8px}
 .mqhero.mqempty::before{display:none}
 .mqhero::before{content:"⚔";position:absolute;right:-26px;bottom:-54px;font-size:13.75rem;line-height:1;opacity:.055;pointer-events:none}
-.mqhero .mqlabel{font-size:0.75rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);z-index:1}
+.mqhero .mqlabel{font-size:0.75rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);z-index:1;display:flex;align-items:center;gap:8px;justify-content:center}
 .mqhero .mqtext{font-size:clamp(1.4375rem,6.3vw,2.0625rem);font-weight:900;line-height:1.28;letter-spacing:-.3px;color:var(--text);z-index:1}
 .mqhero .mqhint{font-size:0.71875rem;color:var(--muted);letter-spacing:.4px;z-index:1}
 
@@ -2832,23 +2832,18 @@ const uid = p => p + Date.now().toString(36) + Math.floor(Math.random() * 1e4).t
 /* ---- Tab (gộp gọn còn 5; cho phép đổi vị trí) ---- */
 const TAB_DEFS = [{
   id: 'pre',
-  ico: '🧘',
   lab: 'Tâm & Thân'
 }, {
   id: 'table',
-  ico: '🎱',
   lab: 'Thi đấu'
 }, {
   id: 'log',
-  ico: '📓',
   lab: 'Nhật ký'
 }, {
   id: 'train',
-  ico: '📈',
   lab: 'Rèn luyện'
 }, {
   id: 'know',
-  ico: '📚',
   lab: 'Kiến thức'
 }];
 const TAB_IDS = TAB_DEFS.map(t => t.id);
@@ -3196,6 +3191,89 @@ function App() {
     close: () => setReset(false)
   }));
 }
+/* ---------- Biểu tượng nét cho thanh dưới và nhãn mục ----------
+   Emoji đổi hình theo từng hệ điều hành và lệch chân dòng, nên thanh điều hướng
+   — thứ hiện ở MỌI màn — không được dùng emoji (luật mục 28, điều 6). */
+const _sIco = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round'
+};
+const _svg = (p, size) => /*#__PURE__*/React.createElement("svg", {
+  viewBox: "0 0 24 24",
+  width: size || 22,
+  height: size || 22,
+  "aria-hidden": "true",
+  style: {
+    display: 'block'
+  }
+}, p);
+function IcoTab({
+  n,
+  size
+}) {
+  if (n === 'pre') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", _extends({
+    cx: "12",
+    cy: "5.2",
+    r: "2.2"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M12 7.6v5.2M8.4 19.4l3.6-6.6 3.6 6.6M6.6 11.2l5.4 1.6 5.4-1.6"
+  }, _sIco))), size);
+  if (n === 'table') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", _extends({
+    cx: "9.4",
+    cy: "14.6",
+    r: "5.4"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M9.4 11.4v6.4M6.2 14.6h6.4"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M13.6 10.4L20.4 3.6"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M12 12l2.2 2.2"
+  }, _sIco, {
+    strokeWidth: "1.2"
+  }))), size);
+  if (n === 'log') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", _extends({
+    d: "M6.4 3.6h11.2a1.4 1.4 0 0 1 1.4 1.4v14a1.4 1.4 0 0 1-1.4 1.4H6.4a1.4 1.4 0 0 1-1.4-1.4V5a1.4 1.4 0 0 1 1.4-1.4z"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M8.8 3.6v16.8M11.6 8.4h4.4M11.6 12h4.4"
+  }, _sIco))), size);
+  if (n === 'train') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", _extends({
+    d: "M4 18.4l4.6-5 3.4 3.2 6-7.4"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M14.4 9.2h3.8v3.8"
+  }, _sIco))), size);
+  if (n === 'know') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", _extends({
+    d: "M12 6.8C10.4 5.2 8.2 4.6 4.6 4.6v12.8c3.6 0 5.8.6 7.4 2.2 1.6-1.6 3.8-2.2 7.4-2.2V4.6c-3.6 0-5.8.6-7.4 2.2z"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M12 6.8v12.8"
+  }, _sIco))), size);
+  if (n === 'giancơ') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", _extends({
+    cx: "12",
+    cy: "4.8",
+    r: "2"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M12 7v4.4M4.8 8.6l7.2 2.8 7.2-2.8M8 19.6l4-8 4 8"
+  }, _sIco))), size);
+  if (n === 'nhac') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", _extends({
+    d: "M9.4 17.2V6.4l8.2-1.8v10.8"
+  }, _sIco)), /*#__PURE__*/React.createElement("circle", _extends({
+    cx: "7.2",
+    cy: "17.6",
+    r: "2.4"
+  }, _sIco)), /*#__PURE__*/React.createElement("circle", _extends({
+    cx: "15.4",
+    cy: "15.4",
+    r: "2.4"
+  }, _sIco))), size);
+  if (n === 'kiem') return _svg(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", _extends({
+    d: "M18.6 4.4l-8 8M5.4 4.4l8.6 8.6"
+  }, _sIco)), /*#__PURE__*/React.createElement("path", _extends({
+    d: "M4.2 17.4l2.6 2.6 3.2-3.2-2.6-2.6zM19.8 17.4l-2.6 2.6-3.2-3.2 2.6-2.6z"
+  }, _sIco))), size);
+  return null;
+}
 function TabBtn({
   id,
   cur,
@@ -3208,7 +3286,10 @@ function TabBtn({
     onClick: () => set(id)
   }, /*#__PURE__*/React.createElement("span", {
     className: "ico"
-  }, ico), lab);
+  }, /*#__PURE__*/React.createElement(IcoTab, {
+    n: id,
+    size: 22
+  })), lab);
 }
 
 /* ---------- buzz ---------- */
@@ -15226,7 +15307,10 @@ function PreMatch() {
     }
   }, /*#__PURE__*/React.createElement(MindsetQuotes, null), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "h"
-  }, "🤸 Khởi động & giãn cơ"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(IcoTab, {
+    n: "giancơ",
+    size: 17
+  }), "Khởi động & giãn cơ"), /*#__PURE__*/React.createElement("div", {
     className: "tsub",
     style: {
       marginTop: 2
@@ -15264,12 +15348,15 @@ function PreMatch() {
     onDone: () => setG(false)
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "h"
-  }, "🎧 Nhạc"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(IcoTab, {
+    n: "nhac",
+    size: 17
+  }), "Nhạc"), /*#__PURE__*/React.createElement("div", {
     className: "tsub",
     style: {
       marginTop: 2
     }
-  }, "Dán link playlist Spotify hoặc YouTube để mở nhanh trước hoặc giữa trận."), /*#__PURE__*/React.createElement(MusicLinks, null)), /*#__PURE__*/React.createElement("div", {
+  }, "Dán đường dẫn danh sách nhạc Spotify hoặc YouTube để mở nhanh trước hoặc giữa trận."), /*#__PURE__*/React.createElement(MusicLinks, null)), /*#__PURE__*/React.createElement("div", {
     style: {
       height: 6
     }
@@ -15411,7 +15498,10 @@ function MindsetQuotes() {
     onClick: next
   }, /*#__PURE__*/React.createElement("div", {
     className: "mqlabel"
-  }, "⚔️ Mindset chiến đấu"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(IcoTab, {
+    n: "kiem",
+    size: 15
+  }), "Tâm thế thi đấu"), /*#__PURE__*/React.createElement("div", {
     className: "mqtext"
   }, cur.t), /*#__PURE__*/React.createElement("div", {
     className: "mqhint"
@@ -15420,7 +15510,10 @@ function MindsetQuotes() {
     onClick: () => setAddOpen(true)
   }, /*#__PURE__*/React.createElement("div", {
     className: "mqlabel"
-  }, "⚔️ Mindset chiến đấu"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(IcoTab, {
+    n: "kiem",
+    size: 15
+  }), "Tâm thế thi đấu"), /*#__PURE__*/React.createElement("div", {
     className: "mqtext",
     style: {
       fontSize: 'clamp(0.9375rem,3.9vw,1.125rem)',
@@ -15459,7 +15552,7 @@ function MindsetQuotes() {
       flex: 1
     },
     onClick: () => setAddOpen(true)
-  }, "＋ Thêm quote"), cur && /*#__PURE__*/React.createElement("button", {
+  }, "＋ Thêm câu"), cur && /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     style: {
       flex: '0 0 auto',
@@ -15514,14 +15607,14 @@ function MusicLinks({
   }), /*#__PURE__*/React.createElement("input", {
     value: url,
     onChange: e => setUrl(e.target.value),
-    placeholder: "Dán link Spotify / YouTube"
+    placeholder: "Dán đường dẫn Spotify / YouTube"
   })), /*#__PURE__*/React.createElement("button", {
     className: "btn ghost wide",
     onClick: add,
     style: {
       marginBottom: 10
     }
-  }, "＋ Thêm link"), list.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "＋ Thêm đường dẫn"), list.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "muted small"
   }, "Chưa có link. Dán link playlist của bạn ở trên để mở nhanh.") : /*#__PURE__*/React.createElement("div", {
     className: "list"
