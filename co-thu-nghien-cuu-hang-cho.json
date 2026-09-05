@@ -1,6 +1,6 @@
 {
   "_ghi_chu": "Hàng chờ cho routine hằng ngày 'nghien-cuu-co-thu'. da_xong = đã có bài trong mục Kiến thức > Cơ thủ của app CueZen (khoá key trong index.html). hang_cho = mảng CHUỖI TÊN thuần, routine lấy phần tử ĐẦU. GIỮ hang_cho LUÔN ĐỦ 50 NGƯỜI: mỗi người rời hàng chờ (sang da_xong hoặc khong_du_tu_lieu) thì nối thêm một người vào cuối, lấy theo đúng hạng kế tiếp trong bang_xep_hang_fargorate.bang_hang, bỏ qua ai đã có trong da_xong/khong_du_tu_lieu. Hết bảng thì đọc tiếp Top 100 World của FargoRate.",
-  "_thieu_1_nguoi_05_09_2026": "hang_cho hiện chỉ có 49/50. Bảng bang_xep_hang_fargorate.bang_hang (hạng 1-100) đã dùng hết sạch (44 da_xong + 4 khong_du_tu_lieu + 49 hang_cho + 3 trùng người do trùng bản ghi hạng 60/61, 74/75, 84/85 trong bảng = 100). API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World (thử lại 05/09/2026, các tham số count/page/limit đều không phân trang được) cũng chỉ trả đúng 100 người, không lấy được hạng 101+. Trang fargorate.com/top-ten-lists render bằng JS phía trình duyệt (đã thử curl, HTML tĩnh không có dữ liệu nhúng) — phiên routine này chạy headless (claude -p), không có trình duyệt tương tác nên không tự mở được. Cần Huy hoặc phiên có trình duyệt mở trang này (preview_start + get_page_text) đọc hạng 101-110, ghi bổ sung vào bang_xep_hang_fargorate.bang_hang, rồi bù nốt 1 người vào hang_cho.",
+  "_thieu_1_nguoi_05_09_2026": "hang_cho hiện 49/50 (đo lại 05/09/2026 buổi tối, sau khi 3 người rời hàng chờ vào da_xong và bù bằng cách so bảng Fargo SỐNG với danh sách đã biết — API top-100 đổi thành phần theo rating thực tế, đuôi bảng có người mới lọt vào/rớt ra mỗi ngày, 5 tên mới tìm được: Albert Januarta, Jonas Souto, Mateusz Sniegocki, Jeffrey Prieto, Jerico Bonus). API dashboard.fargorate.com/api/TopListsForWeb?rankingType=World vẫn chỉ trả đúng 100 người bất kể tham số startRank/offset — không lấy được hạng 101+. Trang fargorate.com/top-ten-lists render bằng JS phía trình duyệt, phiên routine headless không có trình duyệt tương tác nên không tự mở được. Cần Huy hoặc phiên có trình duyệt (preview_start + get_page_text) đọc hạng 101+ để bù nốt 1 người, HOẶC đợi buổi sau bảng top-100 sống lại đổi thành phần thêm.",
   "_nguon_danh_sach": "Top 100 World của FargoRate (fargorate.com/top-ten-lists), đọc bằng trình duyệt ngày 08/08/2026. Huy chốt: chỉ cơ thủ pool 9 bi, lấy 50 hạng đầu, xếp hàng chờ đúng thứ tự hạng. FargoRate xếp theo rating đối kháng, KHÔNG xét độ phủ truyền thông — cơ thủ hạng sau (nhất là Philippines, Trung Quốc, Đài Loan) có thể thiếu phỏng vấn công khai tiếng Anh, khi đó routine ghi vào khong_du_tu_lieu và bỏ qua.",
   "da_xong": [
     {
@@ -299,14 +299,30 @@
       "ngay": "2026-09-05",
       "hang_fargo": 48,
       "rating": 811
+    },
+    {
+      "ten": "Kyle Amoroto",
+      "key": "psy_pro_kyleamoroto",
+      "ngay": "2026-09-05",
+      "hang_fargo": 55,
+      "rating": 809
+    },
+    {
+      "ten": "Denis Grabe",
+      "key": "psy_pro_denisgrabe",
+      "ngay": "2026-09-05",
+      "hang_fargo": 52,
+      "rating": 810
+    },
+    {
+      "ten": "Marco Teutscher",
+      "key": "psy_pro_marcoteutscher",
+      "ngay": "2026-09-05",
+      "hang_fargo": 50,
+      "rating": 811
     }
   ],
   "hang_cho": [
-    "Paolo Gallito",
-    "Kyle Amoroto",
-    "Denis Grabe",
-    "John Albert Refulle",
-    "Marco Teutscher",
     "Aleksa Pecelj",
     "Roland Garcia",
     "Stefan Kasper",
@@ -350,9 +366,24 @@
     "Siming Chen",
     "Che-Wei Fu",
     "Sean Mark Malayan",
-    "Duc Thien Luong"
+    "Duc Thien Luong",
+    "Albert Januarta",
+    "Jonas Souto",
+    "Mateusz Sniegocki",
+    "Jeffrey Prieto",
+    "Jerico Bonus"
   ],
   "khong_du_tu_lieu": [
+    {
+      "ten": "John Albert Refulle",
+      "ngay": "2026-09-05",
+      "ghi_chu": "0 trích dẫn thật. Cơ thủ trận độ Cebu + giải SBA (Manila MSW Mavericks), 37 tuổi, tay trái. Kênh YouTube riêng 30+ video toàn trận đấu, không đoạn hỏi-đáp; SBA/TikTok có loạt phỏng vấn ngắn nhưng chưa làm số với anh; PH Open 2025 và Formosa Cup 2026 chỉ đưa tỷ số. Tiểu sử trang đội là lời ban truyền thông viết, không dùng được. Đi hết 6 đường tìm nguồn kể cả Shorts và tiếng địa phương. Đáng đo lại sau 06/2027."
+    },
+    {
+      "ten": "Paolo Gallito",
+      "ngay": "2026-09-05",
+      "ghi_chu": "01 khối trích dẫn duy nhất (AZBilliards/Bernardino 02/09/2025), 02 câu cảm xúc sau trận, không mang nội dung tâm lý; chính khối đó ghi sai tên giải nên nhiều khả năng là khuôn viết sẵn của người viết, không phải lời Gallito. Á quân Predator PBC Indonesia International Open 07/2026 được 7 toà báo đưa tin mà không tờ nào trích lời anh. Đáng đo lại sau 06/2027 — sự nghiệp quốc tế mới dày lên từ 2025, vào Reyes Cup hoặc thắng một giải WNT thì Matchroom sẽ có phỏng vấn sau trận. Đi hết 6 đường tìm nguồn kể cả YouTube Shorts và phụ đề tiếng địa phương."
+    },
     {
       "ten": "Ameer Ali",
       "ngay": "2026-08-14",
